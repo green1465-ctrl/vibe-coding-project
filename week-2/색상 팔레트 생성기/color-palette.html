@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Palette Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1c1c1e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .iphone-frame {
+      width: 393px;
+      height: 852px;
+      border-radius: 55px;
+      border: 10px solid #1a1a1a;
+      background: #f2f2f7;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 2px #333,
+        0 20px 60px rgba(0,0,0,0.5),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .dynamic-island {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 37px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+    }
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 59px;
+      z-index: 90;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 32px 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #000;
+    }
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 5px;
+      background: #000;
+      border-radius: 3px;
+      z-index: 100;
+    }
+    .screen-content {
+      position: absolute;
+      top: 59px;
+      bottom: 34px;
+      left: 0;
+      right: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen-content::-webkit-scrollbar { display: none; }
+    .screen-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(242, 242, 247, 0.8);
+    }
+
+    .ios-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin: 0 16px 12px;
+    }
+
+    .segmented-control {
+      display: flex;
+      background: rgba(118,118,128,0.12);
+      border-radius: 9px;
+      padding: 2px;
+      position: relative;
+    }
+    .segmented-control button {
+      flex: 1;
+      padding: 7px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+      transition: color 0.2s;
+    }
+    .segmented-control button.active {
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    .toast-enter {
+      animation: toastIn 0.3s ease-out forwards;
+    }
+    .toast-exit {
+      animation: toastOut 0.3s ease-in forwards;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(-50%) translateY(0); }
+      to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+
+    .color-swatch-hover { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .color-swatch-hover:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .color-swatch-hover:active { transform: scale(0.95); }
+
+    .generate-btn {
+      transition: transform 0.1s ease, filter 0.1s ease;
+    }
+    .generate-btn:active {
+      transform: scale(0.97);
+      filter: brightness(0.9);
+    }
+
+    .harmony-chip {
+      transition: all 0.15s ease;
+    }
+    .harmony-chip:active {
+      transform: scale(0.95);
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // ========================================
+    // React Hooks Destructuring
+    // ========================================
+    const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+    // ========================================
+    // Color Utility Functions
+    // ========================================
+    function hexToRgb(hex) {
+      const h = hex.replace('#', '');
+      return {
+        r: parseInt(h.substring(0, 2), 16),
+        g: parseInt(h.substring(2, 4), 16),
+        b: parseInt(h.substring(4, 6), 16)
+      };
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) { h = s = 0; }
+      else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+      return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
+    function hslToHex(h, s, l) {
+      h = ((h % 360) + 360) % 360;
+      s /= 100; l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color);
+      };
+      return rgbToHex(f(0), f(8), f(4));
+    }
+
+    function mixColors(hex1, hex2, amount) {
+      const c1 = hexToRgb(hex1), c2 = hexToRgb(hex2);
+      return rgbToHex(
+        c1.r + (c2.r - c1.r) * amount,
+        c1.g + (c2.g - c1.g) * amount,
+        c1.b + (c2.b - c1.b) * amount
+      );
+    }
+
+    function generateTints(hex) {
+      return [0.2, 0.4, 0.5, 0.6, 0.8].map(a => mixColors(hex, '#FFFFFF', a));
+    }
+
+    function generateShades(hex) {
+      return [0.2, 0.4, 0.5, 0.6, 0.8].map(a => mixColors(hex, '#000000', a));
+    }
+
+    function getHarmonyColors(hex, type) {
+      const rgb = hexToRgb(hex);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const offsets = {
+        complementary: [180],
+        analogous: [-30, -15, 15, 30],
+        triadic: [120, 240],
+        'split-complementary': [150, 210]
+      };
+      return (offsets[type] || []).map(o => hslToHex(hsl.h + o, hsl.s, hsl.l));
+    }
+
+    function getContrastColor(hex) {
+      const { r, g, b } = hexToRgb(hex);
+      return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#000000' : '#FFFFFF';
+    }
+
+    function isValidHex(hex) {
+      return /^#?[0-9A-Fa-f]{6}$/.test(hex);
+    }
+
+    function randomHex() {
+      return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0').toUpperCase();
+    }
+
+    // ========================================
+    // Status Bar Component
+    // ========================================
+    function StatusBar() {
+      const [time, setTime] = useState('');
+      useEffect(() => {
+        const update = () => {
+          const now = new Date();
+          setTime(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }));
+        };
+        update();
+        const id = setInterval(update, 1000);
+        return () => clearInterval(id);
+      }, []);
+
+      return (
+        <div className="status-bar">
+          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }}>{time}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* Cellular */}
+            <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+              <rect x="0" y="10" width="3" height="4" rx="0.5" fill="#000"/>
+              <rect x="4.5" y="7" width="3" height="7" rx="0.5" fill="#000"/>
+              <rect x="9" y="4" width="3" height="10" rx="0.5" fill="#000"/>
+              <rect x="13.5" y="0" width="3" height="14" rx="0.5" fill="#000"/>
+            </svg>
+            {/* WiFi */}
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+              <path d="M8.5 11.5a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" fill="#000"/>
+              <path d="M5.3 8.3a4.5 4.5 0 016.4 0" stroke="#000" strokeWidth="1.4" strokeLinecap="round"/>
+              <path d="M2.8 5.8a8 8 0 0111.4 0" stroke="#000" strokeWidth="1.4" strokeLinecap="round"/>
+              <path d="M0.5 3.3a11.5 11.5 0 0116 0" stroke="#000" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            {/* Battery */}
+            <svg width="27" height="13" viewBox="0 0 27 13" fill="none">
+              <rect x="0.5" y="0.5" width="23" height="12" rx="3" stroke="#000" strokeOpacity="0.35"/>
+              <rect x="2" y="2" width="20" height="9" rx="1.5" fill="#000"/>
+              <path d="M25 4.5v4a2 2 0 000-4z" fill="#000" fillOpacity="0.4"/>
+            </svg>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Toast Component
+    // ========================================
+    function Toast({ message, visible, onHide }) {
+      const [animating, setAnimating] = useState(false);
+      const [show, setShow] = useState(false);
+
+      useEffect(() => {
+        if (visible) {
+          setShow(true);
+          setAnimating(true);
+          const timer = setTimeout(() => {
+            setAnimating(false);
+            setTimeout(() => { setShow(false); onHide(); }, 300);
+          }, 1800);
+          return () => clearTimeout(timer);
+        }
+      }, [visible]);
+
+      if (!show) return null;
+
+      return (
+        <div
+          className={animating ? 'toast-enter' : 'toast-exit'}
+          style={{
+            position: 'absolute',
+            bottom: 50,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,0.8)',
+            color: '#fff',
+            padding: '10px 20px',
+            borderRadius: 20,
+            fontSize: 14,
+            fontWeight: 500,
+            zIndex: 200,
+            backdropFilter: 'blur(10px)',
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none'
+          }}
+        >
+          {message}
+        </div>
+      );
+    }
+
+    // ========================================
+    // Segmented Control Component
+    // ========================================
+    function SegmentedControl({ options, value, onChange }) {
+      return (
+        <div className="segmented-control">
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              className={value === opt.value ? 'active' : ''}
+              onClick={() => onChange(opt.value)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    // ========================================
+    // Color Input Card
+    // ========================================
+    function ColorInputCard({ color, onColorChange, onGenerate, onRandom }) {
+      const [inputVal, setInputVal] = useState(color);
+
+      useEffect(() => { setInputVal(color); }, [color]);
+
+      const handleInputChange = (e) => {
+        let val = e.target.value.toUpperCase();
+        if (!val.startsWith('#')) val = '#' + val;
+        setInputVal(val);
+        if (isValidHex(val)) {
+          onColorChange(val.startsWith('#') ? val : '#' + val);
+        }
+      };
+
+      const handlePickerChange = (e) => {
+        const val = e.target.value.toUpperCase();
+        onColorChange(val);
+        setInputVal(val);
+      };
+
+      return (
+        <div className="ios-card">
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#8e8e93', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            색상 선택
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
+              <input
+                type="color"
+                value={color}
+                onChange={handlePickerChange}
+                style={{
+                  width: 52, height: 52, borderRadius: 12,
+                  border: '2px solid rgba(0,0,0,0.06)',
+                  cursor: 'pointer'
+                }}
+              />
+            </div>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <input
+                type="text"
+                value={inputVal}
+                onChange={handleInputChange}
+                maxLength={7}
+                placeholder="#007AFF"
+                style={{
+                  width: '100%',
+                  height: 44,
+                  border: '1.5px solid rgba(0,0,0,0.08)',
+                  borderRadius: 12,
+                  padding: '0 14px',
+                  fontSize: 17,
+                  fontWeight: 600,
+                  fontFamily: 'SF Mono, Menlo, monospace',
+                  color: '#000',
+                  background: '#f9f9f9',
+                  outline: 'none'
+                }}
+                onFocus={e => e.target.style.borderColor = '#007AFF'}
+                onBlur={e => e.target.style.borderColor = 'rgba(0,0,0,0.08)'}
+              />
+            </div>
+            <button
+              onClick={onRandom}
+              style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: '#f2f2f7', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, flexShrink: 0
+              }}
+              title="Random Color"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <circle cx="8.5" cy="8.5" r="1.5" fill="#000" stroke="none"/>
+                <circle cx="15.5" cy="8.5" r="1.5" fill="#000" stroke="none"/>
+                <circle cx="8.5" cy="15.5" r="1.5" fill="#000" stroke="none"/>
+                <circle cx="15.5" cy="15.5" r="1.5" fill="#000" stroke="none"/>
+                <circle cx="12" cy="12" r="1.5" fill="#000" stroke="none"/>
+              </svg>
+            </button>
+          </div>
+          <button
+            className="generate-btn"
+            onClick={onGenerate}
+            style={{
+              width: '100%',
+              height: 50,
+              background: '#007AFF',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 14,
+              fontSize: 17,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginTop: 14,
+              letterSpacing: 0.3
+            }}
+          >
+            팔레트 생성
+          </button>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Preview Section
+    // ========================================
+    function PreviewSection({ color }) {
+      const rgb = hexToRgb(color);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      return (
+        <div className="ios-card" style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 120, height: 120, borderRadius: '50%',
+            background: color, margin: '8px auto 16px',
+            boxShadow: `0 8px 32px ${color}66, 0 2px 8px rgba(0,0,0,0.08)`,
+            border: '4px solid rgba(255,255,255,0.9)'
+          }} />
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#000', fontFamily: 'SF Mono, Menlo, monospace', letterSpacing: 1 }}>
+            {color}
+          </div>
+          <div style={{ fontSize: 14, color: '#8e8e93', marginTop: 4, fontWeight: 500 }}>
+            RGB({rgb.r}, {rgb.g}, {rgb.b}) &middot; HSL({hsl.h}, {hsl.s}%, {hsl.l}%)
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Swatch Grid Row
+    // ========================================
+    function SwatchRow({ title, colors, onCopy }) {
+      return (
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#8e8e93', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5, padding: '0 16px' }}>
+            {title}
+          </div>
+          <div className="ios-card" style={{ padding: '14px 12px' }}>
+            <div style={{ display: 'flex', gap: 6, justifyContent: 'space-between' }}>
+              {colors.map((c, i) => {
+                const contrast = getContrastColor(c);
+                return (
+                  <div
+                    key={i}
+                    className="color-swatch-hover"
+                    onClick={() => onCopy(c)}
+                    style={{
+                      flex: 1,
+                      aspectRatio: '1',
+                      borderRadius: 12,
+                      background: c,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      minWidth: 0
+                    }}
+                  >
+                    <span style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      color: contrast,
+                      fontFamily: 'SF Mono, Menlo, monospace',
+                      letterSpacing: 0.3,
+                      opacity: 0.9
+                    }}>
+                      {c.slice(1)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // List View
+    // ========================================
+    function ListView({ tints, base, shades, onCopy }) {
+      const allColors = [...[...tints].reverse(), base, ...shades];
+      const labels = [
+        'Tint 80%', 'Tint 60%', 'Tint 50%', 'Tint 40%', 'Tint 20%',
+        'Base',
+        'Shade 20%', 'Shade 40%', 'Shade 50%', 'Shade 60%', 'Shade 80%'
+      ];
+      return (
+        <div className="ios-card" style={{ padding: '6px 0' }}>
+          {allColors.map((c, i) => {
+            const rgb = hexToRgb(c);
+            const isBase = i === 5;
+            return (
+              <div
+                key={i}
+                onClick={() => onCopy(c)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 16px',
+                  cursor: 'pointer',
+                  borderBottom: i < allColors.length - 1 ? '0.5px solid rgba(0,0,0,0.06)' : 'none',
+                  background: isBase ? 'rgba(0,122,255,0.04)' : 'transparent',
+                  transition: 'background 0.15s'
+                }}
+                onMouseEnter={e => { if (!isBase) e.currentTarget.style.background = '#f9f9f9'; }}
+                onMouseLeave={e => { if (!isBase) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10, background: c, flexShrink: 0,
+                  border: '1px solid rgba(0,0,0,0.06)',
+                  boxShadow: isBase ? `0 2px 8px ${c}44` : 'none'
+                }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 15, fontWeight: 600, fontFamily: 'SF Mono, Menlo, monospace' }}>{c}</span>
+                    {isBase && (
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color: '#007AFF',
+                        background: 'rgba(0,122,255,0.1)', padding: '2px 6px', borderRadius: 4
+                      }}>BASE</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#8e8e93', marginTop: 1 }}>
+                    {labels[i]} &middot; RGB({rgb.r}, {rgb.g}, {rgb.b})
+                  </div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" strokeWidth="2" strokeLinecap="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                </svg>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ========================================
+    // Harmony Section
+    // ========================================
+    function HarmonySection({ color, onCopy }) {
+      const [active, setActive] = useState('complementary');
+      const types = [
+        { key: 'analogous', label: 'Analogous' },
+        { key: 'complementary', label: 'Complementary' },
+        { key: 'triadic', label: 'Triadic' },
+        { key: 'split-complementary', label: 'Split' }
+      ];
+      const harmonyColors = useMemo(() => getHarmonyColors(color, active), [color, active]);
+
+      return (
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#8e8e93', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5, padding: '0 16px' }}>
+            색상 조화
+          </div>
+          <div className="ios-card">
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+              {types.map(t => (
+                <button
+                  key={t.key}
+                  className="harmony-chip"
+                  onClick={() => setActive(t.key)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 20,
+                    border: 'none',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    background: active === t.key ? '#007AFF' : 'rgba(0,0,0,0.05)',
+                    color: active === t.key ? '#fff' : '#666'
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div
+                className="color-swatch-hover"
+                onClick={() => onCopy(color)}
+                style={{
+                  flex: 1, height: 60, borderRadius: 12, background: color, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '2px solid rgba(0,0,0,0.08)'
+                }}
+              >
+                <span style={{ fontSize: 10, fontWeight: 700, color: getContrastColor(color), fontFamily: 'monospace' }}>BASE</span>
+              </div>
+              {harmonyColors.map((c, i) => (
+                <div
+                  key={i}
+                  className="color-swatch-hover"
+                  onClick={() => onCopy(c)}
+                  style={{
+                    flex: 1, height: 60, borderRadius: 12, background: c, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: '1px solid rgba(0,0,0,0.06)'
+                  }}
+                >
+                  <span style={{ fontSize: 9, fontWeight: 700, color: getContrastColor(c), fontFamily: 'monospace' }}>
+                    {c.slice(1)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Export Section
+    // ========================================
+    function ExportSection({ tints, base, shades, onToast }) {
+      const allColors = [...[...tints].reverse(), base, ...shades];
+      const labels = ['tint-80','tint-60','tint-50','tint-40','tint-20','base','shade-20','shade-40','shade-50','shade-60','shade-80'];
+
+      const copyCSS = () => {
+        const css = `:root {\n${allColors.map((c, i) => `  --color-${labels[i]}: ${c};`).join('\n')}\n}`;
+        navigator.clipboard.writeText(css);
+        onToast('CSS 변수 복사됨');
+      };
+
+      const copyJSON = () => {
+        const obj = {};
+        allColors.forEach((c, i) => obj[labels[i]] = c);
+        navigator.clipboard.writeText(JSON.stringify(obj, null, 2));
+        onToast('JSON 복사됨');
+      };
+
+      const copyAll = () => {
+        const text = allColors.map((c, i) => `${labels[i]}: ${c}`).join('\n');
+        navigator.clipboard.writeText(text);
+        onToast('전체 복사됨');
+      };
+
+      const btnStyle = {
+        flex: 1,
+        height: 42,
+        borderRadius: 12,
+        border: '1px solid rgba(0,0,0,0.06)',
+        background: '#f9f9f9',
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: 'pointer',
+        color: '#333',
+        transition: 'background 0.15s'
+      };
+
+      return (
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#8e8e93', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5, padding: '0 16px' }}>
+            내보내기
+          </div>
+          <div className="ios-card">
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={copyCSS} style={btnStyle}>CSS 변수</button>
+              <button onClick={copyJSON} style={btnStyle}>JSON</button>
+              <button onClick={copyAll} style={btnStyle}>전체 복사</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // App Component
+    // ========================================
+    function App() {
+      const [color, setColor] = useState('#007AFF');
+      const [generated, setGenerated] = useState(true);
+      const [viewMode, setViewMode] = useState('grid');
+      const [toastMsg, setToastMsg] = useState('');
+      const [toastVisible, setToastVisible] = useState(false);
+      const toastKey = useRef(0);
+
+      const tints = useMemo(() => generateTints(color), [color]);
+      const shades = useMemo(() => generateShades(color), [color]);
+
+      const showToast = useCallback((msg) => {
+        toastKey.current += 1;
+        setToastMsg(msg);
+        setToastVisible(true);
+      }, []);
+
+      const copyColor = useCallback((c) => {
+        navigator.clipboard.writeText(c);
+        showToast(`${c} 복사됨`);
+      }, [showToast]);
+
+      const handleRandom = () => {
+        const newColor = randomHex();
+        setColor(newColor);
+        setGenerated(true);
+      };
+
+      const handleGenerate = () => {
+        setGenerated(true);
+      };
+
+      return (
+        <div className="iphone-frame">
+          <div className="dynamic-island" />
+          <StatusBar />
+
+          <div className="screen-content">
+            {/* Sticky Header */}
+            <div className="sticky-header" style={{ padding: '8px 16px 12px' }}>
+              <div style={{ fontSize: 34, fontWeight: 700, color: '#000', letterSpacing: -0.5 }}>
+                Palette
+              </div>
+              {generated && (
+                <div style={{ marginTop: 10 }}>
+                  <SegmentedControl
+                    options={[
+                      { label: '그리드 뷰', value: 'grid' },
+                      { label: '리스트 뷰', value: 'list' }
+                    ]}
+                    value={viewMode}
+                    onChange={setViewMode}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Color Input */}
+            <div style={{ marginTop: 8 }}>
+              <ColorInputCard
+                color={color}
+                onColorChange={setColor}
+                onGenerate={handleGenerate}
+                onRandom={handleRandom}
+              />
+            </div>
+
+            {/* Generated Palette */}
+            {generated && (
+              <>
+                <PreviewSection color={color} />
+
+                {viewMode === 'grid' ? (
+                  <>
+                    <SwatchRow title="밝은 변형 (Tints)" colors={tints} onCopy={copyColor} />
+                    <SwatchRow title="어두운 변형 (Shades)" colors={shades} onCopy={copyColor} />
+                  </>
+                ) : (
+                  <div style={{ marginBottom: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#8e8e93', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5, padding: '0 16px' }}>
+                      전체 팔레트
+                    </div>
+                    <ListView tints={tints} base={color} shades={shades} onCopy={copyColor} />
+                  </div>
+                )}
+
+                <HarmonySection color={color} onCopy={copyColor} />
+                <ExportSection tints={tints} base={color} shades={shades} onToast={showToast} />
+                <div style={{ height: 20 }} />
+              </>
+            )}
+          </div>
+
+          <div className="home-indicator" />
+          <Toast
+            key={toastKey.current}
+            message={toastMsg}
+            visible={toastVisible}
+            onHide={() => setToastVisible(false)}
+          />
+        </div>
+      );
+    }
+
+    // ========================================
+    // Rendering
+    // ========================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
