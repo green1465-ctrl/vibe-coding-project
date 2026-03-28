@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D-Day 카운터</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.7; }
+    }
+    .pulse-ring { animation: pulse-ring 2s ease-in-out infinite; }
+
+    @keyframes flip-in {
+      0% { transform: rotateX(90deg); opacity: 0; }
+      100% { transform: rotateX(0deg); opacity: 1; }
+    }
+    .flip-in { animation: flip-in 0.6s ease-out; }
+
+    @keyframes slide-up {
+      0% { transform: translateY(30px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .slide-up { animation: slide-up 0.5s ease-out forwards; }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .confetti {
+      position: fixed;
+      top: -10px;
+      animation: confetti-fall linear forwards;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .time-box {
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    /* ───── 색상 테마 ───── */
+    const THEMES = [
+      { name: '오로라', bg: 'from-violet-900 via-purple-800 to-indigo-900', accent: 'text-violet-300', ring: 'ring-violet-400', btn: 'bg-violet-600 hover:bg-violet-500' },
+      { name: '석양',   bg: 'from-orange-900 via-rose-800 to-pink-900',     accent: 'text-orange-300', ring: 'ring-orange-400', btn: 'bg-orange-600 hover:bg-orange-500' },
+      { name: '바다',   bg: 'from-cyan-900 via-teal-800 to-blue-900',       accent: 'text-cyan-300',   ring: 'ring-cyan-400',   btn: 'bg-cyan-600 hover:bg-cyan-500' },
+      { name: '숲',     bg: 'from-emerald-900 via-green-800 to-teal-900',   accent: 'text-emerald-300', ring: 'ring-emerald-400', btn: 'bg-emerald-600 hover:bg-emerald-500' },
+    ];
+
+    /* ───── 폭죽 효과 ───── */
+    function Confetti({ show }) {
+      if (!show) return null;
+      const pieces = Array.from({ length: 40 }, (_, i) => {
+        const colors = ['#f43f5e', '#8b5cf6', '#06b6d4', '#f59e0b', '#22c55e', '#ec4899'];
+        const color = colors[i % colors.length];
+        const left = Math.random() * 100;
+        const delay = Math.random() * 2;
+        const duration = 2 + Math.random() * 2;
+        const size = 6 + Math.random() * 8;
+        return (
+          <div key={i} className="confetti" style={{
+            left: `${left}%`,
+            animationDelay: `${delay}s`,
+            animationDuration: `${duration}s`,
+            width: `${size}px`,
+            height: `${size}px`,
+            backgroundColor: color,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+          }} />
+        );
+      });
+      return <>{pieces}</>;
+    }
+
+    /* ───── 시간 박스 ───── */
+    function TimeBox({ value, label, accent }) {
+      const [prevValue, setPrevValue] = useState(value);
+      const [flipping, setFlipping] = useState(false);
+
+      useEffect(() => {
+        if (value !== prevValue) {
+          setFlipping(true);
+          setPrevValue(value);
+          const t = setTimeout(() => setFlipping(false), 600);
+          return () => clearTimeout(t);
+        }
+      }, [value, prevValue]);
+
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <div className={`time-box rounded-2xl px-4 py-3 sm:px-6 sm:py-4 min-w-[70px] sm:min-w-[90px] ${flipping ? 'flip-in' : ''}`}>
+            <div className={`text-3xl sm:text-5xl font-black tabular-nums ${accent}`}>
+              {String(value).padStart(2, '0')}
+            </div>
+          </div>
+          <span className="text-white/60 text-xs sm:text-sm font-medium tracking-wider uppercase">{label}</span>
+        </div>
+      );
+    }
+
+    /* ───── D-Day 카드 ───── */
+    function DDayCard({ dday, onDelete, theme, now }) {
+      const target = new Date(dday.date + 'T00:00:00');
+      const diff = target - now;
+      const isPast = diff < 0;
+      const isToday = Math.abs(diff) < 86400000 && target.getDate() === now.getDate();
+
+      const absDiff = Math.abs(diff);
+      const days = Math.floor(absDiff / 86400000);
+      const hours = Math.floor((absDiff % 86400000) / 3600000);
+      const minutes = Math.floor((absDiff % 3600000) / 60000);
+      const seconds = Math.floor((absDiff % 60000) / 1000);
+
+      const totalDays = Math.ceil(Math.abs(target - new Date(dday.created + 'T00:00:00')) / 86400000);
+      const elapsed = totalDays - days;
+      const progress = totalDays > 0 ? Math.min(100, Math.max(0, (elapsed / totalDays) * 100)) : 100;
+
+      const label = isToday ? 'D-Day!' : isPast ? `D+${days}` : `D-${days}`;
+
+      return (
+        <div className="glass rounded-3xl p-5 sm:p-6 slide-up relative group">
+          <Confetti show={isToday} />
+
+          <button
+            onClick={() => onDelete(dday.id)}
+            className="absolute top-3 right-3 text-white/30 hover:text-red-400 transition opacity-0 group-hover:opacity-100 text-lg"
+            title="삭제"
+          >&#10005;</button>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-bold text-white">{dday.title}</h3>
+              <p className="text-white/50 text-sm mt-1">
+                {target.getFullYear()}년 {target.getMonth() + 1}월 {target.getDate()}일
+                {isPast && !isToday && ' (지남)'}
+              </p>
+            </div>
+            <div className={`text-3xl sm:text-4xl font-black ${isToday ? 'text-yellow-300 pulse-ring' : isPast ? 'text-white/40' : theme.accent}`}>
+              {label}
+            </div>
+          </div>
+
+          {!isPast && !isToday && (
+            <>
+              <div className="flex justify-center gap-3 sm:gap-4 mb-5">
+                <TimeBox value={days} label="일" accent={theme.accent} />
+                <div className={`text-2xl sm:text-4xl font-bold ${theme.accent} self-start mt-3 sm:mt-4`}>:</div>
+                <TimeBox value={hours} label="시간" accent={theme.accent} />
+                <div className={`text-2xl sm:text-4xl font-bold ${theme.accent} self-start mt-3 sm:mt-4`}>:</div>
+                <TimeBox value={minutes} label="분" accent={theme.accent} />
+                <div className={`text-2xl sm:text-4xl font-bold ${theme.accent} self-start mt-3 sm:mt-4`}>:</div>
+                <TimeBox value={seconds} label="초" accent={theme.accent} />
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-white/40 to-white/70"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="text-white/40 text-xs mt-2 text-right">{Math.round(progress)}% 경과</p>
+            </>
+          )}
+
+          {isToday && (
+            <div className="text-center py-4">
+              <span className="text-5xl">&#127881;</span>
+              <p className="text-yellow-200 text-lg font-bold mt-2">오늘이 바로 그 날!</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ───── 메인 앱 ───── */
+    function App() {
+      const STORAGE_KEY = 'dday-counter-data';
+      const THEME_KEY = 'dday-counter-theme';
+
+      const loadDdays = () => {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch { return []; }
+      };
+
+      const [ddays, setDdays] = useState(loadDdays);
+      const [themeIdx, setThemeIdx] = useState(() => {
+        const saved = localStorage.getItem(THEME_KEY);
+        return saved ? parseInt(saved, 10) : 0;
+      });
+      const [now, setNow] = useState(new Date());
+      const [showForm, setShowForm] = useState(false);
+      const [title, setTitle] = useState('');
+      const [date, setDate] = useState('');
+      const titleRef = useRef(null);
+
+      const theme = THEMES[themeIdx];
+
+      useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ddays));
+      }, [ddays]);
+
+      useEffect(() => {
+        localStorage.setItem(THEME_KEY, String(themeIdx));
+      }, [themeIdx]);
+
+      useEffect(() => {
+        if (showForm && titleRef.current) titleRef.current.focus();
+      }, [showForm]);
+
+      const addDday = (e) => {
+        e.preventDefault();
+        if (!title.trim() || !date) return;
+        const today = new Date();
+        const created = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        setDdays(prev => [...prev, { id: Date.now(), title: title.trim(), date, created }]);
+        setTitle('');
+        setDate('');
+        setShowForm(false);
+      };
+
+      const deleteDday = useCallback((id) => {
+        setDdays(prev => prev.filter(d => d.id !== id));
+      }, []);
+
+      const sorted = [...ddays].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      return (
+        <div className={`min-h-screen bg-gradient-to-br ${theme.bg} transition-colors duration-700`}>
+          <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+
+            {/* 헤더 */}
+            <header className="text-center mb-8">
+              <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
+                D-Day <span className={theme.accent}>카운터</span>
+              </h1>
+              <p className="text-white/50 mt-2 text-sm">
+                {now.getFullYear()}년 {now.getMonth() + 1}월 {now.getDate()}일{' '}
+                {['일', '월', '화', '수', '목', '금', '토'][now.getDay()]}요일{' '}
+                {String(now.getHours()).padStart(2, '0')}:{String(now.getMinutes()).padStart(2, '0')}:{String(now.getSeconds()).padStart(2, '0')}
+              </p>
+
+              {/* 테마 선택 */}
+              <div className="flex justify-center gap-2 mt-4">
+                {THEMES.map((t, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setThemeIdx(i)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                      i === themeIdx ? 'bg-white/20 text-white' : 'text-white/40 hover:text-white/70'
+                    }`}
+                  >{t.name}</button>
+                ))}
+              </div>
+            </header>
+
+            {/* 추가 버튼 / 폼 */}
+            {!showForm ? (
+              <button
+                onClick={() => setShowForm(true)}
+                className={`w-full ${theme.btn} text-white font-bold py-4 rounded-2xl transition text-lg mb-6 shadow-lg`}
+              >
+                + 새 D-Day 추가
+              </button>
+            ) : (
+              <form onSubmit={addDday} className="glass rounded-2xl p-5 mb-6 slide-up">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    ref={titleRef}
+                    type="text"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    placeholder="제목 (예: 시험, 여행, 생일)"
+                    className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    maxLength={30}
+                  />
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={e => setDate(e.target.value)}
+                    className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+                  />
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <button type="submit" className={`flex-1 ${theme.btn} text-white font-bold py-3 rounded-xl transition`}>
+                    추가
+                  </button>
+                  <button type="button" onClick={() => { setShowForm(false); setTitle(''); setDate(''); }}
+                    className="px-6 py-3 bg-white/10 text-white/60 rounded-xl hover:bg-white/20 transition font-medium">
+                    취소
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* D-Day 리스트 */}
+            {sorted.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-6xl mb-4 opacity-50">&#128197;</div>
+                <p className="text-white/40 text-lg">아직 등록된 D-Day가 없습니다</p>
+                <p className="text-white/30 text-sm mt-1">위 버튼을 눌러 추가해보세요!</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {sorted.map((dday, i) => (
+                  <div key={dday.id} style={{ animationDelay: `${i * 0.1}s` }}>
+                    <DDayCard dday={dday} onDelete={deleteDday} theme={theme} now={now} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <footer className="text-center text-white/20 text-xs mt-12">
+              D-Day Counter &middot; 데이터는 브라우저에 저장됩니다
+            </footer>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
