@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>짤 생성기 - Meme Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: { 900: '#0a0a1a', 800: '#1a1a2e', 700: '#16213e', 600: '#0f3460' },
+            accent: { DEFAULT: '#e94560', light: '#ff6b81', dark: '#c23152' },
+            neon: { blue: '#00d2ff', purple: '#7b2ff7', pink: '#ff00e5', green: '#00ff88' }
+          },
+          fontFamily: {
+            korean: ['"Noto Sans KR"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; }
+    * { scrollbar-width: thin; scrollbar-color: #e94560 #1a1a2e; }
+    *::-webkit-scrollbar { width: 6px; }
+    *::-webkit-scrollbar-track { background: #1a1a2e; }
+    *::-webkit-scrollbar-thumb { background: #e94560; border-radius: 3px; }
+    .drop-zone-active { border-color: #e94560 !important; background: rgba(233, 69, 96, 0.1) !important; }
+    @keyframes pulse-border {
+      0%, 100% { border-color: #e94560; }
+      50% { border-color: #00d2ff; }
+    }
+    .pulse-border { animation: pulse-border 2s ease-in-out infinite; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .float-anim { animation: float 3s ease-in-out infinite; }
+    .color-swatch { transition: transform 0.15s, box-shadow 0.15s; }
+    .color-swatch:hover { transform: scale(1.2); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+    .color-swatch.selected { transform: scale(1.25); box-shadow: 0 0 0 2px #fff; }
+    input[type="range"] { -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-track { height: 6px; background: #16213e; border-radius: 3px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #e94560; border-radius: 50%; margin-top: -6px; cursor: pointer; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #16213e; border-radius: 3px; border: none; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: #e94560; border-radius: 50%; border: none; cursor: pointer; }
+  </style>
+</head>
+<body class="bg-dark-900 text-gray-100 min-h-screen">
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+    // ========================================
+    // Design System Components
+    // ========================================
+
+    function Button({ children, onClick, variant = 'primary', size = 'md', disabled = false, className = '', ...props }) {
+      const base = 'font-bold rounded-xl transition-all duration-200 inline-flex items-center justify-center gap-2 cursor-pointer select-none';
+      const variants = {
+        primary: 'bg-accent hover:bg-accent-light active:scale-95 text-white shadow-lg shadow-accent/20',
+        secondary: 'bg-dark-700 hover:bg-dark-600 text-gray-200 border border-gray-600',
+        danger: 'bg-red-600 hover:bg-red-500 active:scale-95 text-white',
+        ghost: 'bg-transparent hover:bg-white/10 text-gray-300',
+        neon: 'bg-gradient-to-r from-neon-blue to-neon-purple hover:from-neon-purple hover:to-neon-pink text-white shadow-lg',
+      };
+      const sizes = { sm: 'px-3 py-1.5 text-sm', md: 'px-5 py-2.5 text-base', lg: 'px-7 py-3.5 text-lg' };
+      return (
+        <button
+          onClick={onClick}
+          disabled={disabled}
+          className={`${base} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-40 cursor-not-allowed' : ''} ${className}`}
+          {...props}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    function Card({ children, className = '', ...props }) {
+      return (
+        <div className={`bg-dark-800 rounded-2xl border border-gray-700/50 shadow-xl ${className}`} {...props}>
+          {children}
+        </div>
+      );
+    }
+
+    function SectionHeader({ emoji, title, subtitle }) {
+      return (
+        <div className="mb-4">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <span className="text-2xl">{emoji}</span> {title}
+          </h3>
+          {subtitle && <p className="text-gray-400 text-sm mt-1 ml-9">{subtitle}</p>}
+        </div>
+      );
+    }
+
+    function ColorPicker({ value, onChange, presets }) {
+      return (
+        <div className="flex items-center gap-2 flex-wrap">
+          {presets.map(c => (
+            <button
+              key={c}
+              onClick={() => onChange(c)}
+              className={`color-swatch w-7 h-7 rounded-full border-2 ${value === c ? 'selected border-white' : 'border-gray-600'}`}
+              style={{ background: c }}
+              title={c}
+            />
+          ))}
+          <input
+            type="color"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent"
+          />
+        </div>
+      );
+    }
+
+    function Slider({ label, value, onChange, min, max, step = 1, unit = '' }) {
+      return (
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400 w-20 shrink-0">{label}</span>
+          <input
+            type="range" min={min} max={max} step={step} value={value}
+            onChange={e => onChange(Number(e.target.value))}
+            className="flex-1"
+          />
+          <span className="text-sm text-accent font-mono w-14 text-right">{value}{unit}</span>
+        </div>
+      );
+    }
+
+    function Toggle({ label, checked, onChange }) {
+      return (
+        <label className="flex items-center gap-3 cursor-pointer select-none">
+          <div className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-accent' : 'bg-dark-600'}`}>
+            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : ''}`} />
+          </div>
+          <span className="text-sm text-gray-300">{label}</span>
+        </label>
+      );
+    }
+
+    function SelectField({ label, value, onChange, options }) {
+      return (
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400 shrink-0">{label}</span>
+          <select
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            className="flex-1 bg-dark-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-200 outline-none focus:border-accent"
+          >
+            {options.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Constants
+    // ========================================
+
+    const PRESET_COLORS = ['#ffffff', '#000000', '#e94560', '#ffd700', '#00d2ff', '#00ff88', '#ff00e5', '#ff6b35'];
+    const FONT_OPTIONS = [
+      { value: 'Impact', label: 'Impact (클래식)' },
+      { value: '"Arial Black"', label: 'Arial Black' },
+      { value: '"Noto Sans KR"', label: 'Noto Sans KR (한글)' },
+      { value: '"Comic Sans MS"', label: 'Comic Sans MS' },
+      { value: 'serif', label: 'Serif (명조)' },
+      { value: 'monospace', label: 'Monospace (고정폭)' },
+    ];
+    const ALIGN_OPTIONS = [
+      { value: 'left', label: '왼쪽' },
+      { value: 'center', label: '가운데' },
+      { value: 'right', label: '오른쪽' },
+    ];
+
+    const TEMPLATES = [
+      { emoji: '😂', label: '웃긴 짤', bg: '#ff6b35', color2: '#ffd700' },
+      { emoji: '😭', label: '슬픈 짤', bg: '#1a5276', color2: '#5dade2' },
+      { emoji: '🔥', label: '핫한 짤', bg: '#c0392b', color2: '#f39c12' },
+      { emoji: '💀', label: '레전드 짤', bg: '#1c1c1c', color2: '#7d3c98' },
+      { emoji: '🤣', label: 'ㅋㅋㅋ 짤', bg: '#27ae60', color2: '#f1c40f' },
+      { emoji: '😎', label: '쿨한 짤', bg: '#0f3460', color2: '#00d2ff' },
+    ];
+
+    const DEFAULT_TEXT = {
+      text: '',
+      fontSize: 48,
+      fontColor: '#ffffff',
+      strokeEnabled: true,
+      strokeColor: '#000000',
+      strokeWidth: 4,
+      fontFamily: 'Impact',
+      bold: true,
+      align: 'center',
+      positionY: 0.1,
+    };
+
+    // ========================================
+    // Helper: generate template image via canvas
+    // ========================================
+
+    function generateTemplateImage(template, width = 600, height = 600) {
+      const c = document.createElement('canvas');
+      c.width = width;
+      c.height = height;
+      const ctx = c.getContext('2d');
+      const grd = ctx.createLinearGradient(0, 0, width, height);
+      grd.addColorStop(0, template.bg);
+      grd.addColorStop(1, template.color2);
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, width, height);
+      // subtle pattern
+      ctx.globalAlpha = 0.06;
+      for (let i = 0; i < 20; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * width, Math.random() * height, Math.random() * 80 + 20, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.font = `${Math.floor(width * 0.35)}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(template.emoji, width / 2, height / 2);
+      return c.toDataURL('image/png');
+    }
+
+    // ========================================
+    // App Component
+    // ========================================
+
+    function App() {
+      // Image state
+      const [imageSrc, setImageSrc] = useState(null);
+      const [imageObj, setImageObj] = useState(null);
+      const [bgColor, setBgColor] = useState('#1a1a2e');
+      const [brightness, setBrightness] = useState(100);
+      const [contrast, setContrast] = useState(100);
+
+      // Text state
+      const [topText, setTopText] = useState({ ...DEFAULT_TEXT, text: '', positionY: 0.08 });
+      const [bottomText, setBottomText] = useState({ ...DEFAULT_TEXT, text: '', positionY: 0.92 });
+      const [extraTexts, setExtraTexts] = useState([]);
+
+      // Undo
+      const [history, setHistory] = useState([]);
+      const pushHistory = useCallback(() => {
+        setHistory(prev => [...prev.slice(-29), { topText, bottomText, extraTexts: JSON.parse(JSON.stringify(extraTexts)) }]);
+      }, [topText, bottomText, extraTexts]);
+
+      // UI state
+      const [activePanel, setActivePanel] = useState('text');
+      const [dragOver, setDragOver] = useState(false);
+      const [editingExtra, setEditingExtra] = useState(null);
+
+      // Refs
+      const canvasRef = useRef(null);
+      const fileInputRef = useRef(null);
+      const renderCanvasRef = useRef(null);
+
+      // Canvas size for display
+      const DISPLAY_W = 600;
+
+      // ---- Image loading ----
+      const loadImage = useCallback((src) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          setImageObj(img);
+          setImageSrc(src);
+        };
+        img.onerror = () => alert('이미지를 불러올 수 없습니다.');
+        img.src = src;
+      }, []);
+
+      const handleFile = useCallback((file) => {
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => loadImage(e.target.result);
+        reader.readAsDataURL(file);
+      }, [loadImage]);
+
+      const handleDrop = useCallback((e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files[0];
+        handleFile(file);
+      }, [handleFile]);
+
+      const handleDragOver = useCallback((e) => { e.preventDefault(); setDragOver(true); }, []);
+      const handleDragLeave = useCallback(() => setDragOver(false), []);
+
+      // ---- Template selection ----
+      const selectTemplate = useCallback((template) => {
+        const src = generateTemplateImage(template);
+        loadImage(src);
+      }, [loadImage]);
+
+      // ---- Drawing ----
+      const drawMeme = useCallback((canvas, scale = 1) => {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        let cw, ch;
+        if (imageObj) {
+          cw = imageObj.naturalWidth;
+          ch = imageObj.naturalHeight;
+        } else {
+          cw = 600;
+          ch = 600;
+        }
+
+        canvas.width = cw * scale;
+        canvas.height = ch * scale;
+        ctx.scale(scale, scale);
+
+        // Background
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, cw, ch);
+
+        // Image with filters
+        if (imageObj) {
+          ctx.save();
+          ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+          ctx.drawImage(imageObj, 0, 0, cw, ch);
+          ctx.restore();
+        }
+
+        // Draw text helper
+        const drawText = (t) => {
+          if (!t.text) return;
+          const size = t.fontSize * (cw / DISPLAY_W);
+          const fontWeight = t.bold ? 'bold ' : '';
+          ctx.font = `${fontWeight}${size}px ${t.fontFamily}, "Noto Sans KR", sans-serif`;
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = t.align;
+
+          let x = cw / 2;
+          if (t.align === 'left') x = cw * 0.05;
+          if (t.align === 'right') x = cw * 0.95;
+          const y = ch * t.positionY;
+
+          // Word wrap
+          const maxWidth = cw * 0.9;
+          const lines = [];
+          const words = t.text.split('');
+          let currentLine = '';
+          for (const char of t.text) {
+            const testLine = currentLine + char;
+            if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+              lines.push(currentLine);
+              currentLine = char;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) lines.push(currentLine);
+
+          const lineHeight = size * 1.2;
+          const startY = y - ((lines.length - 1) * lineHeight) / 2;
+
+          lines.forEach((line, i) => {
+            const ly = startY + i * lineHeight;
+            if (t.strokeEnabled) {
+              ctx.strokeStyle = t.strokeColor;
+              ctx.lineWidth = t.strokeWidth * (cw / DISPLAY_W);
+              ctx.lineJoin = 'round';
+              ctx.miterLimit = 2;
+              ctx.strokeText(line, x, ly);
+            }
+            ctx.fillStyle = t.fontColor;
+            ctx.fillText(line, x, ly);
+          });
+        };
+
+        drawText(topText);
+        drawText(bottomText);
+        extraTexts.forEach(drawText);
+      }, [imageObj, bgColor, brightness, contrast, topText, bottomText, extraTexts]);
+
+      // ---- Render loop ----
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        let cw, ch;
+        if (imageObj) {
+          cw = imageObj.naturalWidth;
+          ch = imageObj.naturalHeight;
+        } else {
+          cw = 600;
+          ch = 600;
+        }
+
+        // Display size
+        const aspect = ch / cw;
+        const container = canvas.parentElement;
+        const displayW = Math.min(container?.clientWidth || DISPLAY_W, DISPLAY_W);
+        canvas.style.width = displayW + 'px';
+        canvas.style.height = (displayW * aspect) + 'px';
+
+        // Retina
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = displayW * dpr;
+        canvas.height = displayW * aspect * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        // Draw at display size
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, displayW, displayW * aspect);
+
+        if (imageObj) {
+          ctx.save();
+          ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+          ctx.drawImage(imageObj, 0, 0, displayW, displayW * aspect);
+          ctx.restore();
+        }
+
+        const drawTextDisplay = (t) => {
+          if (!t.text) return;
+          const size = t.fontSize;
+          const fontWeight = t.bold ? 'bold ' : '';
+          ctx.font = `${fontWeight}${size}px ${t.fontFamily}, "Noto Sans KR", sans-serif`;
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = t.align;
+
+          let x = displayW / 2;
+          if (t.align === 'left') x = displayW * 0.05;
+          if (t.align === 'right') x = displayW * 0.95;
+          const y = (displayW * aspect) * t.positionY;
+
+          const maxWidth = displayW * 0.9;
+          const lines = [];
+          let currentLine = '';
+          for (const char of t.text) {
+            const testLine = currentLine + char;
+            if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+              lines.push(currentLine);
+              currentLine = char;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) lines.push(currentLine);
+
+          const lineHeight = size * 1.2;
+          const startY = y - ((lines.length - 1) * lineHeight) / 2;
+
+          lines.forEach((line, i) => {
+            const ly = startY + i * lineHeight;
+            if (t.strokeEnabled) {
+              ctx.strokeStyle = t.strokeColor;
+              ctx.lineWidth = t.strokeWidth;
+              ctx.lineJoin = 'round';
+              ctx.miterLimit = 2;
+              ctx.strokeText(line, x, ly);
+            }
+            ctx.fillStyle = t.fontColor;
+            ctx.fillText(line, x, ly);
+          });
+        };
+
+        drawTextDisplay(topText);
+        drawTextDisplay(bottomText);
+        extraTexts.forEach(drawTextDisplay);
+      }, [imageObj, bgColor, brightness, contrast, topText, bottomText, extraTexts]);
+
+      // ---- Download ----
+      const handleDownload = useCallback(() => {
+        const offscreen = document.createElement('canvas');
+        let cw = imageObj ? imageObj.naturalWidth : 600;
+        let ch = imageObj ? imageObj.naturalHeight : 600;
+        offscreen.width = cw;
+        offscreen.height = ch;
+        const ctx = offscreen.getContext('2d');
+
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, cw, ch);
+
+        if (imageObj) {
+          ctx.save();
+          ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+          ctx.drawImage(imageObj, 0, 0, cw, ch);
+          ctx.restore();
+        }
+
+        const drawTextFull = (t) => {
+          if (!t.text) return;
+          const scaleFactor = cw / DISPLAY_W;
+          const size = t.fontSize * scaleFactor;
+          const fontWeight = t.bold ? 'bold ' : '';
+          ctx.font = `${fontWeight}${size}px ${t.fontFamily}, "Noto Sans KR", sans-serif`;
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = t.align;
+
+          let x = cw / 2;
+          if (t.align === 'left') x = cw * 0.05;
+          if (t.align === 'right') x = cw * 0.95;
+          const y = ch * t.positionY;
+
+          const maxWidth = cw * 0.9;
+          const lines = [];
+          let currentLine = '';
+          for (const char of t.text) {
+            const testLine = currentLine + char;
+            if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+              lines.push(currentLine);
+              currentLine = char;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) lines.push(currentLine);
+
+          const lineHeight = size * 1.2;
+          const startY = y - ((lines.length - 1) * lineHeight) / 2;
+
+          lines.forEach((line, i) => {
+            const ly = startY + i * lineHeight;
+            if (t.strokeEnabled) {
+              ctx.strokeStyle = t.strokeColor;
+              ctx.lineWidth = t.strokeWidth * scaleFactor;
+              ctx.lineJoin = 'round';
+              ctx.miterLimit = 2;
+              ctx.strokeText(line, x, ly);
+            }
+            ctx.fillStyle = t.fontColor;
+            ctx.fillText(line, x, ly);
+          });
+        };
+
+        drawTextFull(topText);
+        drawTextFull(bottomText);
+        extraTexts.forEach(drawTextFull);
+
+        offscreen.toBlob((blob) => {
+          const now = new Date();
+          const pad = (n) => String(n).padStart(2, '0');
+          const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `짤_생성기_${ts}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      }, [imageObj, bgColor, brightness, contrast, topText, bottomText, extraTexts]);
+
+      // ---- Undo ----
+      const handleUndo = useCallback(() => {
+        if (history.length === 0) return;
+        const prev = history[history.length - 1];
+        setTopText(prev.topText);
+        setBottomText(prev.bottomText);
+        setExtraTexts(prev.extraTexts);
+        setHistory(h => h.slice(0, -1));
+      }, [history]);
+
+      // ---- Reset ----
+      const handleReset = useCallback(() => {
+        pushHistory();
+        setTopText({ ...DEFAULT_TEXT, positionY: 0.08 });
+        setBottomText({ ...DEFAULT_TEXT, positionY: 0.92 });
+        setExtraTexts([]);
+        setEditingExtra(null);
+      }, [pushHistory]);
+
+      // ---- Add extra text ----
+      const addExtraText = useCallback(() => {
+        pushHistory();
+        const newText = { ...DEFAULT_TEXT, text: '텍스트', positionY: 0.5, fontSize: 36 };
+        setExtraTexts(prev => [...prev, newText]);
+        setEditingExtra(extraTexts.length);
+      }, [pushHistory, extraTexts.length]);
+
+      const removeExtraText = useCallback((index) => {
+        pushHistory();
+        setExtraTexts(prev => prev.filter((_, i) => i !== index));
+        setEditingExtra(null);
+      }, [pushHistory]);
+
+      // ---- Text editor component ----
+      const TextEditor = ({ label, emoji, textState, onChange }) => {
+        const update = (key, val) => {
+          pushHistory();
+          onChange({ ...textState, [key]: val });
+        };
+        return (
+          <div className="space-y-3 p-4 bg-dark-900/50 rounded-xl border border-gray-700/30">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-sm flex items-center gap-2">
+                <span className="text-lg">{emoji}</span> {label}
+              </span>
+            </div>
+            <input
+              type="text"
+              value={textState.text}
+              onChange={e => update('text', e.target.value)}
+              placeholder={`${label} 입력...`}
+              className="w-full bg-dark-700 border border-gray-600 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-accent placeholder-gray-500 transition-colors"
+            />
+            <div className="grid grid-cols-1 gap-3">
+              <Slider label="글자 크기" value={textState.fontSize} onChange={v => update('fontSize', v)} min={16} max={120} unit="px" />
+              <Slider label="Y 위치" value={Math.round(textState.positionY * 100)} onChange={v => update('positionY', v / 100)} min={0} max={100} unit="%" />
+              {textState.strokeEnabled && (
+                <Slider label="테두리 두께" value={textState.strokeWidth} onChange={v => update('strokeWidth', v)} min={1} max={8} unit="px" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <span className="text-xs text-gray-400">글자 색상</span>
+              <ColorPicker value={textState.fontColor} onChange={v => update('fontColor', v)} presets={PRESET_COLORS} />
+            </div>
+            {textState.strokeEnabled && (
+              <div className="space-y-2">
+                <span className="text-xs text-gray-400">테두리 색상</span>
+                <ColorPicker value={textState.strokeColor} onChange={v => update('strokeColor', v)} presets={['#000000','#ffffff','#333333','#e94560']} />
+              </div>
+            )}
+            <div className="flex flex-wrap gap-3 items-center">
+              <Toggle label="테두리" checked={textState.strokeEnabled} onChange={v => update('strokeEnabled', v)} />
+              <Toggle label="굵게" checked={textState.bold} onChange={v => update('bold', v)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <SelectField label="폰트" value={textState.fontFamily} onChange={v => update('fontFamily', v)} options={FONT_OPTIONS} />
+              <SelectField label="정렬" value={textState.align} onChange={v => update('align', v)} options={ALIGN_OPTIONS} />
+            </div>
+          </div>
+        );
+      };
+
+      // ---- Tabs ----
+      const tabs = [
+        { id: 'text', emoji: '✏️', label: '텍스트' },
+        { id: 'image', emoji: '🖼️', label: '이미지' },
+        { id: 'extra', emoji: '➕', label: '추가 텍스트' },
+      ];
+
+      return (
+        <div className="min-h-screen bg-dark-900">
+          {/* Header */}
+          <header className="bg-dark-800 border-b border-gray-700/50 sticky top-0 z-50">
+            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl float-anim inline-block">🎨</span>
+                <div>
+                  <h1 className="text-xl font-black bg-gradient-to-r from-accent to-neon-blue bg-clip-text text-transparent">
+                    짤 생성기
+                  </h1>
+                  <p className="text-xs text-gray-500">Meme Generator</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={handleUndo} disabled={history.length === 0}>
+                  ↩️ 되돌리기
+                </Button>
+                <Button variant="neon" size="sm" onClick={handleDownload}>
+                  💾 다운로드
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-6xl mx-auto px-4 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+              {/* Canvas Preview Area */}
+              <div className="lg:col-span-3 space-y-4">
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <SectionHeader emoji="👀" title="미리보기" />
+                    <div className="flex gap-2">
+                      <Button variant="danger" size="sm" onClick={handleReset}>🗑️ 텍스트 초기화</Button>
+                    </div>
+                  </div>
+                  <div className="flex justify-center bg-dark-900 rounded-xl p-2 border border-gray-700/30">
+                    <canvas
+                      ref={canvasRef}
+                      className="max-w-full rounded-lg shadow-2xl"
+                      style={{ maxHeight: '70vh' }}
+                    />
+                  </div>
+                </Card>
+
+                {/* Upload Area */}
+                {!imageSrc && (
+                  <Card className="p-6">
+                    <SectionHeader emoji="📤" title="이미지 업로드" subtitle="이미지를 드래그하거나 클릭하여 업로드하세요" />
+                    <div
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 ${
+                        dragOver ? 'drop-zone-active' : 'border-gray-600 hover:border-accent/50 hover:bg-accent/5'
+                      }`}
+                    >
+                      <div className="text-5xl mb-4">🖼️</div>
+                      <p className="text-gray-300 font-medium mb-1">이미지를 여기에 드래그 & 드롭</p>
+                      <p className="text-gray-500 text-sm">또는 클릭하여 파일 선택 (JPG, PNG, GIF, WebP)</p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={e => handleFile(e.target.files[0])}
+                        className="hidden"
+                      />
+                    </div>
+                  </Card>
+                )}
+
+                {/* Templates */}
+                <Card className="p-4">
+                  <SectionHeader emoji="🎭" title="기본 템플릿" subtitle="클릭하여 템플릿을 선택하세요" />
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                    {TEMPLATES.map((t, i) => (
+                      <button
+                        key={i}
+                        onClick={() => selectTemplate(t)}
+                        className="aspect-square rounded-xl overflow-hidden border-2 border-gray-700 hover:border-accent transition-all hover:scale-105 active:scale-95 relative group"
+                        style={{ background: `linear-gradient(135deg, ${t.bg}, ${t.color2})` }}
+                      >
+                        <span className="text-3xl">{t.emoji}</span>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-xs py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {t.label}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  {imageSrc && (
+                    <div className="mt-3 flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}>
+                        📁 다른 이미지 선택
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setImageSrc(null); setImageObj(null); }}>
+                        ✖️ 이미지 제거
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={e => handleFile(e.target.files[0])}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
+                </Card>
+              </div>
+
+              {/* Controls Panel */}
+              <div className="lg:col-span-2 space-y-4">
+                {/* Tab Navigation */}
+                <Card className="p-2">
+                  <div className="flex gap-1">
+                    {tabs.map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActivePanel(tab.id)}
+                        className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all ${
+                          activePanel === tab.id
+                            ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                            : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                        }`}
+                      >
+                        {tab.emoji} {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* Text Panel */}
+                {activePanel === 'text' && (
+                  <Card className="p-4 space-y-4">
+                    <SectionHeader emoji="✏️" title="텍스트 편집" subtitle="상단/하단 텍스트를 편집하세요" />
+                    <TextEditor
+                      label="상단 텍스트"
+                      emoji="⬆️"
+                      textState={topText}
+                      onChange={setTopText}
+                    />
+                    <TextEditor
+                      label="하단 텍스트"
+                      emoji="⬇️"
+                      textState={bottomText}
+                      onChange={setBottomText}
+                    />
+                  </Card>
+                )}
+
+                {/* Image Settings Panel */}
+                {activePanel === 'image' && (
+                  <Card className="p-4 space-y-4">
+                    <SectionHeader emoji="🖼️" title="이미지 설정" subtitle="배경색과 필터를 조정하세요" />
+                    <div className="space-y-4 p-4 bg-dark-900/50 rounded-xl border border-gray-700/30">
+                      <div className="space-y-2">
+                        <span className="text-sm text-gray-400">배경색 (이미지 없을 때)</span>
+                        <ColorPicker
+                          value={bgColor}
+                          onChange={setBgColor}
+                          presets={['#1a1a2e','#0a0a0a','#ffffff','#e94560','#0f3460','#1a5276','#27ae60','#f39c12']}
+                        />
+                      </div>
+                      <Slider label="밝기" value={brightness} onChange={setBrightness} min={0} max={200} unit="%" />
+                      <Slider label="대비" value={contrast} onChange={setContrast} min={0} max={200} unit="%" />
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => { setBrightness(100); setContrast(100); }}>
+                          🔄 필터 초기화
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Extra Text Panel */}
+                {activePanel === 'extra' && (
+                  <Card className="p-4 space-y-4">
+                    <SectionHeader emoji="➕" title="추가 텍스트" subtitle="자유롭게 텍스트를 추가하세요" />
+                    <Button variant="secondary" size="sm" onClick={addExtraText} className="w-full">
+                      ➕ 새 텍스트 추가
+                    </Button>
+                    {extraTexts.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <div className="text-4xl mb-2">📝</div>
+                        <p className="text-sm">추가된 텍스트가 없습니다</p>
+                        <p className="text-xs text-gray-600">위 버튼을 눌러 텍스트를 추가하세요</p>
+                      </div>
+                    )}
+                    {extraTexts.map((et, i) => (
+                      <div key={i}>
+                        <div className="flex items-center justify-between mb-2">
+                          <button
+                            onClick={() => setEditingExtra(editingExtra === i ? null : i)}
+                            className="text-sm text-gray-300 hover:text-white transition-colors flex items-center gap-2"
+                          >
+                            <span>{editingExtra === i ? '🔽' : '▶️'}</span>
+                            텍스트 #{i + 1}: "{et.text.slice(0, 15)}{et.text.length > 15 ? '...' : ''}"
+                          </button>
+                          <Button variant="danger" size="sm" onClick={() => removeExtraText(i)}>
+                            ✖️
+                          </Button>
+                        </div>
+                        {editingExtra === i && (
+                          <TextEditor
+                            label={`텍스트 #${i + 1}`}
+                            emoji="📌"
+                            textState={et}
+                            onChange={(newState) => {
+                              pushHistory();
+                              setExtraTexts(prev => prev.map((t, idx) => idx === i ? newState : t));
+                            }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </Card>
+                )}
+
+                {/* Quick Actions */}
+                <Card className="p-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="neon" onClick={handleDownload} className="col-span-2">
+                      💾 이미지 다운로드
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleUndo} disabled={history.length === 0}>
+                      ↩️ 되돌리기 ({history.length})
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={handleReset}>
+                      🗑️ 전체 초기화
+                    </Button>
+                  </div>
+                </Card>
+
+                {/* Tips */}
+                <Card className="p-4 bg-dark-700/50">
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    <strong className="text-gray-400">💡 팁:</strong> Impact 폰트 + 흰색 글자 + 검은 테두리 = 클래식 짤 스타일!
+                    한글은 Noto Sans KR 폰트를 추천합니다.
+                    다운로드 시 원본 해상도로 저장됩니다.
+                  </p>
+                </Card>
+              </div>
+            </div>
+          </main>
+
+          {/* Footer */}
+          <footer className="mt-12 py-6 border-t border-gray-800 text-center text-gray-600 text-xs">
+            짤 생성기 v1.0 | Made with React + Canvas
+          </footer>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Rendering
+    // ========================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
