@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌤️ 날씨앱 - OpenWeatherMap</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: linear-gradient(135deg, #2193b0, #6dd5ed);
+      background-attachment: fixed;
+      min-height: 100vh;
+      transition: background 0.6s ease;
+    }
+    body.night {
+      background: linear-gradient(135deg, #141e30, #243b55);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.4s ease; }
+    .capitalize-first::first-letter { text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    // ========================================
+    // 🔑 설정
+    // ========================================
+    const API_KEY = "1d5926b624ef458b103acdefc47d5cbc";
+    const BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
+    const GEO_URL = "https://api.openweathermap.org/geo/1.0/direct";
+
+    // ========================================
+    // 🇰🇷 한글 도시명 → 영문 매핑
+    //   OpenWeatherMap 의 q= 파라미터는 기본적으로 영문명을 받기 때문에
+    //   자주 쓰이는 한글 도시명을 영문으로 변환해 호출합니다.
+    //   매핑에 없는 한글 입력은 Geocoding API 로 fallback 합니다.
+    // ========================================
+    const CITY_MAP = {
+      // 🇰🇷 국내
+      "서울": "Seoul",
+      "부산": "Busan",
+      "인천": "Incheon",
+      "대구": "Daegu",
+      "대전": "Daejeon",
+      "광주": "Gwangju",
+      "울산": "Ulsan",
+      "세종": "Sejong",
+      "수원": "Suwon",
+      "고양": "Goyang",
+      "용인": "Yongin",
+      "창원": "Changwon",
+      "성남": "Seongnam",
+      "청주": "Cheongju",
+      "부천": "Bucheon",
+      "안산": "Ansan",
+      "전주": "Jeonju",
+      "천안": "Cheonan",
+      "안양": "Anyang",
+      "의정부": "Uijeongbu",
+      "제주": "Jeju",
+      "김해": "Gimhae",
+      "포항": "Pohang",
+      "춘천": "Chuncheon",
+      "원주": "Wonju",
+      "강릉": "Gangneung",
+      "속초": "Sokcho",
+      "여수": "Yeosu",
+      "목포": "Mokpo",
+      "경주": "Gyeongju",
+      "안동": "Andong",
+      // 🌏 해외
+      "도쿄": "Tokyo",
+      "오사카": "Osaka",
+      "교토": "Kyoto",
+      "삿포로": "Sapporo",
+      "후쿠오카": "Fukuoka",
+      "오키나와": "Okinawa",
+      "뉴욕": "New York",
+      "로스앤젤레스": "Los Angeles",
+      "엘에이": "Los Angeles",
+      "시카고": "Chicago",
+      "샌프란시스코": "San Francisco",
+      "라스베이거스": "Las Vegas",
+      "시애틀": "Seattle",
+      "호놀룰루": "Honolulu",
+      "런던": "London",
+      "파리": "Paris",
+      "베를린": "Berlin",
+      "로마": "Rome",
+      "마드리드": "Madrid",
+      "바르셀로나": "Barcelona",
+      "암스테르담": "Amsterdam",
+      "빈": "Vienna",
+      "비엔나": "Vienna",
+      "프라하": "Prague",
+      "모스크바": "Moscow",
+      "이스탄불": "Istanbul",
+      "두바이": "Dubai",
+      "싱가포르": "Singapore",
+      "방콕": "Bangkok",
+      "홍콩": "Hong Kong",
+      "상하이": "Shanghai",
+      "베이징": "Beijing",
+      "타이베이": "Taipei",
+      "하노이": "Hanoi",
+      "호치민": "Ho Chi Minh City",
+      "마닐라": "Manila",
+      "시드니": "Sydney",
+      "멜버른": "Melbourne",
+      "오클랜드": "Auckland",
+      "토론토": "Toronto",
+      "밴쿠버": "Vancouver",
+      "멕시코시티": "Mexico City",
+      "리우데자네이루": "Rio de Janeiro",
+      "부에노스아이레스": "Buenos Aires",
+      "카이로": "Cairo",
+      "케이프타운": "Cape Town",
+    };
+
+    // ========================================
+    // 🌍 나라별 검색 지원
+    //   - 국가명만 입력하면 해당 국가의 수도 날씨를 보여줍니다.
+    //   - "도시, 국가" 형식(예: "Paris, FR", "서울, 대한민국")도 지원합니다.
+    //     OpenWeatherMap 은 q=city,ISO2 형식을 공식 지원하므로
+    //     한글 국가명은 ISO 3166-1 alpha-2 코드로 변환해 넘깁니다.
+    // ========================================
+    const COUNTRY_TO_CAPITAL = {
+      // 🇰🇷 한글
+      "한국": "Seoul", "대한민국": "Seoul", "남한": "Seoul",
+      "북한": "Pyongyang", "조선": "Pyongyang",
+      "일본": "Tokyo",
+      "중국": "Beijing",
+      "미국": "Washington", "미합중국": "Washington",
+      "캐나다": "Ottawa",
+      "멕시코": "Mexico City",
+      "영국": "London",
+      "프랑스": "Paris",
+      "독일": "Berlin",
+      "이탈리아": "Rome",
+      "스페인": "Madrid",
+      "포르투갈": "Lisbon",
+      "네덜란드": "Amsterdam",
+      "벨기에": "Brussels",
+      "스위스": "Bern",
+      "오스트리아": "Vienna",
+      "체코": "Prague",
+      "폴란드": "Warsaw",
+      "헝가리": "Budapest",
+      "그리스": "Athens",
+      "스웨덴": "Stockholm",
+      "노르웨이": "Oslo",
+      "핀란드": "Helsinki",
+      "덴마크": "Copenhagen",
+      "아이슬란드": "Reykjavík",
+      "아일랜드": "Dublin",
+      "러시아": "Moscow",
+      "우크라이나": "Kyiv",
+      "터키": "Ankara", "튀르키예": "Ankara",
+      "이스라엘": "Jerusalem",
+      "사우디아라비아": "Riyadh",
+      "아랍에미리트": "Abu Dhabi", "uae": "Abu Dhabi",
+      "이란": "Tehran",
+      "이집트": "Cairo",
+      "남아공": "Pretoria", "남아프리카공화국": "Pretoria",
+      "모로코": "Rabat",
+      "케냐": "Nairobi",
+      "인도": "New Delhi",
+      "파키스탄": "Islamabad",
+      "방글라데시": "Dhaka",
+      "몽골": "Ulaanbaatar",
+      "대만": "Taipei",
+      "베트남": "Hanoi",
+      "태국": "Bangkok",
+      "필리핀": "Manila",
+      "인도네시아": "Jakarta",
+      "말레이시아": "Kuala Lumpur",
+      "싱가포르": "Singapore",
+      "호주": "Canberra", "오스트레일리아": "Canberra",
+      "뉴질랜드": "Wellington",
+      "브라질": "Brasília",
+      "아르헨티나": "Buenos Aires",
+      "칠레": "Santiago",
+      "페루": "Lima",
+      "콜롬비아": "Bogotá",
+      // 🌐 영문 (소문자로 비교)
+      "korea": "Seoul", "south korea": "Seoul", "republic of korea": "Seoul",
+      "north korea": "Pyongyang",
+      "japan": "Tokyo",
+      "china": "Beijing",
+      "usa": "Washington", "us": "Washington",
+      "united states": "Washington", "america": "Washington",
+      "canada": "Ottawa",
+      "mexico": "Mexico City",
+      "uk": "London", "england": "London",
+      "united kingdom": "London", "britain": "London",
+      "france": "Paris",
+      "germany": "Berlin",
+      "italy": "Rome",
+      "spain": "Madrid",
+      "portugal": "Lisbon",
+      "netherlands": "Amsterdam",
+      "belgium": "Brussels",
+      "switzerland": "Bern",
+      "austria": "Vienna",
+      "czech": "Prague", "czechia": "Prague",
+      "poland": "Warsaw",
+      "hungary": "Budapest",
+      "greece": "Athens",
+      "sweden": "Stockholm",
+      "norway": "Oslo",
+      "finland": "Helsinki",
+      "denmark": "Copenhagen",
+      "iceland": "Reykjavík",
+      "ireland": "Dublin",
+      "russia": "Moscow",
+      "ukraine": "Kyiv",
+      "turkey": "Ankara", "türkiye": "Ankara",
+      "israel": "Jerusalem",
+      "saudi arabia": "Riyadh",
+      "iran": "Tehran",
+      "egypt": "Cairo",
+      "south africa": "Pretoria",
+      "morocco": "Rabat",
+      "kenya": "Nairobi",
+      "india": "New Delhi",
+      "pakistan": "Islamabad",
+      "bangladesh": "Dhaka",
+      "mongolia": "Ulaanbaatar",
+      "taiwan": "Taipei",
+      "vietnam": "Hanoi",
+      "thailand": "Bangkok",
+      "philippines": "Manila",
+      "indonesia": "Jakarta",
+      "malaysia": "Kuala Lumpur",
+      "singapore": "Singapore",
+      "australia": "Canberra",
+      "new zealand": "Wellington",
+      "brazil": "Brasília",
+      "argentina": "Buenos Aires",
+      "chile": "Santiago",
+      "peru": "Lima",
+      "colombia": "Bogotá",
+    };
+
+    // 한글/영문 국가명 → ISO 3166-1 alpha-2
+    const COUNTRY_CODE = {
+      "한국": "KR", "대한민국": "KR", "남한": "KR", "korea": "KR",
+      "south korea": "KR", "republic of korea": "KR",
+      "북한": "KP", "조선": "KP", "north korea": "KP",
+      "일본": "JP", "japan": "JP",
+      "중국": "CN", "china": "CN",
+      "미국": "US", "미합중국": "US", "usa": "US", "us": "US",
+      "united states": "US", "america": "US",
+      "캐나다": "CA", "canada": "CA",
+      "멕시코": "MX", "mexico": "MX",
+      "영국": "GB", "uk": "GB", "england": "GB",
+      "united kingdom": "GB", "britain": "GB",
+      "프랑스": "FR", "france": "FR",
+      "독일": "DE", "germany": "DE",
+      "이탈리아": "IT", "italy": "IT",
+      "스페인": "ES", "spain": "ES",
+      "포르투갈": "PT", "portugal": "PT",
+      "네덜란드": "NL", "netherlands": "NL",
+      "벨기에": "BE", "belgium": "BE",
+      "스위스": "CH", "switzerland": "CH",
+      "오스트리아": "AT", "austria": "AT",
+      "체코": "CZ", "czech": "CZ", "czechia": "CZ",
+      "폴란드": "PL", "poland": "PL",
+      "헝가리": "HU", "hungary": "HU",
+      "그리스": "GR", "greece": "GR",
+      "스웨덴": "SE", "sweden": "SE",
+      "노르웨이": "NO", "norway": "NO",
+      "핀란드": "FI", "finland": "FI",
+      "덴마크": "DK", "denmark": "DK",
+      "아이슬란드": "IS", "iceland": "IS",
+      "아일랜드": "IE", "ireland": "IE",
+      "러시아": "RU", "russia": "RU",
+      "우크라이나": "UA", "ukraine": "UA",
+      "터키": "TR", "튀르키예": "TR", "turkey": "TR", "türkiye": "TR",
+      "이스라엘": "IL", "israel": "IL",
+      "사우디아라비아": "SA", "saudi arabia": "SA",
+      "아랍에미리트": "AE", "uae": "AE",
+      "이란": "IR", "iran": "IR",
+      "이집트": "EG", "egypt": "EG",
+      "남아공": "ZA", "남아프리카공화국": "ZA", "south africa": "ZA",
+      "모로코": "MA", "morocco": "MA",
+      "케냐": "KE", "kenya": "KE",
+      "인도": "IN", "india": "IN",
+      "파키스탄": "PK", "pakistan": "PK",
+      "방글라데시": "BD", "bangladesh": "BD",
+      "몽골": "MN", "mongolia": "MN",
+      "대만": "TW", "taiwan": "TW",
+      "베트남": "VN", "vietnam": "VN",
+      "태국": "TH", "thailand": "TH",
+      "필리핀": "PH", "philippines": "PH",
+      "인도네시아": "ID", "indonesia": "ID",
+      "말레이시아": "MY", "malaysia": "MY",
+      "싱가포르": "SG", "singapore": "SG",
+      "홍콩": "HK", "hong kong": "HK",
+      "호주": "AU", "오스트레일리아": "AU", "australia": "AU",
+      "뉴질랜드": "NZ", "new zealand": "NZ",
+      "브라질": "BR", "brazil": "BR",
+      "아르헨티나": "AR", "argentina": "AR",
+      "칠레": "CL", "chile": "CL",
+      "페루": "PE", "peru": "PE",
+      "콜롬비아": "CO", "colombia": "CO",
+    };
+
+    // 빠른 선택용 국가 목록
+    const QUICK_COUNTRIES = [
+      { label: "🇰🇷 한국", key: "한국" },
+      { label: "🇯🇵 일본", key: "일본" },
+      { label: "🇨🇳 중국", key: "중국" },
+      { label: "🇺🇸 미국", key: "미국" },
+      { label: "🇬🇧 영국", key: "영국" },
+      { label: "🇫🇷 프랑스", key: "프랑스" },
+      { label: "🇩🇪 독일", key: "독일" },
+      { label: "🇦🇺 호주", key: "호주" },
+    ];
+
+    const HANGUL_RE = /[\u3131-\u318E\uAC00-\uD7A3]/;
+    const hasHangul = (s) => HANGUL_RE.test(s);
+
+    // 국가명(한/영) 조회 헬퍼 — 영문은 소문자 기준으로 찾음
+    const lookupCountryCapital = (q) =>
+      COUNTRY_TO_CAPITAL[q] || COUNTRY_TO_CAPITAL[q.toLowerCase()];
+    const lookupCountryCode = (q) =>
+      COUNTRY_CODE[q] || COUNTRY_CODE[q.toLowerCase()];
+
+    // ========================================
+    // 🛠️ 유틸
+    // ========================================
+    function formatTime(unixSeconds) {
+      const d = new Date(unixSeconds * 1000);
+      return d.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    async function fetchWeather(queryParams) {
+      const url = `${BASE_URL}?${queryParams}&units=metric&lang=kr&appid=${API_KEY}`;
+      console.log("[Weather API] →", url); // Network 탭에서 확인!
+      const res = await fetch(url);
+      if (!res.ok) {
+        if (res.status === 401) throw new Error("API 키가 유효하지 않습니다. (401)");
+        if (res.status === 404) throw new Error("해당 도시를 찾을 수 없습니다. (404)");
+        throw new Error(`요청 실패: ${res.status}`);
+      }
+      const data = await res.json();
+      console.log("[Weather API] ←", data);
+      return data;
+    }
+
+    // Geocoding API 로 한글/다국어 도시명 → 좌표 변환 (fallback)
+    async function geocodeCity(query) {
+      const url = `${GEO_URL}?q=${encodeURIComponent(query)}&limit=1&appid=${API_KEY}`;
+      console.log("[Geocoding API] →", url);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Geocoding 실패: ${res.status}`);
+      const data = await res.json();
+      console.log("[Geocoding API] ←", data);
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error("해당 도시를 찾을 수 없습니다.");
+      }
+      return data[0]; // { name, local_names, lat, lon, country, ... }
+    }
+
+    // 입력 1개를 "도시 또는 국가"로 해석해서 영문 도시명으로 변환
+    function resolveToCityName(token) {
+      const t = token.trim();
+      if (!t) return null;
+      // 1) 국가명이면 수도로 치환
+      const capital = lookupCountryCapital(t);
+      if (capital) return capital;
+      // 2) 한글 도시면 매핑 확인
+      if (hasHangul(t) && CITY_MAP[t]) return CITY_MAP[t];
+      // 3) 그대로 반환 (영문 도시명일 수 있음)
+      return t;
+    }
+
+    // 한글/나라별 입력을 처리해서 날씨를 가져오는 통합 함수
+    async function fetchWeatherSmart(input) {
+      const q = input.trim();
+      if (!q) throw new Error("도시 이름을 입력해주세요.");
+
+      // 🟢 "도시, 국가" 형식 (예: "Paris, FR" / "서울, 대한민국" / "London, UK")
+      if (q.includes(",")) {
+        const [cityRaw, countryRaw] = q.split(",").map((s) => s.trim());
+        if (!cityRaw) throw new Error("도시 이름을 입력해주세요.");
+
+        const cityEn = resolveToCityName(cityRaw) || cityRaw;
+
+        // 국가 부분 → ISO 코드
+        let code = null;
+        if (countryRaw) {
+          if (/^[a-zA-Z]{2}$/.test(countryRaw)) {
+            code = countryRaw.toUpperCase();
+          } else {
+            code = lookupCountryCode(countryRaw);
+          }
+        }
+
+        const cityQ = code
+          ? `${cityEn},${code}`
+          : cityEn;
+        return fetchWeather(`q=${encodeURIComponent(cityQ)}`);
+      }
+
+      // 🟢 국가명 단독 입력 → 수도 날씨
+      const capital = lookupCountryCapital(q);
+      if (capital) {
+        console.log(`[Country→Capital] ${q} → ${capital}`);
+        return fetchWeather(`q=${encodeURIComponent(capital)}`);
+      }
+
+      // 🟢 한글 도시명
+      if (hasHangul(q)) {
+        const mapped = CITY_MAP[q];
+        if (mapped) {
+          return fetchWeather(`q=${encodeURIComponent(mapped)}`);
+        }
+        // 매핑에 없으면 Geocoding API 로 fallback
+        const geo = await geocodeCity(q);
+        return fetchWeather(`lat=${geo.lat}&lon=${geo.lon}`);
+      }
+
+      // 🟢 영문/기타 언어 도시명
+      return fetchWeather(`q=${encodeURIComponent(q)}`);
+    }
+
+    // ========================================
+    // 🧩 Components
+    // ========================================
+    function SearchBox({ onSearch, onGeo, loading }) {
+      const [city, setCity] = useState("");
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!city.trim()) return;
+        onSearch(city.trim());
+      };
+
+      return (
+        <div className="glass rounded-2xl p-4 mb-5">
+          <form onSubmit={handleSubmit} className="flex flex-wrap gap-2">
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="도시 또는 국가 (예: 서울, 일본, Paris, FR)"
+              className="flex-1 min-w-[200px] px-4 py-3 rounded-xl bg-white/90 text-gray-800 outline-none focus:ring-4 focus:ring-yellow-300/50"
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-5 py-3 rounded-xl bg-yellow-300 text-gray-900 font-semibold hover:bg-yellow-200 active:scale-95 transition disabled:opacity-60"
+            >
+              검색
+            </button>
+            <button
+              type="button"
+              onClick={onGeo}
+              disabled={loading}
+              className="px-5 py-3 rounded-xl bg-white/20 text-white font-semibold border border-white/30 hover:bg-white/30 active:scale-95 transition disabled:opacity-60"
+            >
+              📍 내 위치
+            </button>
+          </form>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <span className="text-xs text-white/70 self-center mr-1">
+              빠른 선택:
+            </span>
+            {QUICK_COUNTRIES.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                disabled={loading}
+                onClick={() => {
+                  setCity(c.key);
+                  onSearch(c.key);
+                }}
+                className="px-2.5 py-1 rounded-full bg-white/15 text-white text-xs border border-white/25 hover:bg-white/25 active:scale-95 transition disabled:opacity-60"
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function StatusBanner({ status }) {
+      if (!status) return null;
+      const base = "rounded-xl p-4 mb-5 text-center text-white";
+      const style =
+        status.type === "error"
+          ? "bg-red-500/30 border border-red-400/50"
+          : "glass";
+      return <div className={`${base} ${style}`}>{status.message}</div>;
+    }
+
+    function Detail({ label, value }) {
+      return (
+        <div className="glass rounded-xl p-3 flex flex-col gap-0.5">
+          <span className="text-xs text-white/65">{label}</span>
+          <span className="text-base font-semibold text-white">{value}</span>
+        </div>
+      );
+    }
+
+    function WeatherCard({ data }) {
+      const icon = data.weather?.[0]?.icon;
+      const iconUrl = icon
+        ? `https://openweathermap.org/img/wn/${icon}@4x.png`
+        : null;
+
+      return (
+        <div className="glass rounded-3xl p-7 shadow-2xl fade-in text-white">
+          <div className="flex items-baseline gap-2 mb-1">
+            <h2 className="text-3xl font-bold">{data.name || "-"}</h2>
+            {data.sys?.country && (
+              <span className="text-sm bg-white/20 px-2 py-0.5 rounded-md">
+                {data.sys.country}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 mt-2">
+            {iconUrl && (
+              <img
+                src={iconUrl}
+                alt={data.weather?.[0]?.description || "weather"}
+                className="w-28 h-28 drop-shadow-xl"
+              />
+            )}
+            <div className="flex items-start font-bold">
+              <span className="text-6xl leading-none">
+                {Math.round(data.main.temp)}
+              </span>
+              <span className="text-2xl mt-2">°C</span>
+            </div>
+          </div>
+
+          <p className="capitalize-first text-lg text-white/85 mb-5">
+            {data.weather?.[0]?.description || "-"}
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
+            <Detail
+              label="체감온도"
+              value={`${Math.round(data.main.feels_like)}°C`}
+            />
+            <Detail label="습도" value={`${data.main.humidity}%`} />
+            <Detail label="풍속" value={`${data.wind?.speed ?? 0} m/s`} />
+            <Detail label="기압" value={`${data.main.pressure} hPa`} />
+            <Detail
+              label="최저/최고"
+              value={`${Math.round(data.main.temp_min)}° / ${Math.round(
+                data.main.temp_max
+              )}°`}
+            />
+            <Detail
+              label="가시거리"
+              value={
+                data.visibility
+                  ? `${(data.visibility / 1000).toFixed(1)} km`
+                  : "-"
+              }
+            />
+          </div>
+
+          <p className="text-right text-xs text-white/65">
+            업데이트: {formatTime(data.dt)}
+          </p>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🚀 App
+    // ========================================
+    function App() {
+      const [weather, setWeather] = useState(null);
+      const [status, setStatus] = useState(null);
+      const [loading, setLoading] = useState(false);
+
+      // 낮/밤에 따라 배경 변경
+      useEffect(() => {
+        const icon = weather?.weather?.[0]?.icon;
+        if (icon && icon.endsWith("n")) {
+          document.body.classList.add("night");
+        } else {
+          document.body.classList.remove("night");
+        }
+      }, [weather]);
+
+      const loadByCity = useCallback(async (city) => {
+        setLoading(true);
+        setWeather(null);
+        setStatus({ type: "loading", message: "🔄 날씨 정보를 불러오는 중..." });
+        try {
+          const data = await fetchWeatherSmart(city);
+          setWeather(data);
+          setStatus(null);
+        } catch (err) {
+          console.error(err);
+          setStatus({ type: "error", message: `⚠️ ${err.message}` });
+        } finally {
+          setLoading(false);
+        }
+      }, []);
+
+      const loadByCoords = useCallback(async (lat, lon) => {
+        setLoading(true);
+        setWeather(null);
+        setStatus({
+          type: "loading",
+          message: "🔄 현재 위치의 날씨를 불러오는 중...",
+        });
+        try {
+          const data = await fetchWeather(`lat=${lat}&lon=${lon}`);
+          setWeather(data);
+          setStatus(null);
+        } catch (err) {
+          console.error(err);
+          setStatus({ type: "error", message: `⚠️ ${err.message}` });
+        } finally {
+          setLoading(false);
+        }
+      }, []);
+
+      const handleGeolocation = useCallback(() => {
+        if (!navigator.geolocation) {
+          setStatus({
+            type: "error",
+            message: "⚠️ 이 브라우저는 위치 정보를 지원하지 않습니다.",
+          });
+          return;
+        }
+        setStatus({
+          type: "loading",
+          message: "📍 현재 위치를 확인하는 중...",
+        });
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            console.log("[Geolocation]", latitude, longitude);
+            loadByCoords(latitude, longitude);
+          },
+          (err) => {
+            console.error(err);
+            let msg = "위치 정보를 가져오지 못했습니다.";
+            if (err.code === 1) msg = "위치 권한이 거부되었습니다.";
+            if (err.code === 2) msg = "위치를 확인할 수 없습니다.";
+            if (err.code === 3) msg = "위치 요청 시간이 초과되었습니다.";
+            setStatus({ type: "error", message: `⚠️ ${msg}` });
+          },
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+        );
+      }, [loadByCoords]);
+
+      // 첫 로드 시 자동으로 내 위치 날씨 시도
+      useEffect(() => {
+        handleGeolocation();
+      }, [handleGeolocation]);
+
+      return (
+        <div className="min-h-screen py-10 px-4">
+          <div className="max-w-xl mx-auto">
+            <header className="text-center mb-7 text-white">
+              <h1 className="text-3xl font-extrabold tracking-tight">
+                🌤️ 오늘의 날씨
+              </h1>
+              <p className="mt-2 text-white/85 text-sm">
+                도시 이름을 검색하거나 내 위치로 확인하세요
+              </p>
+            </header>
+
+            <SearchBox
+              onSearch={loadByCity}
+              onGeo={handleGeolocation}
+              loading={loading}
+            />
+
+            <StatusBanner status={status} />
+
+            {weather && <WeatherCard data={weather} />}
+
+            <footer className="mt-8 text-center text-xs text-white/65">
+              <p>
+                Data by{" "}
+                <a
+                  href="https://openweathermap.org/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-yellow-300 hover:underline"
+                >
+                  OpenWeatherMap
+                </a>
+              </p>
+            </footer>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
