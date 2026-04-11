@@ -1,0 +1,15 @@
+{
+  "name": "friend-chat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single-file React chat UI with 8 Korean friends, powered by an OpenAI-backed Express server.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "openai": "^4.67.3"
+  }
+}

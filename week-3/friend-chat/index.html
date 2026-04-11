@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>친구 채팅 - Friend Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* 커스텀 스크롤바 */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    /* 메시지 등장 애니메이션 */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .msg-enter {
+      animation: fadeInUp 0.25s ease-out;
+    }
+
+    /* 타이핑 인디케이터 점 애니메이션 */
+    @keyframes typingDot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-4px); opacity: 1; }
+    }
+    .typing-dot {
+      animation: typingDot 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+    /* 배경 패턴 */
+    .chat-bg {
+      background-color: #f5f6fa;
+      background-image:
+        radial-gradient(circle at 25% 25%, rgba(147, 197, 253, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(251, 207, 232, 0.08) 0%, transparent 40%);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 min-h-screen">
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    // ========================================
+    // 🎨 Design System Components
+    // ========================================
+
+    function Avatar({ name, emoji, size = "md", online = false, className = "" }) {
+      const sizes = {
+        sm: "w-9 h-9 text-lg",
+        md: "w-12 h-12 text-2xl",
+        lg: "w-14 h-14 text-3xl",
+      };
+      const dotSizes = {
+        sm: "w-2.5 h-2.5 border-2",
+        md: "w-3 h-3 border-2",
+        lg: "w-3.5 h-3.5 border-2",
+      };
+      // 이름 기반 배경색 팔레트
+      const palette = [
+        "from-pink-300 to-rose-400",
+        "from-amber-300 to-orange-400",
+        "from-emerald-300 to-teal-400",
+        "from-sky-300 to-blue-400",
+        "from-violet-300 to-purple-400",
+        "from-fuchsia-300 to-pink-400",
+        "from-lime-300 to-green-400",
+        "from-cyan-300 to-sky-400",
+      ];
+      const hash = name ? name.charCodeAt(0) % palette.length : 0;
+      const gradient = palette[hash];
+
+      return (
+        <div className={`relative flex-shrink-0 ${className}`}>
+          <div
+            className={`${sizes[size]} rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm select-none`}
+          >
+            <span>{emoji}</span>
+          </div>
+          {online && (
+            <span
+              className={`absolute bottom-0 right-0 ${dotSizes[size]} border-white bg-green-500 rounded-full`}
+              aria-label="온라인"
+            ></span>
+          )}
+        </div>
+      );
+    }
+
+    function Badge({ children, className = "" }) {
+      return (
+        <span
+          className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold text-white bg-red-500 rounded-full ${className}`}
+        >
+          {children}
+        </span>
+      );
+    }
+
+    function IconButton({ onClick, children, ariaLabel, className = "" }) {
+      return (
+        <button
+          onClick={onClick}
+          aria-label={ariaLabel}
+          className={`w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 active:bg-slate-200 transition ${className}`}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    // ========================================
+    // 📦 Mock Data
+    // ========================================
+
+    const INITIAL_FRIENDS = [
+      {
+        id: 1,
+        name: "김민지",
+        emoji: "🦊",
+        online: true,
+        unread: 2,
+        messages: [
+          { id: 1, sender: "friend", text: "안녕! 오늘 뭐해?", time: "오전 9:12", date: "2026-04-10" },
+          { id: 2, sender: "me", text: "나 그냥 집에서 쉬는 중 ㅎㅎ", time: "오전 9:14", date: "2026-04-10" },
+          { id: 3, sender: "friend", text: "오 그럼 이따가 카페 갈래?", time: "오후 2:03", date: "2026-04-11" },
+          { id: 4, sender: "friend", text: "새로 생긴 데 있는데 엄청 예쁘대 ☕", time: "오후 2:03", date: "2026-04-11" },
+        ],
+      },
+      {
+        id: 2,
+        name: "박서준",
+        emoji: "🐻",
+        online: true,
+        unread: 0,
+        messages: [
+          { id: 1, sender: "me", text: "서준아 과제 다 했어?", time: "오전 11:20", date: "2026-04-11" },
+          { id: 2, sender: "friend", text: "반 정도? 너는?", time: "오전 11:25", date: "2026-04-11" },
+          { id: 3, sender: "me", text: "나도 비슷해 ㅠㅠ", time: "오전 11:26", date: "2026-04-11" },
+          { id: 4, sender: "friend", text: "같이 도서관 갈래?", time: "오전 11:30", date: "2026-04-11" },
+        ],
+      },
+      {
+        id: 3,
+        name: "이지은",
+        emoji: "🐰",
+        online: false,
+        unread: 0,
+        messages: [
+          { id: 1, sender: "friend", text: "생일 축하해!!! 🎉", time: "오후 10:00", date: "2026-04-09" },
+          { id: 2, sender: "me", text: "헐 고마워 ㅠㅠㅠ 감동", time: "오후 10:02", date: "2026-04-09" },
+        ],
+      },
+      {
+        id: 4,
+        name: "최현우",
+        emoji: "🐶",
+        online: true,
+        unread: 5,
+        messages: [
+          { id: 1, sender: "friend", text: "야 그 영상 봤어?", time: "오후 8:10", date: "2026-04-11" },
+          { id: 2, sender: "friend", text: "진짜 웃김 ㅋㅋㅋㅋ", time: "오후 8:10", date: "2026-04-11" },
+          { id: 3, sender: "friend", text: "링크 보내줄게", time: "오후 8:11", date: "2026-04-11" },
+          { id: 4, sender: "friend", text: "잠깐만", time: "오후 8:11", date: "2026-04-11" },
+          { id: 5, sender: "friend", text: "찾는 중...", time: "오후 8:12", date: "2026-04-11" },
+        ],
+      },
+      {
+        id: 5,
+        name: "정하윤",
+        emoji: "🐱",
+        online: false,
+        unread: 0,
+        messages: [
+          { id: 1, sender: "me", text: "주말에 뭐해?", time: "오후 3:00", date: "2026-04-08" },
+          { id: 2, sender: "friend", text: "가족이랑 여행 가!", time: "오후 3:15", date: "2026-04-08" },
+          { id: 3, sender: "me", text: "오 좋다~ 잘 다녀와!", time: "오후 3:16", date: "2026-04-08" },
+        ],
+      },
+      {
+        id: 6,
+        name: "강태양",
+        emoji: "🦁",
+        online: true,
+        unread: 1,
+        messages: [
+          { id: 1, sender: "friend", text: "형, 운동 같이 가실래요?", time: "오후 6:45", date: "2026-04-11" },
+        ],
+      },
+      {
+        id: 7,
+        name: "윤소희",
+        emoji: "🦄",
+        online: false,
+        unread: 0,
+        messages: [
+          { id: 1, sender: "friend", text: "자료 메일로 보냈어!", time: "오전 10:05", date: "2026-04-07" },
+          { id: 2, sender: "me", text: "확인했어 고마워!", time: "오전 10:30", date: "2026-04-07" },
+        ],
+      },
+      {
+        id: 8,
+        name: "한지훈",
+        emoji: "🐼",
+        online: true,
+        unread: 0,
+        messages: [
+          { id: 1, sender: "me", text: "지훈아 점심 뭐 먹을래?", time: "오전 11:50", date: "2026-04-11" },
+          { id: 2, sender: "friend", text: "나 오늘 김치찌개 땡김 🍲", time: "오전 11:52", date: "2026-04-11" },
+        ],
+      },
+    ];
+
+    // 실제 응답은 서버의 /api/chat (OpenAI) 로부터 받음.
+    // 네트워크/서버 에러 시 사용할 폴백 메시지.
+    const FALLBACK_REPLY = "앗, 답장이 안 보내져 ㅠㅠ";
+
+    // 최근 메시지를 OpenAI Chat Completions 형식(role/content)으로 변환.
+    // 토큰 비용을 낮추기 위해 최근 10개만 보냄.
+    function buildChatHistory(messages) {
+      if (!Array.isArray(messages)) return [];
+      return messages
+        .slice(-10)
+        .map((m) => ({
+          role: m.sender === "friend" ? "assistant" : "user",
+          content: m.text,
+        }));
+    }
+
+    const API_BASE = "http://localhost:3001";
+
+    async function fetchFriendReply({ friendName, history, message }) {
+      const res = await fetch(`${API_BASE}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ friendName, history, message }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      if (!data || typeof data.reply !== "string") {
+        throw new Error("Invalid response from /api/chat");
+      }
+      return data.reply;
+    }
+
+    // ========================================
+    // 🛠 Utilities
+    // ========================================
+
+    function getCurrentTimeLabel() {
+      const d = new Date();
+      const h = d.getHours();
+      const m = d.getMinutes().toString().padStart(2, "0");
+      const period = h < 12 ? "오전" : "오후";
+      const hour12 = h % 12 === 0 ? 12 : h % 12;
+      return `${period} ${hour12}:${m}`;
+    }
+
+    function getTodayDateString() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = (d.getMonth() + 1).toString().padStart(2, "0");
+      const day = d.getDate().toString().padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatDateSeparator(dateStr) {
+      // dateStr: "YYYY-MM-DD"
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const days = ["일", "월", "화", "수", "목", "금", "토"];
+      const dateObj = new Date(y, m - 1, d);
+      const today = new Date();
+      const todayStr = getTodayDateString();
+      if (dateStr === todayStr) return "오늘";
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      const yy = yesterday.getFullYear();
+      const ym = (yesterday.getMonth() + 1).toString().padStart(2, "0");
+      const yd = yesterday.getDate().toString().padStart(2, "0");
+      if (dateStr === `${yy}-${ym}-${yd}`) return "어제";
+      return `${y}년 ${m}월 ${d}일 (${days[dateObj.getDay()]})`;
+    }
+
+    function getLastMessagePreview(friend) {
+      if (!friend.messages || friend.messages.length === 0) return "대화를 시작해보세요";
+      const last = friend.messages[friend.messages.length - 1];
+      return last.text;
+    }
+
+    function getLastMessageTime(friend) {
+      if (!friend.messages || friend.messages.length === 0) return "";
+      return friend.messages[friend.messages.length - 1].time;
+    }
+
+    // ========================================
+    // 🧩 Layout Components
+    // ========================================
+
+    function Sidebar({ friends, selectedId, onSelect, searchQuery, setSearchQuery }) {
+      const filtered = friends.filter((f) =>
+        f.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      return (
+        <aside className="w-full md:w-80 lg:w-96 bg-white border-r border-slate-200 flex flex-col">
+          {/* 사이드바 헤더 */}
+          <div className="px-5 pt-5 pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <span className="text-2xl">💬</span> 친구 채팅
+              </h1>
+              <div className="flex gap-1">
+                <IconButton ariaLabel="새 대화">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </IconButton>
+                <IconButton ariaLabel="설정">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </IconButton>
+              </div>
+            </div>
+
+            {/* 검색창 */}
+            <div className="relative">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="친구 검색"
+                className="w-full pl-9 pr-3 py-2 bg-slate-100 rounded-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-white transition"
+              />
+            </div>
+          </div>
+
+          {/* 친구 목록 */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {filtered.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">
+                일치하는 친구가 없어요
+              </div>
+            ) : (
+              <ul className="py-2">
+                {filtered.map((friend) => {
+                  const isSelected = friend.id === selectedId;
+                  return (
+                    <li key={friend.id}>
+                      <button
+                        onClick={() => onSelect(friend.id)}
+                        className={`w-full flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition text-left ${
+                          isSelected ? "bg-blue-50 hover:bg-blue-50" : ""
+                        }`}
+                      >
+                        <Avatar
+                          name={friend.name}
+                          emoji={friend.emoji}
+                          online={friend.online}
+                          size="md"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-slate-800 truncate">
+                              {friend.name}
+                            </span>
+                            <span className="text-xs text-slate-400 flex-shrink-0 ml-2">
+                              {getLastMessageTime(friend)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <span className="text-sm text-slate-500 truncate pr-2">
+                              {getLastMessagePreview(friend)}
+                            </span>
+                            {friend.unread > 0 && (
+                              <Badge>{friend.unread}</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </aside>
+      );
+    }
+
+    function ChatHeader({ friend, onBack }) {
+      return (
+        <div className="flex items-center gap-3 px-5 py-4 bg-white/80 backdrop-blur-md border-b border-slate-200">
+          <button
+            onClick={onBack}
+            className="md:hidden p-2 -ml-2 rounded-full hover:bg-slate-100"
+            aria-label="뒤로"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <Avatar name={friend.name} emoji={friend.emoji} online={friend.online} size="md" />
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-slate-800 truncate">{friend.name}</div>
+            <div className="text-xs text-slate-500 flex items-center gap-1.5">
+              {friend.online ? (
+                <>
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span>
+                  온라인
+                </>
+              ) : (
+                "오프라인"
+              )}
+            </div>
+          </div>
+          <IconButton ariaLabel="전화">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+          </IconButton>
+          <IconButton ariaLabel="영상통화">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </IconButton>
+          <IconButton ariaLabel="더보기">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v.01M12 12v.01M12 19v.01" />
+            </svg>
+          </IconButton>
+        </div>
+      );
+    }
+
+    function MessageBubble({ message, friend, showAvatar }) {
+      const isMe = message.sender === "me";
+      if (isMe) {
+        return (
+          <div className="flex justify-end mb-2 msg-enter">
+            <div className="flex items-end gap-2 max-w-[75%]">
+              <span className="text-[11px] text-slate-400 mb-1 flex-shrink-0">
+                {message.time}
+              </span>
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-500 text-white px-4 py-2.5 rounded-2xl rounded-br-md shadow-sm break-words">
+                {message.text}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex justify-start mb-2 msg-enter">
+          <div className="flex items-end gap-2 max-w-[75%]">
+            {showAvatar ? (
+              <Avatar name={friend.name} emoji={friend.emoji} size="sm" />
+            ) : (
+              <div className="w-9 h-9 flex-shrink-0"></div>
+            )}
+            <div className="flex flex-col">
+              {showAvatar && (
+                <span className="text-xs text-slate-500 mb-1 ml-1">{friend.name}</span>
+              )}
+              <div className="flex items-end gap-2">
+                <div className="bg-white text-slate-800 px-4 py-2.5 rounded-2xl rounded-bl-md shadow-sm border border-slate-100 break-words">
+                  {message.text}
+                </div>
+                <span className="text-[11px] text-slate-400 mb-1 flex-shrink-0">
+                  {message.time}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function TypingIndicator({ friend }) {
+      return (
+        <div className="flex justify-start mb-2 msg-enter">
+          <div className="flex items-end gap-2">
+            <Avatar name={friend.name} emoji={friend.emoji} size="sm" />
+            <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-md shadow-sm border border-slate-100 flex items-center gap-1">
+              <span className="typing-dot w-1.5 h-1.5 bg-slate-400 rounded-full inline-block"></span>
+              <span className="typing-dot w-1.5 h-1.5 bg-slate-400 rounded-full inline-block"></span>
+              <span className="typing-dot w-1.5 h-1.5 bg-slate-400 rounded-full inline-block"></span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function MessageList({ friend, isTyping }) {
+      const containerRef = useRef(null);
+
+      useEffect(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+      }, [friend.messages, isTyping]);
+
+      // 메시지를 날짜별로 그룹화하여 구분선 삽입
+      const items = useMemo(() => {
+        const result = [];
+        let lastDate = null;
+        let lastSender = null;
+        friend.messages.forEach((msg, idx) => {
+          if (msg.date !== lastDate) {
+            result.push({ type: "separator", date: msg.date, key: `sep-${msg.date}-${idx}` });
+            lastDate = msg.date;
+            lastSender = null;
+          }
+          // 연속으로 같은 친구가 보낸 메시지 중 첫 번째만 아바타/이름 노출
+          const showAvatar = msg.sender === "friend" && lastSender !== "friend";
+          result.push({ type: "message", message: msg, showAvatar, key: `msg-${msg.id}-${idx}` });
+          lastSender = msg.sender;
+        });
+        return result;
+      }, [friend.messages]);
+
+      return (
+        <div
+          ref={containerRef}
+          className="flex-1 overflow-y-auto custom-scrollbar px-4 py-5 chat-bg"
+        >
+          {items.map((item) => {
+            if (item.type === "separator") {
+              return (
+                <div key={item.key} className="flex justify-center my-4">
+                  <span className="px-3 py-1 bg-slate-200/70 text-slate-600 text-xs rounded-full">
+                    {formatDateSeparator(item.date)}
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <MessageBubble
+                key={item.key}
+                message={item.message}
+                friend={friend}
+                showAvatar={item.showAvatar}
+              />
+            );
+          })}
+          {isTyping && <TypingIndicator friend={friend} />}
+        </div>
+      );
+    }
+
+    function MessageInput({ onSend, disabled }) {
+      const [text, setText] = useState("");
+
+      const handleSend = () => {
+        const trimmed = text.trim();
+        if (!trimmed || disabled) return;
+        onSend(trimmed);
+        setText("");
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      };
+
+      return (
+        <div className="px-4 py-3 bg-white border-t border-slate-200">
+          <div className="flex items-end gap-2">
+            <IconButton ariaLabel="첨부">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+            </IconButton>
+            <div className="flex-1 bg-slate-100 rounded-3xl px-4 py-2.5 flex items-center">
+              <input
+                type="text"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="메시지를 입력하세요..."
+                className="flex-1 bg-transparent outline-none text-sm text-slate-800 placeholder-slate-400"
+              />
+              <button
+                className="ml-2 text-slate-400 hover:text-yellow-500 transition"
+                aria-label="이모지"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
+            <button
+              onClick={handleSend}
+              disabled={!text.trim() || disabled}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition flex-shrink-0 ${
+                text.trim() && !disabled
+                  ? "bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-md hover:shadow-lg hover:scale-105"
+                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
+              }`}
+              aria-label="보내기"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function EmptyState() {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center chat-bg p-10 text-center">
+          <div className="text-7xl mb-4">💭</div>
+          <h2 className="text-xl font-bold text-slate-700 mb-2">대화를 시작해볼까요?</h2>
+          <p className="text-slate-500 text-sm">왼쪽에서 친구를 선택하면 채팅이 시작됩니다.</p>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 App (Main Page)
+    // ========================================
+
+    function App() {
+      const [friends, setFriends] = useState(INITIAL_FRIENDS);
+      const [selectedId, setSelectedId] = useState(INITIAL_FRIENDS[0].id);
+      const [searchQuery, setSearchQuery] = useState("");
+      const [typingFriendId, setTypingFriendId] = useState(null);
+      const [mobileShowChat, setMobileShowChat] = useState(false);
+
+      const selectedFriend = friends.find((f) => f.id === selectedId);
+
+      const handleSelectFriend = (id) => {
+        setSelectedId(id);
+        setMobileShowChat(true);
+        // 읽음 처리
+        setFriends((prev) =>
+          prev.map((f) => (f.id === id ? { ...f, unread: 0 } : f))
+        );
+      };
+
+      const handleSendMessage = async (text) => {
+        const targetId = selectedId;
+        const now = getCurrentTimeLabel();
+        const today = getTodayDateString();
+        const newMsg = {
+          id: Date.now(),
+          sender: "me",
+          text,
+          time: now,
+          date: today,
+        };
+
+        // 현재 친구의 최근 대화 기록을 먼저 스냅샷으로 떠 둔다 (API로 보낼 용도).
+        const currentFriend = friends.find((f) => f.id === targetId);
+        const historyForApi = buildChatHistory(
+          currentFriend ? currentFriend.messages : []
+        );
+
+        // 내 메시지를 즉시 UI에 반영
+        setFriends((prev) =>
+          prev.map((f) =>
+            f.id === targetId
+              ? { ...f, messages: [...f.messages, newMsg] }
+              : f
+          )
+        );
+
+        // 타이핑 인디케이터를 살짝 지연 후 표시 (즉각 나오면 어색함)
+        const typingTimer = setTimeout(() => {
+          setTypingFriendId(targetId);
+        }, 400);
+
+        try {
+          const replyText = await fetchFriendReply({
+            friendName: currentFriend ? currentFriend.name : "친구",
+            history: historyForApi,
+            message: text,
+          });
+
+          const replyMsg = {
+            id: Date.now() + 1,
+            sender: "friend",
+            text: replyText,
+            time: getCurrentTimeLabel(),
+            date: getTodayDateString(),
+          };
+          setFriends((prev) =>
+            prev.map((f) =>
+              f.id === targetId
+                ? { ...f, messages: [...f.messages, replyMsg] }
+                : f
+            )
+          );
+        } catch (err) {
+          console.error("[friend-chat] /api/chat 실패:", err);
+          const fallbackMsg = {
+            id: Date.now() + 2,
+            sender: "friend",
+            text: FALLBACK_REPLY,
+            time: getCurrentTimeLabel(),
+            date: getTodayDateString(),
+          };
+          setFriends((prev) =>
+            prev.map((f) =>
+              f.id === targetId
+                ? { ...f, messages: [...f.messages, fallbackMsg] }
+                : f
+            )
+          );
+        } finally {
+          clearTimeout(typingTimer);
+          setTypingFriendId((curr) => (curr === targetId ? null : curr));
+        }
+      };
+
+      const handleBack = () => setMobileShowChat(false);
+
+      return (
+        <div className="h-screen w-screen flex items-center justify-center p-0 md:p-4 lg:p-6">
+          <div className="w-full h-full md:max-w-6xl md:h-[90vh] md:rounded-3xl overflow-hidden bg-white shadow-2xl flex">
+            {/* 사이드바: 모바일에서는 채팅 열리면 숨김 */}
+            <div className={`${mobileShowChat ? "hidden" : "flex"} md:flex w-full md:w-auto`}>
+              <Sidebar
+                friends={friends}
+                selectedId={selectedId}
+                onSelect={handleSelectFriend}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+              />
+            </div>
+
+            {/* 채팅 영역 */}
+            <main
+              className={`${
+                mobileShowChat ? "flex" : "hidden"
+              } md:flex flex-1 flex-col bg-white min-w-0`}
+            >
+              {selectedFriend ? (
+                <>
+                  <ChatHeader friend={selectedFriend} onBack={handleBack} />
+                  <MessageList
+                    friend={selectedFriend}
+                    isTyping={typingFriendId === selectedFriend.id}
+                  />
+                  <MessageInput
+                    onSend={handleSendMessage}
+                    disabled={typingFriendId === selectedFriend.id}
+                  />
+                </>
+              ) : (
+                <EmptyState />
+              )}
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🚀 Rendering
+    // ========================================
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
