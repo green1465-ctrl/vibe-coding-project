@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 별명 생성기 ✨</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .float-anim { animation: float 3s ease-in-out infinite; }
+
+    @keyframes pop-in {
+      0% { opacity: 0; transform: scale(0.7) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .pop-in { animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+    @keyframes slide-down {
+      0% { opacity: 0; transform: translateY(-20px) translateX(-50%); }
+      100% { opacity: 1; transform: translateY(0) translateX(-50%); }
+    }
+    .slide-down { animation: slide-down 0.3s ease-out both; }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #fef3c7 0%, #fbcfe8 40%, #c7d2fe 80%, #a5f3fc 100%);
+      background-size: 300% 300%;
+      animation: gradient-shift 12s ease infinite;
+    }
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .card-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px) rotate(-0.5deg);
+    }
+
+    /* Tag button active ring */
+    .tag-active {
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useMemo, useEffect, useRef } = React;
+
+    // ========================================
+    // 🎨 Design System Components
+    // ========================================
+
+    function Button({ variant = 'primary', size = 'md', disabled, onClick, className = '', children, type = 'button' }) {
+      const base = 'inline-flex items-center justify-center font-semibold rounded-full transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4';
+      const sizes = {
+        sm: 'px-3 py-1.5 text-sm',
+        md: 'px-5 py-2.5 text-base',
+        lg: 'px-8 py-3.5 text-lg'
+      };
+      const variants = {
+        primary: 'bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 text-white shadow-lg hover:shadow-xl hover:brightness-110 focus:ring-pink-200',
+        secondary: 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm focus:ring-gray-200',
+        ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-200',
+        danger: 'bg-red-500 text-white hover:bg-red-600 shadow focus:ring-red-200'
+      };
+      return (
+        <button
+          type={type}
+          onClick={onClick}
+          disabled={disabled}
+          className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    function Input({ label, value, onChange, placeholder, error, type = 'text', required, maxLength }) {
+      return (
+        <div className="w-full">
+          {label && (
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              {label} {required && <span className="text-pink-500">*</span>}
+            </label>
+          )}
+          <input
+            type={type}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            maxLength={maxLength}
+            className={`w-full px-4 py-3 bg-white/80 backdrop-blur rounded-2xl border-2 transition-all focus:outline-none focus:ring-4 focus:ring-pink-200 ${
+              error ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-pink-400'
+            }`}
+          />
+          {error && <p className="text-red-500 text-xs mt-1 ml-1">{error}</p>}
+        </div>
+      );
+    }
+
+    function Card({ className = '', children, onClick }) {
+      return (
+        <div
+          onClick={onClick}
+          className={`bg-white/80 backdrop-blur rounded-3xl shadow-lg p-5 ${className}`}
+        >
+          {children}
+        </div>
+      );
+    }
+
+    function TagButton({ active, onClick, children, color = 'pink' }) {
+      const colorMap = {
+        pink: active ? 'bg-pink-500 text-white tag-active' : 'bg-white text-gray-700 hover:bg-pink-50',
+        indigo: active ? 'bg-indigo-500 text-white tag-active' : 'bg-white text-gray-700 hover:bg-indigo-50',
+        amber: active ? 'bg-amber-500 text-white tag-active' : 'bg-white text-gray-700 hover:bg-amber-50',
+      };
+      return (
+        <button
+          type="button"
+          onClick={onClick}
+          className={`px-4 py-1.5 text-sm font-medium rounded-full border border-gray-200 transition-all active:scale-95 ${colorMap[color]}`}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    function Toast({ message, show }) {
+      if (!show) return null;
+      return (
+        <div className="fixed top-6 left-1/2 slide-down z-50 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2">
+          <span className="text-lg">✓</span>
+          <span className="font-medium">{message}</span>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🧠 Nickname Generation Logic (Client-side "AI")
+    // ========================================
+
+    // 성격 기반 단어 풀
+    const PERSONALITY_POOLS = {
+      '활발함': {
+        adj: ['번개같은', '폭주하는', '반짝이는', '에너지넘치는', '통통튀는', '활활타는', '발랄한', '쌩쌩한'],
+        noun: ['번개', '폭죽', '햇살', '스파크', '로켓', '불꽃', '라이트닝', '다람쥐']
+      },
+      '차분함': {
+        adj: ['고요한', '잔잔한', '유유자적', '달빛같은', '느긋한', '평온한', '나른한', '명상하는'],
+        noun: ['달', '호수', '안개', '구름', '이끼', '바람', '연못', '나무늘보']
+      },
+      '유머러스': {
+        adj: ['웃기는', '엉뚱한', '장난꾸러기', '깨방정', '익살맞은', '4차원', '개그맨', '배꼽빠지는'],
+        noun: ['광대', '개그', '펭귄', '바나나', '스마일', '요들', '망나니', '재롱']
+      },
+      '진지함': {
+        adj: ['근엄한', '묵직한', '냉철한', '심오한', '철학적인', '현자의', '고뇌하는', '사유하는'],
+        noun: ['현자', '학자', '철학자', '수도승', '장군', '고서', '사색가', '군주']
+      },
+      '엉뚱함': {
+        adj: ['이상한', '4차원', '기묘한', '수수께끼의', '별나라의', '외계의', '어처구니없는', '뚱딴지같은'],
+        noun: ['외계인', '수수께끼', '미스터리', '요정', 'UFO', '환상', '도깨비', '꿈']
+      },
+      '다정함': {
+        adj: ['따뜻한', '포근한', '달콤한', '마시멜로같은', '상냥한', '사랑스러운', '폭신한', '말랑한'],
+        noun: ['곰돌이', '마시멜로', '코코아', '하트', '쿠션', '햇살', '포옹', '사탕']
+      },
+      '시크함': {
+        adj: ['시크한', '도도한', '쿨한', '차가운', '은밀한', '미스테리한', '흑막의', '그림자의'],
+        noun: ['밤하늘', '흑요석', '그림자', '까마귀', '검', '얼음', '비밀', '달의']
+      },
+      '창의적': {
+        adj: ['상상력넘치는', '창조적인', '영감받은', '색채의', '예술적인', '무한한', '꿈꾸는', '발명하는'],
+        noun: ['화가', '시인', '마법사', '팔레트', '뮤즈', '드리머', '발명가', '캔버스']
+      }
+    };
+
+    // 취미 기반 단어 풀
+    const HOBBY_POOLS = {
+      '게임': ['게이머', '레벨업', '던전', '마스터', '보스', '콤보킹', '치트키', '콘솔'],
+      '운동': ['스프린터', '챔피언', '덤벨', '근육왕', '파이터', '러너', '에이스', '트레이너'],
+      '독서': ['책벌레', '서재지기', '문장수집가', '북러버', '페이지', '활자중독', '소설가', '학자'],
+      '음악': ['멜로디', '리듬', '비트', '바이브', '노래꾼', '작곡가', '선율', 'DJ'],
+      '요리': ['셰프', '맛집', '레시피', '미식가', '주방장', '플레이터', '베이커', '소믈리에'],
+      '영화': ['시네필', '스크린', '관람러', '배우', '감독', '명장면', '팝콘', '크레딧'],
+      '여행': ['방랑자', '여행자', '탐험가', '지도', '발걸음', '유목민', '항해사', '모험가'],
+      '그림': ['화가', '붓끝', '팔레트', '드로잉', '아틀리에', '스케치', '일러스트', '색채'],
+      '사진': ['포토그래퍼', '셔터', '앵글', '프레임', '렌즈', '필름', '순간포착', '뷰파인더'],
+      '코딩': ['코더', '개발자', '해커', '디버거', '알고리즘', '버그헌터', '빌더', '엔지니어'],
+      '춤': ['댄서', '스텝', '리듬', '무용수', '플로어', '그루브', '비보이', '탱고'],
+      '낚시': ['낚시꾼', '강태공', '미끼', '어부', '찌', '월척', '루어', '포인트']
+    };
+
+    // 분위기/스타일 수식어 풀
+    const STYLE_POOLS = {
+      '귀엽게': {
+        prefix: ['말랑한', '쪼꼬미', '꼬물이', '포동포동', '뽀잉뽀잉', '아장아장', '뿌잉뿌잉', '폭신한'],
+        suffix: ['이', '둥이', '뽀짝', '쁘니', '냥이', '토끼', '젤리', '푸딩']
+      },
+      '멋있게': {
+        prefix: ['전설의', '카리스마', '황제', '제왕', '영웅', '전사', '레전드', '마스터'],
+        suffix: ['킹', '제왕', '장군', '로드', '마에스트로', '히어로', '사령관', '기사']
+      },
+      '웃기게': {
+        prefix: ['허당', '푼수', '깨방정', '엉뚱한', '웃픈', '폭소의', '감자같은', '호구']
+        , suffix: ['학개론', '학박사', '인류', '협회장', '선생', '수석', '박사', '마왕']
+      },
+      '시적으로': {
+        prefix: ['은하수', '새벽의', '달빛의', '꿈꾸는', '별을세는', '바람의', '안개낀', '서정적인'],
+        suffix: ['시인', '노래', '여행자', '음유시인', '방랑자', '꽃잎', '별', '속삭임']
+      },
+      '신비롭게': {
+        prefix: ['수수께끼의', '그림자', '예언의', '마법사', '달빛의', '안개속', '전설의', '고대의'],
+        suffix: ['현자', '마녀', '주술사', '예언자', '신탁', '정령', '수호자', '비밀']
+      },
+      '장난스럽게': {
+        prefix: ['까불이', '장난꾸러기', '깨방정', '천방지축', '짓궂은', '말썽꾸러기', '뽀글이', '찹쌀떡'],
+        suffix: ['악동', '꼬맹이', '요정', '꼼지락', '우당탕', '폭주기관차', '뿜뿜', '꿀밤']
+      }
+    };
+
+    // 템플릿 조합 패턴
+    const TEMPLATES = [
+      ({adj, noun, hobby}) => `${adj} ${hobby}`,
+      ({adj, noun, hobby}) => `${adj} ${noun} ${hobby}`,
+      ({adj, noun, hobby}) => `${noun}${hobby}`,
+      ({adj, noun, hobby, stylePrefix}) => `${stylePrefix} ${hobby}`,
+      ({adj, noun, hobby, stylePrefix, styleSuffix}) => `${stylePrefix} ${noun}${styleSuffix}`,
+      ({adj, noun, hobby, styleSuffix}) => `${adj} ${hobby}${styleSuffix}`,
+      ({adj, noun, hobby}) => `${hobby}의 ${noun}`,
+      ({adj, noun, hobby, stylePrefix}) => `${stylePrefix} ${noun}`,
+      ({adj, noun, hobby, styleSuffix}) => `${adj} ${noun}${styleSuffix}`,
+      ({adj, noun, hobby}) => `${adj} ${noun}`,
+    ];
+
+    // 기본 풀 (성격/취미 없을 때)
+    const DEFAULT_ADJ = ['수수께끼의', '반짝이는', '춤추는', '노래하는', '꿈꾸는', '상상하는', '달려가는', '하늘을나는', '폭신한', '빛나는'];
+    const DEFAULT_NOUN = ['고양이', '토끼', '여우', '펭귄', '별', '바람', '구름', '유령', '요정', '천재'];
+    const DEFAULT_SUFFIX = ['님', '씨', '이', '장인', '대마왕', '박사', '마스터', '학자', '전문가'];
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function uniqueShuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function generateNicknames({ name, personalities, hobbies, styles, count = 8 }) {
+      // 선택된 풀들 병합
+      const persAdj = [];
+      const persNoun = [];
+      personalities.forEach(p => {
+        if (PERSONALITY_POOLS[p]) {
+          persAdj.push(...PERSONALITY_POOLS[p].adj);
+          persNoun.push(...PERSONALITY_POOLS[p].noun);
+        }
+      });
+      if (persAdj.length === 0) persAdj.push(...DEFAULT_ADJ);
+      if (persNoun.length === 0) persNoun.push(...DEFAULT_NOUN);
+
+      const hobbyWords = [];
+      hobbies.forEach(h => {
+        if (HOBBY_POOLS[h]) hobbyWords.push(...HOBBY_POOLS[h]);
+      });
+      if (hobbyWords.length === 0) hobbyWords.push(...DEFAULT_NOUN);
+
+      const stylePrefixes = [];
+      const styleSuffixes = [];
+      styles.forEach(s => {
+        if (STYLE_POOLS[s]) {
+          stylePrefixes.push(...STYLE_POOLS[s].prefix);
+          styleSuffixes.push(...STYLE_POOLS[s].suffix);
+        }
+      });
+      if (stylePrefixes.length === 0) stylePrefixes.push(...DEFAULT_ADJ);
+      if (styleSuffixes.length === 0) styleSuffixes.push(...DEFAULT_SUFFIX);
+
+      const results = new Set();
+      const maxAttempts = count * 10;
+      let attempts = 0;
+
+      // 이름 앞글자 기반 특별 별명 1~2개 섞기
+      const firstChar = name.trim().charAt(0);
+
+      while (results.size < count && attempts < maxAttempts) {
+        attempts++;
+        const template = pickRandom(TEMPLATES);
+        const nickname = template({
+          adj: pickRandom(persAdj),
+          noun: pickRandom(persNoun),
+          hobby: pickRandom(hobbyWords),
+          stylePrefix: pickRandom(stylePrefixes),
+          styleSuffix: pickRandom(styleSuffixes)
+        }).trim().replace(/\s+/g, ' ');
+
+        // 너무 긴 별명 제외
+        if (nickname.length > 18) continue;
+        // 너무 짧은 것도 제외
+        if (nickname.length < 2) continue;
+
+        results.add(nickname);
+
+        // 20% 확률로 이름 앞글자를 조합한 버전 추가
+        if (results.size < count && firstChar && Math.random() < 0.2) {
+          results.add(`${firstChar}${firstChar} ${pickRandom(stylePrefixes)} ${pickRandom(persNoun)}`.replace(/\s+/g, ' '));
+        }
+      }
+
+      return Array.from(results).slice(0, count);
+    }
+
+    // ========================================
+    // 🧩 Feature Sub-components
+    // ========================================
+
+    function TagGroup({ title, options, selected, onToggle, color = 'pink', emoji }) {
+      return (
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {emoji} {title}
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {options.map(opt => (
+              <TagButton
+                key={opt}
+                active={selected.includes(opt)}
+                onClick={() => onToggle(opt)}
+                color={color}
+              >
+                {opt}
+              </TagButton>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function NicknameCard({ nickname, index, isSelected, onSelect, onCopy }) {
+      const gradients = [
+        'from-pink-400 to-rose-400',
+        'from-indigo-400 to-purple-400',
+        'from-amber-400 to-orange-400',
+        'from-cyan-400 to-sky-400',
+        'from-emerald-400 to-teal-400',
+        'from-fuchsia-400 to-pink-400',
+        'from-violet-400 to-indigo-400',
+        'from-yellow-400 to-amber-400',
+      ];
+      const grad = gradients[index % gradients.length];
+
+      const handleCopy = (e) => {
+        e.stopPropagation();
+        onCopy(nickname);
+      };
+
+      return (
+        <div
+          onClick={() => onSelect(nickname)}
+          style={{ animationDelay: `${index * 60}ms` }}
+          className={`pop-in card-hover cursor-pointer relative rounded-3xl p-5 overflow-hidden shadow-lg ${
+            isSelected
+              ? 'ring-4 ring-pink-400 scale-105'
+              : ''
+          }`}
+        >
+          <div className={`absolute inset-0 bg-gradient-to-br ${grad} opacity-90`}></div>
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]"></div>
+
+          <div className="relative flex flex-col items-center justify-between h-full min-h-[110px] text-white">
+            {isSelected && (
+              <span className="absolute top-0 right-0 bg-white/95 text-pink-500 text-xs font-bold px-2 py-1 rounded-full shadow">
+                ★ 선택됨
+              </span>
+            )}
+            <p className="text-lg md:text-xl font-bold text-center drop-shadow-sm flex-1 flex items-center justify-center px-2">
+              {nickname}
+            </p>
+            <button
+              onClick={handleCopy}
+              className="mt-3 bg-white/95 hover:bg-white text-gray-800 px-4 py-1.5 rounded-full text-sm font-semibold shadow transition-all active:scale-95 flex items-center gap-1"
+            >
+              <span>📋</span> 복사
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 Main Page Component
+    // ========================================
+
+    const PERSONALITY_OPTIONS = Object.keys(PERSONALITY_POOLS);
+    const HOBBY_OPTIONS = Object.keys(HOBBY_POOLS);
+    const STYLE_OPTIONS = Object.keys(STYLE_POOLS);
+
+    function NicknameGeneratorPage() {
+      const [name, setName] = useState('');
+      const [personalities, setPersonalities] = useState([]);
+      const [hobbies, setHobbies] = useState([]);
+      const [styles, setStyles] = useState([]);
+      const [customPersonality, setCustomPersonality] = useState('');
+      const [customHobby, setCustomHobby] = useState('');
+      const [nicknames, setNicknames] = useState([]);
+      const [selected, setSelected] = useState(null);
+      const [error, setError] = useState('');
+      const [generating, setGenerating] = useState(false);
+      const [toast, setToast] = useState({ show: false, message: '' });
+      const toastTimerRef = useRef(null);
+
+      const toggleFromList = (list, setList, value) => {
+        if (list.includes(value)) {
+          setList(list.filter(v => v !== value));
+        } else {
+          setList([...list, value]);
+        }
+      };
+
+      const showToast = (message) => {
+        setToast({ show: true, message });
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => {
+          setToast({ show: false, message: '' });
+        }, 1800);
+      };
+
+      useEffect(() => {
+        return () => {
+          if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        };
+      }, []);
+
+      const handleGenerate = () => {
+        if (!name.trim()) {
+          setError('이름을 입력해주세요!');
+          return;
+        }
+        setError('');
+        setGenerating(true);
+        setSelected(null);
+
+        // 자유 입력값 병합
+        const mergedPersonalities = [...personalities];
+        if (customPersonality.trim()) {
+          customPersonality.split(',').map(s => s.trim()).filter(Boolean).forEach(p => {
+            if (!mergedPersonalities.includes(p)) mergedPersonalities.push(p);
+          });
+        }
+        const mergedHobbies = [...hobbies];
+        if (customHobby.trim()) {
+          customHobby.split(',').map(s => s.trim()).filter(Boolean).forEach(h => {
+            if (!mergedHobbies.includes(h)) mergedHobbies.push(h);
+          });
+        }
+
+        // 살짝 딜레이로 "생성 중" 느낌
+        setTimeout(() => {
+          const result = generateNicknames({
+            name: name.trim(),
+            personalities: mergedPersonalities,
+            hobbies: mergedHobbies,
+            styles,
+            count: 8
+          });
+          setNicknames(result);
+          setGenerating(false);
+        }, 450);
+      };
+
+      const handleCopy = async (text) => {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            // fallback
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          showToast(`"${text}" 복사 완료!`);
+        } catch (e) {
+          showToast('복사에 실패했어요 😢');
+        }
+      };
+
+      const handleSelect = (nickname) => {
+        setSelected(prev => prev === nickname ? null : nickname);
+      };
+
+      const handleReset = () => {
+        setName('');
+        setPersonalities([]);
+        setHobbies([]);
+        setStyles([]);
+        setCustomPersonality('');
+        setCustomHobby('');
+        setNicknames([]);
+        setSelected(null);
+        setError('');
+      };
+
+      return (
+        <div className="min-h-screen gradient-bg">
+          <Toast show={toast.show} message={toast.message} />
+
+          <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
+
+            {/* Header */}
+            <header className="text-center mb-8 md:mb-12">
+              <div className="text-5xl md:text-6xl mb-3 float-anim inline-block">✨</div>
+              <h1 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-pink-600 via-fuchsia-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                AI 별명 생성기
+              </h1>
+              <p className="text-gray-700 text-sm md:text-base">
+                이름과 성격, 취미를 알려주세요. 나만을 위한 특별한 별명을 지어드릴게요!
+              </p>
+            </header>
+
+            {/* Input Form */}
+            <Card className="mb-8 !p-6 md:!p-8 space-y-6 shadow-2xl">
+              <Input
+                label="이름"
+                value={name}
+                onChange={(e) => { setName(e.target.value); if (error) setError(''); }}
+                placeholder="예: 민지, 지훈, 서연..."
+                error={error}
+                required
+                maxLength={20}
+              />
+
+              <TagGroup
+                title="성격 (여러 개 선택 가능)"
+                emoji="😊"
+                options={PERSONALITY_OPTIONS}
+                selected={personalities}
+                onToggle={(v) => toggleFromList(personalities, setPersonalities, v)}
+                color="pink"
+              />
+              <Input
+                label=""
+                value={customPersonality}
+                onChange={(e) => setCustomPersonality(e.target.value)}
+                placeholder="직접 입력하고 싶다면? (쉼표로 여러 개 구분)"
+                maxLength={40}
+              />
+
+              <TagGroup
+                title="취미 (여러 개 선택 가능)"
+                emoji="🎨"
+                options={HOBBY_OPTIONS}
+                selected={hobbies}
+                onToggle={(v) => toggleFromList(hobbies, setHobbies, v)}
+                color="indigo"
+              />
+              <Input
+                label=""
+                value={customHobby}
+                onChange={(e) => setCustomHobby(e.target.value)}
+                placeholder="직접 입력하고 싶다면? (쉼표로 여러 개 구분)"
+                maxLength={40}
+              />
+
+              <TagGroup
+                title="분위기 / 스타일"
+                emoji="🎭"
+                options={STYLE_OPTIONS}
+                selected={styles}
+                onToggle={(v) => toggleFromList(styles, setStyles, v)}
+                color="amber"
+              />
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleGenerate}
+                  disabled={generating}
+                  className="flex-1"
+                >
+                  {generating ? (
+                    <span className="flex items-center gap-2">
+                      <span className="inline-block w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></span>
+                      생성 중...
+                    </span>
+                  ) : (
+                    <>🪄 별명 생성하기</>
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={handleReset}
+                >
+                  초기화
+                </Button>
+              </div>
+            </Card>
+
+            {/* Results */}
+            {nicknames.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                    🎁 {name}님을 위한 별명 {nicknames.length}개
+                  </h2>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleGenerate}
+                    disabled={generating}
+                  >
+                    🔄 다시 생성
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {nicknames.map((nick, i) => (
+                    <NicknameCard
+                      key={`${nick}-${i}`}
+                      nickname={nick}
+                      index={i}
+                      isSelected={selected === nick}
+                      onSelect={handleSelect}
+                      onCopy={handleCopy}
+                    />
+                  ))}
+                </div>
+
+                {selected && (
+                  <div className="mt-6 text-center">
+                    <div className="inline-block bg-white/80 backdrop-blur px-6 py-3 rounded-full shadow-lg">
+                      <span className="text-gray-600">최애 별명: </span>
+                      <span className="font-bold text-pink-600">{selected}</span>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Empty state helper */}
+            {nicknames.length === 0 && !generating && (
+              <div className="text-center text-gray-500 text-sm mt-4">
+                👆 위에서 입력을 마치고 '별명 생성하기'를 눌러보세요!
+              </div>
+            )}
+
+            <footer className="text-center text-xs text-gray-500 mt-12 pb-4">
+              Made with 💖 · 클라이언트 사이드 "AI" · 외부 API 사용 없음
+            </footer>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🚀 App Component
+    // ========================================
+
+    function App() {
+      return <NicknameGeneratorPage />;
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
