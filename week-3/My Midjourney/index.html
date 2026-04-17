@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Midjourney - 팝아트 이미지 생성기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* 팝아트 느낌의 도트 패턴 배경 */
+    .pop-dots {
+      background-image: radial-gradient(circle, #000 1.5px, transparent 1.5px);
+      background-size: 18px 18px;
+    }
+    .pop-shadow {
+      box-shadow: 6px 6px 0 0 #000;
+    }
+    .pop-shadow-sm {
+      box-shadow: 3px 3px 0 0 #000;
+    }
+    /* 타이틀 폰트 (Bangers 느낌) */
+    @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Bebas+Neue&display=swap');
+    .font-pop {
+      font-family: 'Bangers', 'Bebas Neue', sans-serif;
+      letter-spacing: 0.05em;
+    }
+    /* 로딩 스피너 애니메이션 */
+    @keyframes popSpin {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.2); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .pop-spinner {
+      animation: popSpin 1.2s ease-in-out infinite;
+    }
+    /* 이미지 로드 페이드인 */
+    @keyframes popFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .pop-fade-in {
+      animation: popFadeIn 0.5s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-yellow-300 pop-dots min-h-screen">
+  <div id="root"></div>
+  <script type="text/babel">
+    // ========================================
+    // API: 백엔드 서버의 /api/generate (server.js 가 fal.ai 프록시)
+    // 브라우저는 API 키를 모르고, 서버가 .env 에서 FAL_KEY 를 읽어 호출한다.
+    // ========================================
+
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    const GENERATE_ENDPOINT = '/api/generate';
+
+    async function generateImage({ prompt, width = 1024, height = 1024 }) {
+      const res = await fetch(GENERATE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, width, height, num_images: 1 }),
+      });
+
+      let payload = null;
+      try { payload = await res.json(); } catch (_) {}
+
+      if (!res.ok || !payload?.success) {
+        const msg = payload?.message || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+
+      const url = payload?.data?.imageUrl;
+      if (!url) throw new Error('응답에 이미지 URL이 없습니다.');
+      return { url, seed: payload?.data?.seed };
+    }
+
+    // ========================================
+    // 🎨 Design System Components
+    // ========================================
+
+    function Button({ variant = 'primary', size = 'md', disabled, onClick, className = '', children, type = 'button' }) {
+      const base = 'font-pop tracking-wider border-4 border-black transition-all duration-150 active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-x-0 disabled:active:translate-y-0';
+      const variants = {
+        primary: 'bg-pink-500 text-white hover:bg-pink-600 pop-shadow',
+        secondary: 'bg-white text-black hover:bg-gray-100 pop-shadow',
+        danger: 'bg-red-500 text-white hover:bg-red-600 pop-shadow',
+        ghost: 'bg-transparent text-black hover:bg-black/10 border-transparent',
+        yellow: 'bg-yellow-400 text-black hover:bg-yellow-500 pop-shadow',
+      };
+      const sizes = {
+        sm: 'px-3 py-1 text-sm',
+        md: 'px-5 py-2 text-lg',
+        lg: 'px-8 py-3 text-2xl',
+      };
+      return (
+        <button
+          type={type}
+          disabled={disabled}
+          onClick={onClick}
+          className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    function Textarea({ label, value, onChange, placeholder, rows = 3, disabled, error, className = '' }) {
+      return (
+        <div className={`flex flex-col gap-1 ${className}`}>
+          {label && (
+            <label className="font-pop text-xl tracking-wide text-black">{label}</label>
+          )}
+          <textarea
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            rows={rows}
+            disabled={disabled}
+            className="w-full p-3 border-4 border-black bg-white pop-shadow-sm focus:outline-none focus:ring-0 focus:bg-yellow-50 resize-none text-black placeholder:text-gray-400 disabled:opacity-60"
+          />
+          {error && <span className="text-red-600 font-semibold text-sm">{error}</span>}
+        </div>
+      );
+    }
+
+    function Input({ label, type = 'text', value, onChange, placeholder, disabled, error, className = '' }) {
+      return (
+        <div className={`flex flex-col gap-1 ${className}`}>
+          {label && (
+            <label className="font-pop text-xl tracking-wide text-black">{label}</label>
+          )}
+          <input
+            type={type}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            disabled={disabled}
+            className="w-full p-3 border-4 border-black bg-white pop-shadow-sm focus:outline-none focus:ring-0 focus:bg-yellow-50 text-black placeholder:text-gray-400 disabled:opacity-60"
+          />
+          {error && <span className="text-red-600 font-semibold text-sm">{error}</span>}
+        </div>
+      );
+    }
+
+    function Card({ children, className = '' }) {
+      return (
+        <div className={`bg-white border-4 border-black pop-shadow p-6 ${className}`}>
+          {children}
+        </div>
+      );
+    }
+
+    function Badge({ children, color = 'pink', className = '' }) {
+      const colors = {
+        pink: 'bg-pink-500 text-white',
+        yellow: 'bg-yellow-400 text-black',
+        blue: 'bg-blue-500 text-white',
+        black: 'bg-black text-white',
+      };
+      return (
+        <span className={`inline-block px-3 py-1 font-pop tracking-wider border-2 border-black ${colors[color]} ${className}`}>
+          {children}
+        </span>
+      );
+    }
+
+    function Spinner() {
+      return (
+        <div className="flex flex-col items-center justify-center gap-4 py-8">
+          <div className="pop-spinner w-16 h-16 border-8 border-black border-t-pink-500 border-r-yellow-400 border-b-blue-500 rounded-full"></div>
+          <p className="font-pop text-2xl tracking-wider text-black">BANG! 그리는 중...</p>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🎭 Pop Art Style Presets
+    // ========================================
+    const POP_PRESETS = [
+      {
+        id: 'warhol',
+        label: 'Andy Warhol',
+        emoji: '🎨',
+        color: 'bg-pink-500',
+        keyword: 'in the style of Andy Warhol pop art, bold saturated colors, silkscreen print, repeating panels, iconic portrait composition',
+      },
+      {
+        id: 'lichtenstein',
+        label: 'Lichtenstein',
+        emoji: '💥',
+        color: 'bg-red-500',
+        keyword: 'in the style of Roy Lichtenstein, Ben-Day dots, thick black outlines, primary colors, comic panel, onomatopoeia aesthetic',
+      },
+      {
+        id: 'comic',
+        label: 'Comic Book',
+        emoji: '📚',
+        color: 'bg-blue-500',
+        keyword: 'vintage American comic book style, halftone shading, ink outlines, dynamic action pose, speech bubble vibe, cel shading',
+      },
+      {
+        id: 'neon',
+        label: 'Neon Pop',
+        emoji: '🌈',
+        color: 'bg-purple-500',
+        keyword: 'neon pop art, glowing magenta and cyan lights, 80s retro futurism, high contrast, synthwave gradient, vibrant fluorescent palette',
+      },
+      {
+        id: 'retro',
+        label: 'Retro Pop',
+        emoji: '📺',
+        color: 'bg-orange-500',
+        keyword: 'retro 1960s pop art poster, muted vintage palette, screen printed texture, groovy patterns, mid-century advertisement aesthetic',
+      },
+      {
+        id: 'manga',
+        label: 'Manga Pop',
+        emoji: '🗯️',
+        color: 'bg-green-500',
+        keyword: 'Japanese manga pop art fusion, screentone shading, bold speed lines, expressive characters, dynamic panel composition, black ink with pink accents',
+      },
+    ];
+
+    // ========================================
+    // 🧩 Feature Components
+    // ========================================
+
+    function StylePresets({ selectedId, onSelect }) {
+      return (
+        <div>
+          <h2 className="font-pop text-2xl tracking-wider text-black mb-3">🎭 팝아트 스타일 고르기</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {POP_PRESETS.map((preset) => {
+              const active = selectedId === preset.id;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => onSelect(active ? null : preset.id)}
+                  className={`font-pop tracking-wider text-lg border-4 border-black py-3 px-2 transition-all duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                    active
+                      ? `${preset.color} text-white pop-shadow scale-[1.02] ring-4 ring-yellow-300`
+                      : 'bg-white text-black pop-shadow-sm hover:-translate-y-0.5'
+                  }`}
+                  aria-pressed={active}
+                >
+                  <div className="text-2xl mb-1">{preset.emoji}</div>
+                  <div>{preset.label}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function ResultPanel({ loading, error, image, prompt, onDownload }) {
+      if (loading) {
+        return (
+          <Card className="min-h-[300px] flex items-center justify-center">
+            <Spinner />
+          </Card>
+        );
+      }
+      if (error) {
+        return (
+          <Card className="bg-red-100 border-red-600 min-h-[200px]">
+            <h3 className="font-pop text-2xl text-red-700 mb-2">💥 오류 발생!</h3>
+            <p className="text-red-900 break-words">{error}</p>
+            <p className="text-xs text-red-800 mt-3">
+              • 백엔드 서버(npm start)가 실행 중인지 확인하세요.<br/>
+              • 서버 콘솔 로그에서 fal.ai 응답 오류를 확인해 보세요.<br/>
+              • fal.ai 크레딧이 남아있는지 확인하세요.
+            </p>
+          </Card>
+        );
+      }
+      if (image) {
+        return (
+          <Card>
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h3 className="font-pop text-2xl tracking-wider">✨ 완성!</h3>
+              <Button variant="yellow" size="sm" onClick={onDownload}>
+                ⬇ 다운로드
+              </Button>
+            </div>
+            <div className="border-4 border-black overflow-hidden bg-gray-100">
+              <img
+                src={image}
+                alt={prompt || '생성된 이미지'}
+                className="w-full h-auto block pop-fade-in"
+              />
+            </div>
+            {prompt && (
+              <p className="mt-3 text-sm text-gray-700 italic break-words">
+                <span className="font-bold not-italic">프롬프트: </span>{prompt}
+              </p>
+            )}
+          </Card>
+        );
+      }
+      return (
+        <Card className="min-h-[300px] flex flex-col items-center justify-center text-center bg-gradient-to-br from-pink-100 via-yellow-100 to-blue-100">
+          <div className="text-6xl mb-3">🎨</div>
+          <p className="font-pop text-2xl tracking-wider text-black">
+            프롬프트를 입력하고<br/>생성 버튼을 눌러보세요!
+          </p>
+          <p className="text-sm text-gray-600 mt-2">팝아트 스타일을 고르면 더 재밌어요.</p>
+        </Card>
+      );
+    }
+
+    // ========================================
+    // 🧱 Layout Components
+    // ========================================
+    function Header() {
+      return (
+        <header className="mb-6 text-center">
+          <div className="inline-block bg-black text-white px-6 py-2 border-4 border-black transform -rotate-2 pop-shadow mb-2">
+            <span className="font-pop text-xl tracking-[0.3em] text-yellow-400">POP ART AI</span>
+          </div>
+          <h1 className="font-pop text-5xl sm:text-6xl md:text-7xl tracking-wider text-black drop-shadow-[4px_4px_0_rgba(236,72,153,1)]">
+            MY MIDJOURNEY
+          </h1>
+          <p className="mt-2 text-base sm:text-lg text-black/80 font-semibold">
+            나만의 팝아트 이미지 생성기 💥 Powered by fal.ai Z-Image Turbo
+          </p>
+        </header>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="mt-10 text-center text-sm text-black/70 font-semibold">
+          <p>⚡ fal.ai Z-Image Turbo · React + Tailwind · Single HTML ⚡</p>
+        </footer>
+      );
+    }
+
+    // ========================================
+    // 📄 Main Page
+    // ========================================
+    function HomePage() {
+      // --- Prompt & preset state ---
+      const [prompt, setPrompt] = useState('');
+      const [selectedPresetId, setSelectedPresetId] = useState('warhol');
+      const selectedPreset = POP_PRESETS.find((p) => p.id === selectedPresetId);
+
+      // --- Generation state ---
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [image, setImage] = useState(null);
+      const [finalPrompt, setFinalPrompt] = useState('');
+
+      const buildFinalPrompt = () => {
+        const base = prompt.trim();
+        if (!base) return '';
+        if (selectedPreset) return `${base}, ${selectedPreset.keyword}`;
+        return base;
+      };
+
+      const canGenerate = prompt.trim().length > 0 && !loading;
+
+      const handleGenerate = async () => {
+        setError('');
+        setImage(null);
+        if (!prompt.trim()) {
+          setError('프롬프트를 입력해주세요.');
+          return;
+        }
+        const fp = buildFinalPrompt();
+        setFinalPrompt(fp);
+        setLoading(true);
+        try {
+          const { url } = await generateImage({ prompt: fp });
+          setImage(url);
+        } catch (e) {
+          setError(e.message || String(e));
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleDownload = async () => {
+        if (!image) return;
+        try {
+          const res = await fetch(image);
+          const blob = await res.blob();
+          const href = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = href;
+          a.download = `my-midjourney-${Date.now()}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(href);
+        } catch (e) {
+          // fallback: 새 탭으로 열기
+          window.open(image, '_blank', 'noopener');
+        }
+      };
+
+      const handleClearPrompt = () => {
+        setPrompt('');
+      };
+
+      const SAMPLE_PROMPTS = [
+        '마릴린 먼로 스타일의 한국 아이돌 초상화',
+        '번개를 내리치는 슈퍼히어로 고양이',
+        '햄버거를 먹고 있는 로봇',
+        '도쿄 밤거리를 달리는 스포츠카',
+      ];
+
+      return (
+        <div className="max-w-5xl mx-auto p-4 sm:p-6">
+          <Header />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* --- Left: Controls --- */}
+            <div className="flex flex-col gap-5">
+              <Card>
+                <Textarea
+                  label="✏️ 프롬프트"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="예: 번개를 내리치는 슈퍼히어로 고양이"
+                  rows={4}
+                  disabled={loading}
+                />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="text-xs font-bold text-gray-600 self-center">빠른 예시:</span>
+                  {SAMPLE_PROMPTS.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setPrompt(s)}
+                      disabled={loading}
+                      className="text-xs px-2 py-1 border-2 border-black bg-yellow-200 hover:bg-yellow-300 disabled:opacity-50"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              <Card>
+                <StylePresets
+                  selectedId={selectedPresetId}
+                  onSelect={setSelectedPresetId}
+                />
+                {selectedPreset && (
+                  <div className="mt-3 p-3 border-2 border-dashed border-black/60 bg-yellow-50 text-xs text-gray-700">
+                    <span className="font-bold">적용 키워드: </span>
+                    {selectedPreset.keyword}
+                  </div>
+                )}
+              </Card>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleGenerate}
+                  disabled={!canGenerate}
+                  className="flex-1"
+                >
+                  {loading ? '🎨 생성 중...' : '💥 이미지 생성!'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={handleClearPrompt}
+                  disabled={loading || !prompt}
+                >
+                  지우기
+                </Button>
+              </div>
+
+            </div>
+
+            {/* --- Right: Result --- */}
+            <div className="flex flex-col gap-5">
+              <ResultPanel
+                loading={loading}
+                error={error}
+                image={image}
+                prompt={finalPrompt}
+                onDownload={handleDownload}
+              />
+
+              <Card className="bg-blue-100">
+                <h3 className="font-pop text-xl tracking-wider mb-2">💡 사용 팁</h3>
+                <ul className="list-disc pl-5 text-sm text-black/80 space-y-1">
+                  <li>구체적인 묘사(색상·배경·표정)가 들어갈수록 결과가 좋아져요.</li>
+                  <li>한국어/영어 모두 가능하지만 영어가 스타일 반영이 더 정확합니다.</li>
+                  <li>팝아트 프리셋을 바꾸며 다양한 느낌을 시도해보세요.</li>
+                  <li>Z-Image Turbo는 1장당 약 7원, 2초 내외로 생성됩니다.</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <Footer />
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🚀 App Root
+    // ========================================
+    function App() {
+      return <HomePage />;
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
