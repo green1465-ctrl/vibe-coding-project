@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>깐깐한 제품 디자이너</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            sidebar: '#171717',
+            sidebarHover: '#212121',
+            chatDark: '#212121',
+            inputDark: '#2f2f2f',
+            userBubbleLight: '#f4f4f4',
+            userBubbleDark: '#2f2f2f',
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.25s ease-out',
+            'bounce-dot': 'bounceDot 1.4s infinite ease-in-out',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+            slideUp: { '0%': { opacity: 0, transform: 'translateY(8px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+            bounceDot: {
+              '0%, 80%, 100%': { transform: 'scale(0.6)', opacity: 0.4 },
+              '40%': { transform: 'scale(1)', opacity: 1 },
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body, #root { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Scrollbars */
+    .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(120,120,120,0.3); border-radius: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(120,120,120,0.5); }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+
+    /* Typing dots */
+    .typing-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background: currentColor; margin: 0 2px; animation: bounceDot 1.4s infinite ease-in-out both; }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    /* Code blocks */
+    pre.code-block {
+      background: rgba(0,0,0,0.06);
+      border-radius: 8px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 8px 0;
+    }
+    .dark pre.code-block { background: #0d0d0d; color: #e5e5e5; }
+    code.inline-code {
+      background: rgba(0,0,0,0.07);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.92em;
+    }
+    .dark code.inline-code { background: #3a3a3a; color: #f1f1f1; }
+
+    /* Smooth textarea */
+    textarea { resize: none; }
+
+    /* Hide scrollbar-arrows for textarea */
+    textarea::-webkit-scrollbar { width: 6px; }
+    textarea::-webkit-scrollbar-thumb { background: rgba(120,120,120,0.3); border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-white dark:bg-chatDark text-gray-900 dark:text-gray-100">
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="env,react">
+  // ========================================
+  // 🎣 React Hooks
+  // ========================================
+  const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
+
+  // ========================================
+  // 🔧 Utilities
+  // ========================================
+  const STORAGE_KEY = 'my-chatgpt-conversations';
+  const THEME_KEY = 'my-chatgpt-theme';
+
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  const truncate = (str, n = 40) => {
+    if (!str) return '';
+    const trimmed = str.trim().replace(/\s+/g, ' ');
+    return trimmed.length > n ? trimmed.slice(0, n) + '…' : trimmed;
+  };
+
+  // ----------------------------------------
+  // 🌐 Streaming chat API client
+  // ----------------------------------------
+  // Try relative first (works when served by server.js),
+  // then fall back to http://localhost:3000 for file:// usage.
+  const STREAM_PATH = '/api/chat/stream';
+  const STREAM_FALLBACK = 'http://localhost:3000/api/chat/stream';
+
+  async function openChatStream({ history, message, signal }) {
+    const body = JSON.stringify({ history, message });
+    const init = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      signal,
+    };
+
+    // Try relative URL first
+    try {
+      const res = await fetch(STREAM_PATH, init);
+      if (!res.ok) {
+        // Server responded but with error status — try to read JSON error and throw
+        let msg = `HTTP ${res.status}`;
+        try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (_) {}
+        throw new Error(msg);
+      }
+      return res;
+    } catch (err) {
+      // TypeError from fetch usually means network/CORS/scheme issue (e.g. file://)
+      const isNetwork = err && (err.name === 'TypeError' || err.message === 'Failed to fetch');
+      if (!isNetwork) throw err;
+      // Fallback to localhost:3000
+      const res2 = await fetch(STREAM_FALLBACK, init);
+      if (!res2.ok) {
+        let msg = `HTTP ${res2.status}`;
+        try { const j = await res2.json(); if (j && j.error) msg = j.error; } catch (_) {}
+        throw new Error(msg);
+      }
+      return res2;
+    }
+  }
+
+  // Parse an SSE stream from a fetch Response, yielding JSON-parsed events.
+  // Calls onEvent(obj) for each `data: {...}` line.
+  async function consumeSSE(response, onEvent) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // SSE events separated by blank line
+      let idx;
+      while ((idx = buffer.indexOf('\n\n')) !== -1) {
+        const rawEvent = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+        const dataLines = rawEvent
+          .split('\n')
+          .filter((l) => l.startsWith('data:'))
+          .map((l) => l.slice(5).trim());
+        if (dataLines.length === 0) continue;
+        const payload = dataLines.join('\n');
+        try {
+          const obj = JSON.parse(payload);
+          onEvent(obj);
+          if (obj && obj.done) return;
+        } catch (_) {
+          // ignore malformed chunk
+        }
+      }
+    }
+    // flush any trailing event
+    if (buffer.trim()) {
+      const dataLines = buffer
+        .split('\n')
+        .filter((l) => l.startsWith('data:'))
+        .map((l) => l.slice(5).trim());
+      if (dataLines.length) {
+        try { onEvent(JSON.parse(dataLines.join('\n'))); } catch (_) {}
+      }
+    }
+  }
+
+  // Tiny markdown-ish renderer: supports fenced code blocks, inline `code`, preserves line breaks
+  function renderMarkdown(text) {
+    if (!text) return null;
+    const parts = [];
+    const fenceRegex = /```(\w*)\n?([\s\S]*?)```/g;
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+
+    while ((match = fenceRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({ type: 'text', content: text.slice(lastIndex, match.index), key: key++ });
+      }
+      parts.push({ type: 'code', lang: match[1], content: match[2], key: key++ });
+      lastIndex = fenceRegex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+      parts.push({ type: 'text', content: text.slice(lastIndex), key: key++ });
+    }
+
+    return parts.map((p) => {
+      if (p.type === 'code') {
+        return (
+          <pre className="code-block" key={p.key}>
+            <code>{p.content.replace(/\n$/, '')}</code>
+          </pre>
+        );
+      }
+      // For text part, handle inline code and line breaks + simple bold **..**
+      const lines = p.content.split('\n');
+      return (
+        <span key={p.key}>
+          {lines.map((line, i) => (
+            <React.Fragment key={i}>
+              {renderInline(line)}
+              {i < lines.length - 1 && <br />}
+            </React.Fragment>
+          ))}
+        </span>
+      );
+    });
+  }
+
+  function renderInline(line) {
+    // Tokenize by `code` and **bold**
+    const tokens = [];
+    const regex = /(`[^`]+`|\*\*[^*]+\*\*)/g;
+    let last = 0;
+    let m;
+    let k = 0;
+    while ((m = regex.exec(line)) !== null) {
+      if (m.index > last) tokens.push({ t: 'text', v: line.slice(last, m.index), k: k++ });
+      const v = m[0];
+      if (v.startsWith('`')) tokens.push({ t: 'code', v: v.slice(1, -1), k: k++ });
+      else tokens.push({ t: 'bold', v: v.slice(2, -2), k: k++ });
+      last = regex.lastIndex;
+    }
+    if (last < line.length) tokens.push({ t: 'text', v: line.slice(last), k: k++ });
+
+    return tokens.map((tok) => {
+      if (tok.t === 'code') return <code className="inline-code" key={tok.k}>{tok.v}</code>;
+      if (tok.t === 'bold') return <strong key={tok.k}>{tok.v}</strong>;
+      return <React.Fragment key={tok.k}>{tok.v}</React.Fragment>;
+    });
+  }
+
+  // ========================================
+  // 🎨 Design System Components
+  // ========================================
+  function IconButton({ onClick, title, children, className = '' }) {
+    return (
+      <button
+        onClick={onClick}
+        title={title}
+        aria-label={title}
+        className={`inline-flex items-center justify-center rounded-md p-2 hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${className}`}
+      >
+        {children}
+      </button>
+    );
+  }
+
+  function PrimaryButton({ onClick, children, disabled, className = '' }) {
+    return (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className={`inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-medium bg-black text-white hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-white/80 transition ${className}`}
+      >
+        {children}
+      </button>
+    );
+  }
+
+  function ConfirmDialog({ open, title, description, onCancel, onConfirm }) {
+    if (!open) return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-fade-in" onClick={onCancel}>
+        <div
+          className="bg-white dark:bg-[#2f2f2f] rounded-xl shadow-2xl w-[90%] max-w-sm p-6 animate-slide-up"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-lg font-semibold mb-2">{title}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">{description}</p>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+            >
+              취소
+            </button>
+            <button
+              onClick={onConfirm}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ========================================
+  // 💬 Message Bubble
+  // ========================================
+  function MessageBubble({ message }) {
+    const isUser = message.role === 'user';
+    return (
+      <div className={`w-full flex ${isUser ? 'justify-end' : 'justify-start'} animate-slide-up`}>
+        {!isUser && (
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold mr-3 mt-0.5 select-none">
+            AI
+          </div>
+        )}
+        <div
+          className={
+            isUser
+              ? 'max-w-[78%] rounded-3xl px-4 py-2.5 bg-userBubbleLight dark:bg-userBubbleDark whitespace-pre-wrap break-words text-[15px] leading-relaxed'
+              : 'max-w-[85%] text-[15px] leading-relaxed whitespace-pre-wrap break-words'
+          }
+        >
+          {message.streaming && !message.content ? (
+            <TypingDots />
+          ) : (
+            <>
+              {renderMarkdown(message.content)}
+              {message.streaming && <span className="inline-block w-1.5 h-4 bg-current align-middle ml-0.5 animate-pulse" />}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function TypingDots() {
+    return (
+      <span className="inline-flex items-center text-gray-500 dark:text-gray-400">
+        <span className="typing-dot" />
+        <span className="typing-dot" />
+        <span className="typing-dot" />
+      </span>
+    );
+  }
+
+  // ========================================
+  // 🧭 Sidebar
+  // ========================================
+  function Sidebar({
+    conversations,
+    activeId,
+    onSelect,
+    onNew,
+    onDelete,
+    open,
+    onClose,
+    darkMode,
+    onToggleTheme,
+  }) {
+    return (
+      <>
+        {/* Backdrop on mobile */}
+        {open && (
+          <div
+            className="fixed inset-0 bg-black/40 z-30 md:hidden"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+        )}
+        <aside
+          className={`fixed md:static top-0 left-0 h-full z-40 bg-sidebar text-gray-200 w-64 flex flex-col transition-transform duration-300 ${
+            open ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-0 md:overflow-hidden'
+          }`}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 border-b border-white/5">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold">C</div>
+              <span className="text-sm font-medium">깐깐한 제품 디자이너</span>
+            </div>
+            <IconButton onClick={onClose} title="사이드바 닫기" className="md:hidden text-gray-300">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            </IconButton>
+          </div>
+
+          {/* New chat */}
+          <div className="p-3">
+            <button
+              onClick={onNew}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-white/10 hover:bg-sidebarHover transition"
+              title="새 채팅 (Ctrl/Cmd+Shift+O)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+              <span>새 채팅</span>
+            </button>
+          </div>
+
+          {/* Conversation list */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-2">
+            {conversations.length === 0 ? (
+              <div className="text-center text-xs text-gray-500 mt-6 px-4 leading-relaxed">
+                아직 대화가 없습니다.<br/>새 채팅 버튼을 눌러<br/>대화를 시작해보세요.
+              </div>
+            ) : (
+              <ul className="space-y-0.5">
+                {conversations.map((conv) => (
+                  <li key={conv.id}>
+                    <div
+                      onClick={() => onSelect(conv.id)}
+                      className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm transition ${
+                        conv.id === activeId ? 'bg-sidebarHover' : 'hover:bg-sidebarHover/70'
+                      }`}
+                    >
+                      <span className="truncate flex-1">{conv.title || '새 채팅'}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/10"
+                        title="삭제"
+                        aria-label="대화 삭제"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="p-3 border-t border-white/5">
+            <button
+              onClick={onToggleTheme}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-sidebarHover transition"
+            >
+              {darkMode ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                  <span>라이트 모드</span>
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  <span>다크 모드</span>
+                </>
+              )}
+            </button>
+          </div>
+        </aside>
+      </>
+    );
+  }
+
+  // ========================================
+  // 📝 Empty State with Suggestion Chips
+  // ========================================
+  function EmptyState({ onPick }) {
+    const suggestions = [
+      '내 앱 온보딩 화면 평가해줘',
+      '이 제품 아이디어 어떤 것 같아?',
+      '좋은 산업 디자인의 조건이 뭐야?',
+      '디자인 포트폴리오 피드백 부탁해',
+    ];
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center px-4">
+        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center text-2xl font-bold mb-5 shadow-lg">
+          C
+        </div>
+        <h1 className="text-2xl md:text-3xl font-semibold mb-2 text-center">뭘 봐줄까?</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 text-center max-w-md">경고: 칭찬은 인색하고 비판은 정확함. 감정적 위로가 필요하면 다른 데로.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xl">
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => onPick(s)}
+              className="text-left text-sm px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ========================================
+  // ⬆️ Input Composer
+  // ========================================
+  function Composer({ onSend, disabled, inputRef }) {
+    const [value, setValue] = useState('');
+    const taRef = useRef(null);
+
+    useEffect(() => {
+      if (inputRef) inputRef.current = taRef.current;
+    }, [inputRef]);
+
+    const autoGrow = useCallback(() => {
+      const ta = taRef.current;
+      if (!ta) return;
+      ta.style.height = 'auto';
+      const lineHeight = 24;
+      const maxHeight = lineHeight * 6 + 20;
+      ta.style.height = Math.min(ta.scrollHeight, maxHeight) + 'px';
+    }, []);
+
+    useEffect(() => { autoGrow(); }, [value, autoGrow]);
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
+        e.preventDefault();
+        submit();
+      }
+    };
+
+    const submit = () => {
+      const trimmed = value.trim();
+      if (!trimmed || disabled) return;
+      onSend(trimmed);
+      setValue('');
+      requestAnimationFrame(() => {
+        if (taRef.current) taRef.current.style.height = 'auto';
+      });
+    };
+
+    return (
+      <div className="px-3 md:px-6 pb-3 md:pb-5 pt-2 bg-white dark:bg-chatDark">
+        <div className="mx-auto max-w-3xl">
+          <div className="flex items-end gap-2 bg-gray-100 dark:bg-inputDark rounded-3xl px-3 py-2 shadow-sm border border-transparent focus-within:border-gray-300 dark:focus-within:border-white/20 transition">
+            <textarea
+              ref={taRef}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              placeholder="제품/디자인 얘기를 던져봐... (Shift+Enter 줄바꿈)"
+              className="flex-1 bg-transparent outline-none text-[15px] leading-6 py-2 px-2 placeholder-gray-400 dark:placeholder-gray-500 max-h-[164px] overflow-y-auto"
+              aria-label="메시지 입력"
+            />
+            <button
+              onClick={submit}
+              disabled={!value.trim() || disabled}
+              className="flex-shrink-0 w-9 h-9 rounded-full bg-black text-white disabled:bg-gray-300 dark:disabled:bg-white/20 disabled:cursor-not-allowed dark:bg-white dark:text-black hover:opacity-90 transition flex items-center justify-center"
+              title="보내기 (Enter)"
+              aria-label="메시지 보내기"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 19V5M5 12l7-7 7 7"/>
+              </svg>
+            </button>
+          </div>
+          <p className="text-[11px] text-center text-gray-500 dark:text-gray-400 mt-2">
+            AI 디자이너의 피드백은 참고용이야. 최종 판단은 네 몫.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ========================================
+  // 💬 Chat Area
+  // ========================================
+  function ChatArea({ conversation, onSend, isResponding, inputRef, onOpenSidebar, sidebarOpen }) {
+    const listRef = useRef(null);
+
+    useEffect(() => {
+      if (listRef.current) {
+        listRef.current.scrollTop = listRef.current.scrollHeight;
+      }
+    }, [conversation?.messages]);
+
+    const hasMessages = conversation && conversation.messages && conversation.messages.length > 0;
+
+    return (
+      <section className="flex-1 flex flex-col min-w-0 bg-white dark:bg-chatDark">
+        {/* Header */}
+        <header className="flex items-center gap-2 px-3 md:px-6 py-3 border-b border-gray-100 dark:border-white/10">
+          <IconButton onClick={onOpenSidebar} title="사이드바 열기" className="md:hidden">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </IconButton>
+          <IconButton onClick={onOpenSidebar} title={sidebarOpen ? '사이드바 숨기기' : '사이드바 보이기'} className="hidden md:inline-flex">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>
+            </svg>
+          </IconButton>
+          <h2 className="flex-1 truncate text-sm md:text-base font-medium">
+            {conversation?.title || '새 채팅'}
+          </h2>
+        </header>
+
+        {/* Messages */}
+        <div ref={listRef} className="flex-1 overflow-y-auto scrollbar-thin">
+          {!hasMessages ? (
+            <EmptyState onPick={onSend} />
+          ) : (
+            <div className="mx-auto max-w-3xl px-4 md:px-6 py-6 space-y-5">
+              {conversation.messages.map((m) => (
+                <MessageBubble key={m.id} message={m} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Composer */}
+        <Composer onSend={onSend} disabled={isResponding} inputRef={inputRef} />
+      </section>
+    );
+  }
+
+  // ========================================
+  // 🚀 App
+  // ========================================
+  function App() {
+    const [conversations, setConversations] = useState(() => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (_) {}
+      return [];
+    });
+
+    const [activeId, setActiveId] = useState(() => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (arr.length > 0) return arr[0].id;
+        }
+      } catch (_) {}
+      return null;
+    });
+
+    const [darkMode, setDarkMode] = useState(() => {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved) return saved === 'dark';
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    });
+
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+      return typeof window !== 'undefined' ? window.innerWidth >= 768 : true;
+    });
+
+    const [isResponding, setIsResponding] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(null);
+    const inputRef = useRef(null);
+    const abortRef = useRef(null);
+
+    // Apply dark class to <html>
+    useEffect(() => {
+      const root = document.documentElement;
+      if (darkMode) root.classList.add('dark'); else root.classList.remove('dark');
+      localStorage.setItem(THEME_KEY, darkMode ? 'dark' : 'light');
+    }, [darkMode]);
+
+    // Persist conversations
+    useEffect(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+      } catch (_) {}
+    }, [conversations]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+      const handler = (e) => {
+        const mod = e.ctrlKey || e.metaKey;
+        if (mod && !e.shiftKey && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          if (inputRef.current) inputRef.current.focus();
+        }
+        if (mod && e.shiftKey && e.key.toLowerCase() === 'o') {
+          e.preventDefault();
+          handleNewChat();
+        }
+      };
+      window.addEventListener('keydown', handler);
+      return () => window.removeEventListener('keydown', handler);
+    }, []);
+
+    // Abort any in-flight stream on unmount
+    useEffect(() => {
+      return () => { if (abortRef.current) { try { abortRef.current.abort(); } catch (_) {} } };
+    }, []);
+
+    const activeConversation = useMemo(
+      () => conversations.find((c) => c.id === activeId) || null,
+      [conversations, activeId]
+    );
+
+    const handleNewChat = useCallback(() => {
+      if (abortRef.current) { try { abortRef.current.abort(); } catch (_) {} abortRef.current = null; }
+      setIsResponding(false);
+      const newConv = { id: uid(), title: '', messages: [], createdAt: Date.now() };
+      setConversations((prev) => [newConv, ...prev]);
+      setActiveId(newConv.id);
+      if (window.innerWidth < 768) setSidebarOpen(false);
+      requestAnimationFrame(() => { if (inputRef.current) inputRef.current.focus(); });
+    }, []);
+
+    const handleSelect = useCallback((id) => {
+      setActiveId(id);
+      if (window.innerWidth < 768) setSidebarOpen(false);
+    }, []);
+
+    const handleDeleteRequest = useCallback((id) => {
+      setConfirmDelete(id);
+    }, []);
+
+    const doDelete = useCallback(() => {
+      if (!confirmDelete) return;
+      setConversations((prev) => {
+        const next = prev.filter((c) => c.id !== confirmDelete);
+        if (confirmDelete === activeId) {
+          setActiveId(next.length > 0 ? next[0].id : null);
+        }
+        return next;
+      });
+      setConfirmDelete(null);
+    }, [confirmDelete, activeId]);
+
+    const handleSend = useCallback((text) => {
+      if (!text || isResponding) return;
+
+      // Ensure active conversation exists; build history from existing messages.
+      let convId = activeId;
+      const userMsg = { id: uid(), role: 'user', content: text, createdAt: Date.now() };
+      const assistantId = uid();
+      const placeholder = { id: assistantId, role: 'assistant', content: '', streaming: true, createdAt: Date.now() };
+
+      let historyForApi = [];
+
+      setConversations((prev) => {
+        let next = [...prev];
+        let target = convId ? next.find((c) => c.id === convId) : null;
+        if (!target) {
+          const created = { id: uid(), title: truncate(text, 32), messages: [], createdAt: Date.now() };
+          convId = created.id;
+          target = created;
+          next = [created, ...next];
+        }
+        // Build history from the target conversation's existing messages,
+        // excluding any empty assistant placeholder bubbles.
+        historyForApi = (target.messages || [])
+          .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim().length > 0)
+          .map((m) => ({ role: m.role, content: m.content }));
+
+        next = next.map((c) => {
+          if (c.id !== convId) return c;
+          const newTitle = c.title && c.messages.length > 0 ? c.title : truncate(text, 32);
+          return { ...c, title: newTitle, messages: [...c.messages, userMsg, placeholder] };
+        });
+        return next;
+      });
+
+      if (convId !== activeId) setActiveId(convId);
+      setIsResponding(true);
+
+      const appendDelta = (delta) => {
+        setConversations((prev) => prev.map((c) => {
+          if (c.id !== convId) return c;
+          return {
+            ...c,
+            messages: c.messages.map((m) => m.id === assistantId
+              ? { ...m, content: (m.content || '') + delta, streaming: true }
+              : m)
+          };
+        }));
+      };
+
+      const finishStreaming = () => {
+        setConversations((prev) => prev.map((c) => {
+          if (c.id !== convId) return c;
+          return {
+            ...c,
+            messages: c.messages.map((m) => m.id === assistantId ? { ...m, streaming: false } : m)
+          };
+        }));
+        setIsResponding(false);
+      };
+
+      const showError = (msg) => {
+        setConversations((prev) => prev.map((c) => {
+          if (c.id !== convId) return c;
+          return {
+            ...c,
+            messages: c.messages.map((m) => m.id === assistantId
+              ? { ...m, content: (m.content || '') + (m.content ? '\n\n' : '') + `⚠️ 응답을 받지 못했어요: ${msg}`, streaming: false }
+              : m)
+          };
+        }));
+        setIsResponding(false);
+      };
+
+      // Thinking delay keeps the typing-dots UX natural before the stream starts.
+      const thinkingDelay = 600;
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setTimeout(async () => {
+        try {
+          const response = await openChatStream({
+            history: historyForApi,
+            message: text,
+            signal: controller.signal,
+          });
+
+          await consumeSSE(response, (evt) => {
+            if (!evt) return;
+            if (evt.error) {
+              showError(evt.error);
+              return;
+            }
+            if (typeof evt.delta === 'string' && evt.delta) {
+              appendDelta(evt.delta);
+            }
+            if (evt.done) {
+              finishStreaming();
+            }
+          });
+
+          // Safety: if stream ended without an explicit done event, still finalize.
+          finishStreaming();
+        } catch (err) {
+          if (err && err.name === 'AbortError') { finishStreaming(); return; }
+          showError((err && err.message) || '알 수 없는 오류');
+        } finally {
+          if (abortRef.current === controller) abortRef.current = null;
+        }
+      }, thinkingDelay);
+    }, [activeId, isResponding]);
+
+    return (
+      <div className="flex h-full w-full overflow-hidden">
+        <Sidebar
+          conversations={conversations}
+          activeId={activeId}
+          onSelect={handleSelect}
+          onNew={handleNewChat}
+          onDelete={handleDeleteRequest}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          darkMode={darkMode}
+          onToggleTheme={() => setDarkMode((v) => !v)}
+        />
+
+        <main className="flex-1 flex flex-col min-w-0 h-full">
+          <ChatArea
+            conversation={activeConversation}
+            onSend={handleSend}
+            isResponding={isResponding}
+            inputRef={inputRef}
+            onOpenSidebar={() => setSidebarOpen((v) => !v)}
+            sidebarOpen={sidebarOpen}
+          />
+        </main>
+
+        <ConfirmDialog
+          open={!!confirmDelete}
+          title="대화를 삭제할까요?"
+          description="삭제한 대화는 되돌릴 수 없습니다."
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={doDelete}
+        />
+      </div>
+    );
+  }
+
+  // ========================================
+  // 🎬 Render
+  // ========================================
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

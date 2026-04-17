@@ -1,0 +1,15 @@
+{
+  "name": "my-chat-gpt",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal ChatGPT-style UI backed by OpenAI via Express.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "openai": "^4.73.0"
+  }
+}
