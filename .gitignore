@@ -1,0 +1,6 @@
+node_modules/
+.env
+.env.local
+.tmp-db/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
