@@ -1,0 +1,13 @@
+{
+  "name": "salarycheck-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file=.env server.js",
+    "init-db": "node --env-file=.env scripts/init-db.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.5"
+  }
+}

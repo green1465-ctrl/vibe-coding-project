@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>익명 고민·칭찬 게시판</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #fce7f3 100%);
+      min-height: 100vh;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+    .animate-pop {
+      animation: pop 0.3s ease-in-out;
+    }
+    /* 부드러운 스크롤바 */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+  </style>
+</head>
+<body>
+  <!-- 통합 상단 탭바 (4개 앱 공통) -->
+  <nav class="bg-slate-900 text-white border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-1 overflow-x-auto">
+      <a href="/" class="flex items-center gap-2 mr-4 font-bold text-base shrink-0 hover:text-blue-300 transition">
+        <span class="w-7 h-7 rounded-md bg-blue-500 flex items-center justify-center text-sm">4</span>
+        4-Apps
+      </a>
+      <a href="/board"   class="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white shadow shrink-0">💬 익명 게시판</a>
+      <a href="/salary"  class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition shrink-0">📊 연봉 비교</a>
+      <a href="/fridge"  class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition shrink-0">🍳 냉장고 레시피</a>
+      <a href="/balance" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition shrink-0">⚖️ 밸런스 게임</a>
+    </div>
+  </nav>
+
+  <div id="root"></div>
+  <script type="text/babel">
+    // ========================================
+    // React Hooks 추출
+    // ========================================
+    const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+    // ========================================
+    // 상수 / 카테고리 정의
+    // ========================================
+    // DB(Q4_posts.category)와 동일하게 한글 값을 그대로 id 로 사용
+    const CATEGORIES = [
+      {
+        id: '고민',
+        label: '고민',
+        emoji: '💭',
+        chipBg: 'bg-blue-100',
+        chipText: 'text-blue-700',
+        chipBorder: 'border-blue-200',
+        cardAccent: 'border-l-blue-400',
+        ringColor: 'focus:ring-blue-300',
+      },
+      {
+        id: '칭찬',
+        label: '칭찬',
+        emoji: '👏',
+        chipBg: 'bg-yellow-100',
+        chipText: 'text-yellow-800',
+        chipBorder: 'border-yellow-200',
+        cardAccent: 'border-l-yellow-400',
+        ringColor: 'focus:ring-yellow-300',
+      },
+      {
+        id: '응원',
+        label: '응원',
+        emoji: '💪',
+        chipBg: 'bg-green-100',
+        chipText: 'text-green-700',
+        chipBorder: 'border-green-200',
+        cardAccent: 'border-l-green-400',
+        ringColor: 'focus:ring-green-300',
+      },
+      {
+        id: '고백',
+        label: '고백',
+        emoji: '💗',
+        chipBg: 'bg-pink-100',
+        chipText: 'text-pink-700',
+        chipBorder: 'border-pink-200',
+        cardAccent: 'border-l-pink-400',
+        ringColor: 'focus:ring-pink-300',
+      },
+    ];
+
+    const getCategory = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[0];
+
+    // ========================================
+    // 유틸 함수
+    // ========================================
+    // 서버는 createdAt 을 ISO 문자열(timestamptz)로 내려준다 → ms 로 변환
+    const toMs = (createdAt) => {
+      if (typeof createdAt === 'number') return createdAt;
+      if (!createdAt) return Date.now();
+      const t = new Date(createdAt).getTime();
+      return Number.isNaN(t) ? Date.now() : t;
+    };
+
+    const formatRelativeTime = (createdAt) => {
+      const ts = toMs(createdAt);
+      const now = Date.now();
+      const diff = Math.max(0, now - ts);
+      const sec = Math.floor(diff / 1000);
+      if (sec < 60) return '방금 전';
+      const min = Math.floor(sec / 60);
+      if (min < 60) return `${min}분 전`;
+      const hr = Math.floor(min / 60);
+      if (hr < 24) return `${hr}시간 전`;
+      const day = Math.floor(hr / 24);
+      if (day < 7) return `${day}일 전`;
+      const d = new Date(ts);
+      return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    };
+
+    const formatFullTime = (createdAt) => {
+      const d = new Date(toMs(createdAt));
+      return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    };
+
+    // ========================================
+    // API 클라이언트
+    // ========================================
+    const api = {
+      list: async () => {
+        const res = await fetch('/api/board/posts');
+        if (!res.ok) throw new Error('목록을 불러오지 못했어요');
+        return res.json();
+      },
+      create: async ({ category, content }) => {
+        const res = await fetch('/api/board/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, content }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || '글 작성에 실패했어요');
+        }
+        return res.json();
+      },
+      like: async (id) => {
+        const res = await fetch(`/api/board/posts/${id}/like`, { method: 'POST' });
+        if (!res.ok) throw new Error('공감을 보내지 못했어요');
+        return res.json();
+      },
+      remove: async (id) => {
+        const res = await fetch(`/api/board/posts/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('삭제에 실패했어요');
+        return res.json();
+      },
+    };
+
+    // ========================================
+    // 게시글 훅 (Supabase Postgres 연동)
+    // ========================================
+    const usePosts = () => {
+      const [posts, setPosts] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+
+      const refresh = useCallback(async () => {
+        try {
+          setError(null);
+          const data = await api.list();
+          setPosts(Array.isArray(data) ? data : []);
+        } catch (e) {
+          console.error(e);
+          setError(e.message || '데이터를 불러오지 못했어요');
+        } finally {
+          setLoading(false);
+        }
+      }, []);
+
+      useEffect(() => { refresh(); }, [refresh]);
+
+      const addPost = useCallback(async ({ category, content }) => {
+        const created = await api.create({ category, content: content.trim() });
+        setPosts(prev => [created, ...prev]);
+      }, []);
+
+      // 공감 +1: 서버에서 UPDATE likes = likes + 1 → 갱신된 행을 반환
+      const likePost = useCallback(async (id) => {
+        // 낙관적 업데이트
+        setPosts(prev => prev.map(p => p.id === id ? { ...p, likes: (p.likes || 0) + 1 } : p));
+        try {
+          const updated = await api.like(id);
+          setPosts(prev => prev.map(p => p.id === id ? updated : p));
+        } catch (e) {
+          console.error(e);
+          // 실패 시 롤백
+          setPosts(prev => prev.map(p => p.id === id ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) } : p));
+          alert(e.message || '공감을 보내지 못했어요');
+        }
+      }, []);
+
+      const deletePost = useCallback(async (id) => {
+        const snapshot = posts;
+        setPosts(prev => prev.filter(p => p.id !== id));
+        try {
+          await api.remove(id);
+        } catch (e) {
+          console.error(e);
+          setPosts(snapshot);
+          alert(e.message || '삭제에 실패했어요');
+        }
+      }, [posts]);
+
+      return { posts, loading, error, addPost, likePost, deletePost, refresh };
+    };
+
+    // ========================================
+    // 🎨 Design System 컴포넌트
+    // ========================================
+    const Button = ({ variant = 'primary', size = 'md', className = '', children, ...rest }) => {
+      const base = 'inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed';
+      const variants = {
+        primary: 'bg-rose-500 hover:bg-rose-600 text-white shadow-md hover:shadow-lg focus:ring-rose-300',
+        secondary: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 focus:ring-gray-300',
+        ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 focus:ring-gray-200',
+        danger: 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-300',
+      };
+      const sizes = {
+        sm: 'px-3 py-1.5 text-sm',
+        md: 'px-4 py-2 text-sm',
+        lg: 'px-6 py-3 text-base',
+      };
+      return (
+        <button className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...rest}>
+          {children}
+        </button>
+      );
+    };
+
+    const Input = React.forwardRef(({ label, error, className = '', ...rest }, ref) => (
+      <div className="w-full">
+        {label && <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>}
+        <input
+          ref={ref}
+          className={`w-full px-4 py-2.5 rounded-xl border bg-white text-gray-800 placeholder-gray-400 transition focus:outline-none focus:ring-2 ${error ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-rose-200 focus:border-rose-300'} ${className}`}
+          {...rest}
+        />
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      </div>
+    ));
+
+    const Textarea = React.forwardRef(({ label, error, className = '', ...rest }, ref) => (
+      <div className="w-full">
+        {label && <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>}
+        <textarea
+          ref={ref}
+          className={`w-full px-4 py-2.5 rounded-xl border bg-white text-gray-800 placeholder-gray-400 transition resize-none focus:outline-none focus:ring-2 ${error ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-rose-200 focus:border-rose-300'} ${className}`}
+          {...rest}
+        />
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      </div>
+    ));
+
+    const Card = ({ className = '', children }) => (
+      <div className={`bg-white/90 backdrop-blur rounded-2xl shadow-sm border border-white/60 ${className}`}>
+        {children}
+      </div>
+    );
+
+    const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
+      useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', onKey);
+        document.body.style.overflow = 'hidden';
+        return () => {
+          window.removeEventListener('keydown', onKey);
+          document.body.style.overflow = '';
+        };
+      }, [isOpen, onClose]);
+
+      if (!isOpen) return null;
+
+      const sizeClass = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-2xl' }[size] || 'max-w-md';
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn"
+            onClick={onClose}
+          />
+          <div className={`relative w-full ${sizeClass} bg-white rounded-2xl shadow-2xl animate-fadeIn`}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800">{title}</h3>
+              <button
+                onClick={onClose}
+                aria-label="닫기"
+                className="text-gray-400 hover:text-gray-700 transition rounded-lg p-1 hover:bg-gray-100"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">{children}</div>
+          </div>
+        </div>
+      );
+    };
+
+    const CategoryChip = ({ categoryId, className = '' }) => {
+      const c = getCategory(categoryId);
+      return (
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${c.chipBg} ${c.chipText} ${c.chipBorder} ${className}`}>
+          <span>{c.emoji}</span>
+          <span>{c.label}</span>
+        </span>
+      );
+    };
+
+    // ========================================
+    // 🧩 Layout / 공용 컴포넌트
+    // ========================================
+    const Header = ({ onWriteClick, postCount }) => (
+      <header className="sticky top-0 z-40 backdrop-blur bg-white/70 border-b border-white/50 shadow-sm">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white text-xl shadow-md shrink-0">
+              💌
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-extrabold text-gray-800 truncate">
+                마음을 나누는 게시판
+              </h1>
+              <p className="text-xs text-gray-500 truncate">
+                익명으로 편하게 · 총 {postCount}개의 이야기
+              </p>
+            </div>
+          </div>
+          <Button onClick={onWriteClick} variant="primary" size="md" className="shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <span className="hidden sm:inline">글쓰기</span>
+          </Button>
+        </div>
+      </header>
+    );
+
+    const FilterBar = ({ activeCategory, onCategoryChange, sortBy, onSortChange }) => {
+      const categoryItems = [
+        { id: 'all', label: '전체', emoji: '🌿' },
+        ...CATEGORIES.map(c => ({ id: c.id, label: c.label, emoji: c.emoji })),
+      ];
+      return (
+        <div className="space-y-3">
+          {/* 카테고리 필터 */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {categoryItems.map(item => {
+              const active = activeCategory === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onCategoryChange(item.id)}
+                  className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition border ${
+                    active
+                      ? 'bg-gray-800 text-white border-gray-800 shadow-sm'
+                      : 'bg-white/80 text-gray-600 border-gray-200 hover:bg-white'
+                  }`}
+                >
+                  <span>{item.emoji}</span>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 정렬 토글 */}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-500 pl-1">총 게시글</p>
+            <div className="inline-flex bg-white/70 border border-gray-200 rounded-full p-0.5 text-xs">
+              {[
+                { id: 'latest', label: '최신순' },
+                { id: 'likes', label: '공감순' },
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => onSortChange(opt.id)}
+                  className={`px-3 py-1.5 rounded-full font-semibold transition ${
+                    sortBy === opt.id
+                      ? 'bg-rose-500 text-white shadow'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ========================================
+    // 게시글 카드
+    // ========================================
+    const PostCard = ({ post, onLike, onDelete }) => {
+      const c = getCategory(post.category);
+      const [popping, setPopping] = useState(false);
+
+      const handleLike = () => {
+        onLike(post.id);
+        setPopping(true);
+        setTimeout(() => setPopping(false), 300);
+      };
+
+      return (
+        <Card className={`p-5 sm:p-6 border-l-4 ${c.cardAccent} animate-fadeIn hover:shadow-md transition`}>
+          <div className="flex items-center justify-between mb-3 gap-2">
+            <CategoryChip categoryId={post.category} />
+            <span
+              className="text-xs text-gray-400 select-none"
+              title={formatFullTime(post.createdAt)}
+            >
+              {formatRelativeTime(post.createdAt)}
+            </span>
+          </div>
+
+          <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
+            {post.content}
+          </p>
+
+          <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+            <button
+              onClick={handleLike}
+              aria-label="공감하기"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 transition"
+            >
+              <span className={`text-base inline-block ${popping ? 'animate-pop' : ''}`}>❤️</span>
+              <span>공감</span>
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white text-rose-600 text-xs font-bold min-w-[1.5rem] text-center">
+                {post.likes || 0}
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (window.confirm('이 글을 삭제하시겠어요?')) onDelete(post.id);
+              }}
+              aria-label="삭제"
+              className="text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded"
+            >
+              삭제
+            </button>
+          </div>
+        </Card>
+      );
+    };
+
+    // ========================================
+    // 글쓰기 폼 (모달 내부)
+    // ========================================
+    const WriteForm = ({ onSubmit, onCancel }) => {
+      const [category, setCategory] = useState('고민');
+      const [content, setContent] = useState('');
+      const [errors, setErrors] = useState({});
+      const [submitting, setSubmitting] = useState(false);
+      const contentRef = useRef(null);
+
+      useEffect(() => {
+        const t = setTimeout(() => contentRef.current?.focus(), 50);
+        return () => clearTimeout(t);
+      }, []);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        const newErrors = {};
+        if (!content.trim()) newErrors.content = '내용을 입력해 주세요.';
+        if (content.trim().length > 1000) newErrors.content = '내용은 1000자 이내로 작성해 주세요.';
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) return;
+
+        setSubmitting(true);
+        try {
+          await onSubmit({ category, content });
+        } catch (err) {
+          alert(err.message || '글 작성에 실패했어요');
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 카테고리 선택 */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">카테고리</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {CATEGORIES.map(c => {
+                const active = category === c.id;
+                return (
+                  <button
+                    type="button"
+                    key={c.id}
+                    onClick={() => setCategory(c.id)}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition ${
+                      active
+                        ? `${c.chipBg} ${c.chipText} ${c.chipBorder} ring-2 ring-offset-1 ring-rose-200`
+                        : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span>{c.emoji}</span>
+                    <span>{c.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <Textarea
+            ref={contentRef}
+            label={`내용 (${content.length}/1000)`}
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            placeholder="여기는 안전한 익명 공간이에요. 마음껏 적어보세요."
+            rows={7}
+            maxLength={1000}
+            error={errors.content}
+          />
+
+          <div className="flex items-center gap-2 text-xs text-gray-500 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            <span>🤫</span>
+            <span>작성자 정보는 저장되지 않아요. 완전한 익명입니다.</span>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>취소</Button>
+            <Button type="submit" variant="primary" disabled={submitting}>
+              {submitting ? '게시 중…' : '게시하기'}
+            </Button>
+          </div>
+        </form>
+      );
+    };
+
+    // wrap input/textarea forwardRef to support ref
+    // (Input component refactored to accept ref)
+    // Note: rewriting Input/Textarea with React.forwardRef below as a small enhancement
+    // (Already declared above—override here for ref support)
+
+    // ========================================
+    // 📄 메인 페이지 (Board)
+    // ========================================
+    const BoardPage = () => {
+      const { posts, loading, error, addPost, likePost, deletePost, refresh } = usePosts();
+      const [activeCategory, setActiveCategory] = useState('all');
+      const [sortBy, setSortBy] = useState('latest');
+      const [isModalOpen, setIsModalOpen] = useState(false);
+
+      const filteredPosts = useMemo(() => {
+        let list = activeCategory === 'all' ? posts : posts.filter(p => p.category === activeCategory);
+        if (sortBy === 'latest') {
+          list = [...list].sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+        } else if (sortBy === 'likes') {
+          list = [...list].sort((a, b) => (b.likes || 0) - (a.likes || 0) || toMs(b.createdAt) - toMs(a.createdAt));
+        }
+        return list;
+      }, [posts, activeCategory, sortBy]);
+
+      const handleSubmit = async (data) => {
+        await addPost(data);
+        setIsModalOpen(false);
+      };
+
+      // tick: 시간 표시 갱신을 위해 1분마다 리렌더
+      const [, setTick] = useState(0);
+      useEffect(() => {
+        const id = setInterval(() => setTick(t => t + 1), 60 * 1000);
+        return () => clearInterval(id);
+      }, []);
+
+      return (
+        <div className="min-h-screen pb-24">
+          <Header onWriteClick={() => setIsModalOpen(true)} postCount={posts.length} />
+
+          <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+            {/* 인사 카드 */}
+            <Card className="p-5 sm:p-6 bg-gradient-to-br from-white/90 to-rose-50/80">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl shrink-0">🌷</div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-1">
+                    오늘 마음은 어떠신가요?
+                  </h2>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    고민도, 칭찬도, 응원도, 고백도. 누가 적었는지 묻지 않고 그저 함께 읽어요.
+                    가벼운 마음으로 한 줄 남겨보세요.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <FilterBar
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+
+            {/* 게시글 리스트 */}
+            <section className="space-y-4">
+              {loading ? (
+                <Card className="p-10 text-center">
+                  <div className="text-4xl mb-3">⏳</div>
+                  <p className="text-sm text-gray-600">불러오는 중…</p>
+                </Card>
+              ) : error ? (
+                <Card className="p-8 text-center">
+                  <div className="text-3xl mb-2">⚠️</div>
+                  <p className="text-sm text-red-600 mb-4">{error}</p>
+                  <Button variant="secondary" onClick={refresh}>다시 시도</Button>
+                </Card>
+              ) : filteredPosts.length === 0 ? (
+                <Card className="p-10 text-center">
+                  <div className="text-4xl mb-3">📭</div>
+                  <p className="text-sm text-gray-600 mb-4">아직 이 카테고리에 글이 없어요.</p>
+                  <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                    첫 글 남기기
+                  </Button>
+                </Card>
+              ) : (
+                filteredPosts.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={likePost}
+                    onDelete={deletePost}
+                  />
+                ))
+              )}
+            </section>
+
+            <p className="text-center text-xs text-gray-400 pt-6">
+              💌 모든 글은 Supabase Postgres(Q4_posts)에 저장돼요
+            </p>
+          </main>
+
+          {/* 모바일 플로팅 버튼 */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            aria-label="글쓰기"
+            className="sm:hidden fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-2xl flex items-center justify-center transition active:scale-95"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </button>
+
+          {/* 글쓰기 모달 */}
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="익명으로 마음 남기기"
+            size="lg"
+          >
+            <WriteForm
+              onSubmit={handleSubmit}
+              onCancel={() => setIsModalOpen(false)}
+            />
+          </Modal>
+        </div>
+      );
+    };
+
+    // ========================================
+    // 🚀 App 루트 컴포넌트
+    // ========================================
+    const App = () => {
+      return <BoardPage />;
+    };
+
+    // ========================================
+    // 렌더링
+    // ========================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

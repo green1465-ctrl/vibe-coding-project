@@ -1,0 +1,16 @@
+{
+  "name": "fridge-recipe-manager",
+  "version": "1.0.0",
+  "description": "냉장고 재료 & 레시피 관리 앱 — Express + Supabase Postgres",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}

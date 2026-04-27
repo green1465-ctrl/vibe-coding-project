@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-Apps · 부트캠프 4주차 통합 데모</title>
+  <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+      min-height: 100vh;
+      color: #F1F5F9;
+    }
+    .card-hover { transition: all .25s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4); }
+  </style>
+</head>
+<body>
+  <!-- 통합 상단 탭바 (홈에서는 모든 탭 비활성) -->
+  <nav class="bg-slate-900 text-white border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-1 overflow-x-auto">
+      <a href="/" class="flex items-center gap-2 mr-4 font-bold text-base shrink-0 hover:text-blue-300 transition">
+        <span class="w-7 h-7 rounded-md bg-blue-500 flex items-center justify-center text-sm">4</span>
+        4-Apps
+      </a>
+      <a href="/board"   class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition shrink-0">💬 익명 게시판</a>
+      <a href="/salary"  class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition shrink-0">📊 연봉 비교</a>
+      <a href="/fridge"  class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition shrink-0">🍳 냉장고 레시피</a>
+      <a href="/balance" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition shrink-0">⚖️ 밸런스 게임</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-5 py-12 lg:py-20">
+    <!-- Hero -->
+    <section class="text-center mb-14">
+      <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-300 text-xs font-semibold rounded-full mb-5 border border-blue-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+        부트캠프 4주차 · Express + Postgres + Vercel 배포
+      </div>
+      <h1 class="text-4xl lg:text-5xl font-bold tracking-tight leading-tight mb-4">
+        하나의 사이트, <span class="text-blue-400">네 가지</span> 앱.
+      </h1>
+      <p class="text-slate-400 text-base lg:text-lg max-w-2xl mx-auto leading-relaxed">
+        Supabase Postgres 를 백엔드로 한 4개의 미니 웹앱을 한 도메인에서 사용해보세요.<br />
+        상단 탭으로 자유롭게 이동할 수 있어요.
+      </p>
+    </section>
+
+    <!-- 4 cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-7">
+      <!-- 익명 게시판 -->
+      <a href="/board" class="card-hover block bg-slate-800/60 border border-slate-700 rounded-2xl p-7 backdrop-blur">
+        <div class="flex items-start justify-between mb-4">
+          <div class="text-4xl">💬</div>
+          <span class="text-xs text-slate-400 px-2 py-1 rounded bg-slate-700/50">/api/board</span>
+        </div>
+        <h2 class="text-xl font-bold mb-2">익명 고민·칭찬 게시판</h2>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          이름 없이 마음을 공유하고 공감(❤️)을 주고받는 공간.<br />
+          <span class="text-slate-500">고민 · 칭찬 · 응원 · 고백 카테고리</span>
+        </p>
+        <div class="flex items-center gap-2 text-blue-400 text-sm font-semibold">
+          시작하기
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+      </a>
+
+      <!-- 연봉 비교 -->
+      <a href="/salary" class="card-hover block bg-slate-800/60 border border-slate-700 rounded-2xl p-7 backdrop-blur">
+        <div class="flex items-start justify-between mb-4">
+          <div class="text-4xl">📊</div>
+          <span class="text-xs text-slate-400 px-2 py-1 rounded bg-slate-700/50">/api/salary</span>
+        </div>
+        <h2 class="text-xl font-bold mb-2">익명 연봉·지출 비교</h2>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          직군과 연차를 입력하면 <strong class="text-slate-300">상위 %</strong>와 카테고리별 평균 지출을 비교해드려요.<br />
+          <span class="text-slate-500">AVG · STDDEV · GROUP BY 통계</span>
+        </p>
+        <div class="flex items-center gap-2 text-blue-400 text-sm font-semibold">
+          내 위치 확인
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+      </a>
+
+      <!-- 냉장고 -->
+      <a href="/fridge" class="card-hover block bg-slate-800/60 border border-slate-700 rounded-2xl p-7 backdrop-blur">
+        <div class="flex items-start justify-between mb-4">
+          <div class="text-4xl">🍳</div>
+          <span class="text-xs text-slate-400 px-2 py-1 rounded bg-slate-700/50">/api/fridge</span>
+        </div>
+        <h2 class="text-xl font-bold mb-2">냉장고 재료 & AI 레시피</h2>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          냉장고 속 재료를 등록하면 OpenAI 가 한 끼 레시피를 만들어줍니다.<br />
+          <span class="text-slate-500">난이도·시간·칼로리 옵션 지정 가능</span>
+        </p>
+        <div class="flex items-center gap-2 text-blue-400 text-sm font-semibold">
+          레시피 만들기
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+      </a>
+
+      <!-- 밸런스 -->
+      <a href="/balance" class="card-hover block bg-slate-800/60 border border-slate-700 rounded-2xl p-7 backdrop-blur">
+        <div class="flex items-start justify-between mb-4">
+          <div class="text-4xl">⚖️</div>
+          <span class="text-xs text-slate-400 px-2 py-1 rounded bg-slate-700/50">/api/balance</span>
+        </div>
+        <h2 class="text-xl font-bold mb-2">실시간 밸런스 게임</h2>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          A vs B 중 하나를 골라 다른 사람들과 실시간으로 비율을 비교해보세요.<br />
+          <span class="text-slate-500">UPSERT · 5초마다 집계 갱신</span>
+        </p>
+        <div class="flex items-center gap-2 text-blue-400 text-sm font-semibold">
+          투표하러 가기
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+      </a>
+    </section>
+
+    <footer class="mt-16 text-center text-xs text-slate-500">
+      Built with Express · pg · Supabase Postgres · Tailwind · React (CDN) · deployed on Vercel
+    </footer>
+  </main>
+</body>
+</html>
