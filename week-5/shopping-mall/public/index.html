@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MUJI SHOP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+        "Noto Sans KR", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="bg-white text-neutral-900">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // ========================================
+    // React Hooks
+    // ========================================
+    const { useState, useEffect, useContext, createContext, useCallback, useMemo } = React;
+
+    // ========================================
+    // Constants & Helpers
+    // ========================================
+    const API_BASE_URL = '/api';
+    const TOKEN_KEY = 'token';
+
+    const formatPrice = (price) => {
+      if (price == null || isNaN(price)) return '';
+      return '₩' + Number(price).toLocaleString('ko-KR');
+    };
+
+    // fetch wrapper with automatic Authorization header
+    async function apiFetch(path, options = {}) {
+      const token = localStorage.getItem(TOKEN_KEY);
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        headers,
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = null;
+      }
+
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    // ========================================
+    // Auth Context
+    // ========================================
+    const AuthContext = createContext(null);
+
+    function AuthProvider({ children }) {
+      const [user, setUser] = useState(null);
+      const [authLoading, setAuthLoading] = useState(true);
+
+      useEffect(() => {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (!token) {
+          setAuthLoading(false);
+          return;
+        }
+        apiFetch('/auth/me')
+          .then(({ ok, status, data }) => {
+            if (ok && data?.user) {
+              setUser(data.user);
+            } else if (status === 401) {
+              localStorage.removeItem(TOKEN_KEY);
+              setUser(null);
+            }
+          })
+          .catch(() => {
+            // silent — leave unauthenticated
+          })
+          .finally(() => setAuthLoading(false));
+      }, []);
+
+      const login = useCallback((token, userObj) => {
+        localStorage.setItem(TOKEN_KEY, token);
+        setUser(userObj);
+      }, []);
+
+      const logout = useCallback(() => {
+        localStorage.removeItem(TOKEN_KEY);
+        setUser(null);
+      }, []);
+
+      const value = useMemo(
+        () => ({ user, authLoading, login, logout }),
+        [user, authLoading, login, logout]
+      );
+
+      return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    }
+
+    const useAuth = () => useContext(AuthContext);
+
+    // ========================================
+    // Cart Context
+    // ========================================
+    const CartContext = createContext(null);
+
+    function CartProvider({ children }) {
+      const { user } = useAuth();
+      const [items, setItems] = useState([]);
+      const [total, setTotal] = useState(0);
+      const [itemCount, setItemCount] = useState(0);
+      const [loading, setLoading] = useState(false);
+
+      const refresh = useCallback(async () => {
+        if (!user) {
+          setItems([]);
+          setTotal(0);
+          setItemCount(0);
+          return;
+        }
+        setLoading(true);
+        try {
+          const { ok, data } = await apiFetch('/cart');
+          if (ok && data) {
+            setItems(data.items || []);
+            setTotal(data.total || 0);
+            setItemCount(data.itemCount || 0);
+          }
+        } catch (e) {
+          // silent
+        } finally {
+          setLoading(false);
+        }
+      }, [user]);
+
+      // user 바뀌면 자동 새로고침
+      useEffect(() => {
+        refresh();
+      }, [refresh]);
+
+      const addItem = useCallback(
+        async (productId, quantity = 1) => {
+          const { ok, data } = await apiFetch('/cart', {
+            method: 'POST',
+            body: JSON.stringify({ product_id: productId, quantity }),
+          });
+          if (ok) await refresh();
+          return { ok, data };
+        },
+        [refresh]
+      );
+
+      const updateQty = useCallback(
+        async (itemId, qty) => {
+          // optimistic 업데이트
+          setItems((prev) =>
+            prev.map((it) =>
+              it.id === itemId
+                ? { ...it, quantity: qty, subtotal: it.product.price * qty }
+                : it
+            )
+          );
+          const { ok, data } = await apiFetch(`/cart/${itemId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ quantity: qty }),
+          });
+          await refresh();
+          return { ok, data };
+        },
+        [refresh]
+      );
+
+      const removeItem = useCallback(
+        async (itemId) => {
+          // optimistic 업데이트
+          setItems((prev) => prev.filter((it) => it.id !== itemId));
+          const { ok, data } = await apiFetch(`/cart/${itemId}`, {
+            method: 'DELETE',
+          });
+          await refresh();
+          return { ok, data };
+        },
+        [refresh]
+      );
+
+      const value = useMemo(
+        () => ({ items, total, itemCount, loading, refresh, addItem, updateQty, removeItem }),
+        [items, total, itemCount, loading, refresh, addItem, updateQty, removeItem]
+      );
+
+      return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+    }
+
+    const useCart = () => useContext(CartContext);
+
+    // ========================================
+    // Design System Components
+    // ========================================
+    function Button({
+      children,
+      variant = 'primary',
+      size = 'md',
+      type = 'button',
+      disabled = false,
+      onClick,
+      className = '',
+      ...rest
+    }) {
+      const base =
+        'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed';
+      const variants = {
+        primary: 'bg-neutral-900 text-white hover:bg-neutral-800',
+        secondary: 'bg-white text-neutral-900 border border-neutral-300 hover:bg-neutral-50',
+        ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100',
+        danger: 'bg-red-600 text-white hover:bg-red-700',
+      };
+      const sizes = {
+        sm: 'h-8 px-3 text-sm',
+        md: 'h-10 px-4 text-sm',
+        lg: 'h-12 px-6 text-base',
+      };
+      return (
+        <button
+          type={type}
+          disabled={disabled}
+          onClick={onClick}
+          className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+          {...rest}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    function Input({
+      label,
+      type = 'text',
+      value,
+      onChange,
+      placeholder,
+      error,
+      disabled = false,
+      id,
+      autoComplete,
+      className = '',
+    }) {
+      const inputId = id || `input-${Math.random().toString(36).slice(2, 9)}`;
+      return (
+        <div className={`flex flex-col gap-1.5 ${className}`}>
+          {label && (
+            <label htmlFor={inputId} className="text-sm font-medium text-neutral-800">
+              {label}
+            </label>
+          )}
+          <input
+            id={inputId}
+            type={type}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            disabled={disabled}
+            autoComplete={autoComplete}
+            className={`h-11 px-3 rounded-md border bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 disabled:bg-neutral-50 ${
+              error ? 'border-red-500' : 'border-neutral-300'
+            }`}
+          />
+          {error && <span className="text-xs text-red-600">{error}</span>}
+        </div>
+      );
+    }
+
+    function Card({ children, className = '' }) {
+      return (
+        <div className={`bg-white border border-neutral-200 rounded-md ${className}`}>
+          {children}
+        </div>
+      );
+    }
+
+    // ========================================
+    // Router (Hash-based)
+    // ========================================
+    const RouterContext = createContext({ path: '/', navigate: () => {} });
+
+    function getHashPath() {
+      const h = window.location.hash || '#/';
+      return h.startsWith('#') ? h.slice(1) || '/' : '/';
+    }
+
+    function Router({ children }) {
+      const [path, setPath] = useState(getHashPath());
+
+      useEffect(() => {
+        const onHashChange = () => setPath(getHashPath());
+        window.addEventListener('hashchange', onHashChange);
+        // Normalize empty hash on first load
+        if (!window.location.hash) window.location.hash = '#/';
+        return () => window.removeEventListener('hashchange', onHashChange);
+      }, []);
+
+      const navigate = useCallback((to) => {
+        const next = to.startsWith('/') ? to : `/${to}`;
+        window.location.hash = `#${next}`;
+      }, []);
+
+      const value = useMemo(() => ({ path, navigate }), [path, navigate]);
+      return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
+    }
+
+    const useRouter = () => useContext(RouterContext);
+
+    // matchRoute: returns { params } if pattern matches, else null
+    function matchRoute(pattern, path) {
+      const pSeg = pattern.split('/').filter(Boolean);
+      const aSeg = path.split('/').filter(Boolean);
+      if (pSeg.length !== aSeg.length) return null;
+      const params = {};
+      for (let i = 0; i < pSeg.length; i++) {
+        if (pSeg[i].startsWith(':')) {
+          params[pSeg[i].slice(1)] = decodeURIComponent(aSeg[i]);
+        } else if (pSeg[i] !== aSeg[i]) {
+          return null;
+        }
+      }
+      return { params };
+    }
+
+    function Link({ to, children, className = '', onClick }) {
+      const { navigate } = useRouter();
+      const handleClick = (e) => {
+        e.preventDefault();
+        if (onClick) onClick(e);
+        navigate(to);
+      };
+      return (
+        <a href={`#${to}`} onClick={handleClick} className={className}>
+          {children}
+        </a>
+      );
+    }
+
+    // ========================================
+    // Layout: Header
+    // ========================================
+    function CartIcon({ count }) {
+      return (
+        <Link
+          to="/cart"
+          className="relative inline-flex items-center justify-center w-9 h-9 text-neutral-700 hover:text-neutral-900 rounded-md hover:bg-neutral-100"
+          aria-label="장바구니"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          {count > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-neutral-900 text-white text-[10px] font-semibold flex items-center justify-center">
+              {count > 99 ? '99+' : count}
+            </span>
+          )}
+        </Link>
+      );
+    }
+
+    function Header() {
+      const { user, logout, authLoading } = useAuth();
+      const { itemCount } = useCart();
+      const { navigate } = useRouter();
+
+      const handleLogout = () => {
+        logout();
+        navigate('/');
+      };
+
+      return (
+        <header className="sticky top-0 z-30 bg-white border-b border-neutral-200">
+          <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <Link
+              to="/"
+              className="text-xl font-semibold tracking-widest text-neutral-900 hover:opacity-70"
+            >
+              MUJI SHOP
+            </Link>
+            <nav className="flex items-center gap-3 sm:gap-4 text-sm">
+              {authLoading ? (
+                <span className="text-neutral-400">…</span>
+              ) : user ? (
+                <>
+                  <CartIcon count={itemCount} />
+                  <span className="hidden sm:inline text-neutral-600 truncate max-w-[200px]">
+                    {user.email}
+                  </span>
+                  <Button variant="secondary" size="sm" onClick={handleLogout}>
+                    로그아웃
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-neutral-700 hover:text-neutral-900 hover:underline"
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="text-neutral-700 hover:text-neutral-900 hover:underline"
+                  >
+                    회원가입
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
+        </header>
+      );
+    }
+
+    // ========================================
+    // Page: Home (Product List)
+    // ========================================
+    function ProductCardSkeleton() {
+      return (
+        <div className="animate-pulse">
+          <div className="aspect-square bg-neutral-100 rounded-md" />
+          <div className="mt-3 h-4 bg-neutral-100 rounded w-3/4" />
+          <div className="mt-2 h-4 bg-neutral-100 rounded w-1/3" />
+          <div className="mt-2 h-3 bg-neutral-100 rounded w-full" />
+        </div>
+      );
+    }
+
+    function ProductCard({ product }) {
+      const { user } = useAuth();
+      const { addItem } = useCart();
+      const { navigate } = useRouter();
+      const [busy, setBusy] = useState(false);
+
+      const handleAdd = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!user) {
+          alert('로그인이 필요합니다');
+          navigate('/login');
+          return;
+        }
+        if (busy) return;
+        setBusy(true);
+        const { ok, data } = await addItem(product.id, 1);
+        setBusy(false);
+        if (!ok) {
+          alert(data?.error || '담기에 실패했습니다');
+        }
+      };
+
+      return (
+        <div className="group block">
+          <Link to={`/products/${product.id}`} className="block focus:outline-none">
+            <div className="aspect-square overflow-hidden rounded-md bg-neutral-100">
+              {product.image_url ? (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-neutral-300 text-sm">
+                  no image
+                </div>
+              )}
+            </div>
+            <div className="mt-3 px-0.5">
+              <h3 className="text-sm font-medium text-neutral-900 truncate">
+                {product.name}
+              </h3>
+              <p className="mt-1 text-sm text-neutral-900">{formatPrice(product.price)}</p>
+              {product.description && (
+                <p className="mt-1 text-xs text-neutral-500 line-clamp-2">
+                  {product.description}
+                </p>
+              )}
+            </div>
+          </Link>
+          <div className="mt-3 px-0.5">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleAdd}
+              disabled={busy}
+              className="w-full"
+            >
+              {busy ? '담는 중…' : '장바구니 담기'}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    function HomePage() {
+      const [products, setProducts] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+
+      useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        apiFetch('/products')
+          .then(({ ok, data }) => {
+            if (cancelled) return;
+            if (ok && Array.isArray(data?.products)) {
+              setProducts(data.products);
+              setError(null);
+            } else {
+              setError(data?.error || '상품을 불러오지 못했습니다.');
+            }
+          })
+          .catch(() => !cancelled && setError('네트워크 오류가 발생했습니다.'))
+          .finally(() => !cancelled && setLoading(false));
+        return () => {
+          cancelled = true;
+        };
+      }, []);
+
+      return (
+        <main className="max-w-6xl mx-auto px-4 py-10">
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+              전체 상품
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              간결한 일상을 위한 셀렉션
+            </p>
+          </div>
+
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="text-center py-20 text-red-600 text-sm">{error}</div>
+          )}
+
+          {!loading && !error && products.length === 0 && (
+            <div className="text-center py-20 text-neutral-500 text-sm">
+              등록된 상품이 없습니다.
+            </div>
+          )}
+
+          {!loading && !error && products.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+              {products.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
+        </main>
+      );
+    }
+
+    // ========================================
+    // Page: Product Detail
+    // ========================================
+    function ProductDetailPage({ id }) {
+      const { user } = useAuth();
+      const { addItem } = useCart();
+      const { navigate } = useRouter();
+      const [product, setProduct] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [adding, setAdding] = useState(false);
+      const [qty, setQty] = useState(1);
+
+      useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError(null);
+        setProduct(null);
+        apiFetch(`/products/${encodeURIComponent(id)}`)
+          .then(({ ok, status, data }) => {
+            if (cancelled) return;
+            if (ok && data?.product) {
+              setProduct(data.product);
+            } else if (status === 404) {
+              setError('상품을 찾을 수 없습니다.');
+            } else {
+              setError(data?.error || '상품을 불러오지 못했습니다.');
+            }
+          })
+          .catch(() => !cancelled && setError('네트워크 오류가 발생했습니다.'))
+          .finally(() => !cancelled && setLoading(false));
+        return () => {
+          cancelled = true;
+        };
+      }, [id]);
+
+      const handleAddToCart = async () => {
+        if (!user) {
+          alert('로그인이 필요합니다');
+          navigate('/login');
+          return;
+        }
+        if (adding || !product) return;
+        setAdding(true);
+        const { ok, data } = await addItem(product.id, qty);
+        setAdding(false);
+        if (ok) {
+          if (confirm('장바구니에 담겼습니다. 장바구니로 이동할까요?')) {
+            navigate('/cart');
+          }
+        } else {
+          alert(data?.error || '담기에 실패했습니다');
+        }
+      };
+
+      return (
+        <main className="max-w-5xl mx-auto px-4 py-10">
+          <div className="mb-6">
+            <Link
+              to="/"
+              className="inline-flex items-center text-sm text-neutral-600 hover:text-neutral-900"
+            >
+              ← 목록으로
+            </Link>
+          </div>
+
+          {loading && (
+            <div className="text-center py-20 text-neutral-500 text-sm">불러오는 중…</div>
+          )}
+
+          {!loading && error && (
+            <div className="text-center py-20 text-red-600 text-sm">{error}</div>
+          )}
+
+          {!loading && !error && product && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="aspect-square overflow-hidden rounded-md bg-neutral-100">
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-neutral-300 text-sm">
+                    no image
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+                  {product.name}
+                </h1>
+                <p className="mt-3 text-xl text-neutral-900">
+                  {formatPrice(product.price)}
+                </p>
+
+                {product.description && (
+                  <p className="mt-6 text-sm leading-6 text-neutral-700 whitespace-pre-line">
+                    {product.description}
+                  </p>
+                )}
+
+                <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
+                  <div className="inline-flex items-center border border-neutral-300 rounded-md h-12 self-start">
+                    <button
+                      type="button"
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      className="w-10 h-full flex items-center justify-center text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                      disabled={qty <= 1}
+                      aria-label="수량 감소"
+                    >
+                      −
+                    </button>
+                    <span className="w-10 text-center text-sm font-medium select-none">
+                      {qty}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQty((q) => Math.min(99, q + 1))}
+                      className="w-10 h-full flex items-center justify-center text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                      disabled={qty >= 99}
+                      aria-label="수량 증가"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <Button
+                    size="lg"
+                    onClick={handleAddToCart}
+                    disabled={adding}
+                    className="flex-1"
+                  >
+                    {adding ? '담는 중…' : '장바구니에 담기'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      );
+    }
+
+    // ========================================
+    // Page: Login
+    // ========================================
+    function LoginPage() {
+      const { login } = useAuth();
+      const { navigate } = useRouter();
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [submitting, setSubmitting] = useState(false);
+      const [error, setError] = useState(null);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (submitting) return;
+        setError(null);
+
+        if (!email.trim() || !password) {
+          setError('이메일과 비밀번호를 입력해주세요.');
+          return;
+        }
+
+        setSubmitting(true);
+        try {
+          const { ok, data } = await apiFetch('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email: email.trim(), password }),
+          });
+          if (ok && data?.token && data?.user) {
+            login(data.token, data.user);
+            navigate('/');
+          } else {
+            setError(data?.error || '로그인에 실패했습니다.');
+          }
+        } catch (err) {
+          setError('네트워크 오류가 발생했습니다.');
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      return (
+        <main className="max-w-md mx-auto px-4 py-16">
+          <Card className="p-8">
+            <h1 className="text-xl font-semibold tracking-tight text-neutral-900 text-center">
+              로그인
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500 text-center">
+              MUJI SHOP에 오신 것을 환영합니다
+            </p>
+
+            <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+              <Input
+                label="이메일"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+              <Input
+                label="비밀번호"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••"
+                autoComplete="current-password"
+              />
+
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" size="lg" disabled={submitting} className="mt-2">
+                {submitting ? '로그인 중…' : '로그인'}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-sm text-center text-neutral-600">
+              계정이 없으신가요?{' '}
+              <Link to="/signup" className="text-neutral-900 underline hover:opacity-70">
+                회원가입
+              </Link>
+            </p>
+          </Card>
+        </main>
+      );
+    }
+
+    // ========================================
+    // Page: Signup
+    // ========================================
+    function SignupPage() {
+      const { login } = useAuth();
+      const { navigate } = useRouter();
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [passwordConfirm, setPasswordConfirm] = useState('');
+      const [submitting, setSubmitting] = useState(false);
+      const [error, setError] = useState(null);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (submitting) return;
+        setError(null);
+
+        if (!email.trim() || !password) {
+          setError('이메일과 비밀번호를 입력해주세요.');
+          return;
+        }
+        if (password.length < 6) {
+          setError('비밀번호는 6자 이상이어야 합니다.');
+          return;
+        }
+        if (password !== passwordConfirm) {
+          setError('비밀번호가 일치하지 않습니다.');
+          return;
+        }
+
+        setSubmitting(true);
+        try {
+          const { ok, data } = await apiFetch('/auth/signup', {
+            method: 'POST',
+            body: JSON.stringify({ email: email.trim(), password }),
+          });
+          if (ok && data?.token && data?.user) {
+            login(data.token, data.user);
+            navigate('/');
+          } else {
+            setError(data?.error || '회원가입에 실패했습니다.');
+          }
+        } catch (err) {
+          setError('네트워크 오류가 발생했습니다.');
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      return (
+        <main className="max-w-md mx-auto px-4 py-16">
+          <Card className="p-8">
+            <h1 className="text-xl font-semibold tracking-tight text-neutral-900 text-center">
+              회원가입
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500 text-center">
+              새 계정을 만들어보세요
+            </p>
+
+            <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+              <Input
+                label="이메일"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+              <Input
+                label="비밀번호"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="6자 이상"
+                autoComplete="new-password"
+              />
+              <Input
+                label="비밀번호 확인"
+                type="password"
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                placeholder="비밀번호 재입력"
+                autoComplete="new-password"
+              />
+
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" size="lg" disabled={submitting} className="mt-2">
+                {submitting ? '가입 중…' : '가입하기'}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-sm text-center text-neutral-600">
+              이미 계정이 있으신가요?{' '}
+              <Link to="/login" className="text-neutral-900 underline hover:opacity-70">
+                로그인
+              </Link>
+            </p>
+          </Card>
+        </main>
+      );
+    }
+
+    // ========================================
+    // Page: Cart
+    // ========================================
+    function CartLineItem({ item }) {
+      const { updateQty, removeItem } = useCart();
+      const [busy, setBusy] = useState(false);
+
+      const handleDec = async () => {
+        if (item.quantity <= 1 || busy) return;
+        setBusy(true);
+        await updateQty(item.id, item.quantity - 1);
+        setBusy(false);
+      };
+      const handleInc = async () => {
+        if (item.quantity >= 99 || busy) return;
+        setBusy(true);
+        await updateQty(item.id, item.quantity + 1);
+        setBusy(false);
+      };
+      const handleRemove = async () => {
+        if (busy) return;
+        if (!confirm(`'${item.product.name}'을(를) 삭제하시겠어요?`)) return;
+        setBusy(true);
+        await removeItem(item.id);
+        // (after refresh, this component will be unmounted)
+      };
+
+      return (
+        <li className="flex gap-4 py-5 border-b border-neutral-200">
+          <Link to={`/products/${item.product.id}`} className="shrink-0">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-md overflow-hidden bg-neutral-100">
+              {item.product.image_url ? (
+                <img
+                  src={item.product.image_url}
+                  alt={item.product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : null}
+            </div>
+          </Link>
+
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Link
+                  to={`/products/${item.product.id}`}
+                  className="text-sm font-medium text-neutral-900 hover:underline line-clamp-1"
+                >
+                  {item.product.name}
+                </Link>
+                <p className="mt-1 text-sm text-neutral-500">
+                  {formatPrice(item.product.price)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemove}
+                disabled={busy}
+                className="text-xs text-neutral-400 hover:text-red-600 disabled:opacity-50 shrink-0"
+                aria-label="삭제"
+              >
+                삭제
+              </button>
+            </div>
+
+            <div className="mt-auto flex items-end justify-between pt-3">
+              <div className="inline-flex items-center border border-neutral-300 rounded-md h-9">
+                <button
+                  type="button"
+                  onClick={handleDec}
+                  disabled={busy || item.quantity <= 1}
+                  className="w-8 h-full flex items-center justify-center text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                  aria-label="수량 감소"
+                >
+                  −
+                </button>
+                <span className="w-8 text-center text-sm font-medium select-none">
+                  {item.quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleInc}
+                  disabled={busy || item.quantity >= 99}
+                  className="w-8 h-full flex items-center justify-center text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                  aria-label="수량 증가"
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-sm font-semibold text-neutral-900">
+                {formatPrice(item.subtotal)}
+              </p>
+            </div>
+          </div>
+        </li>
+      );
+    }
+
+    function CartPage() {
+      const { user, authLoading } = useAuth();
+      const { items, total, itemCount, loading, refresh } = useCart();
+      const { navigate } = useRouter();
+
+      // 비로그인 상태면 로그인 유도
+      useEffect(() => {
+        if (!authLoading && !user) {
+          alert('로그인이 필요합니다');
+          navigate('/login');
+        }
+      }, [authLoading, user, navigate]);
+
+      // 진입 시 한 번 더 새로고침 (다른 탭 동기화)
+      useEffect(() => {
+        if (user) refresh();
+        // eslint-disable-next-line
+      }, [user]);
+
+      if (authLoading || !user) {
+        return (
+          <main className="max-w-3xl mx-auto px-4 py-16 text-center text-neutral-500 text-sm">
+            …
+          </main>
+        );
+      }
+
+      return (
+        <main className="max-w-3xl mx-auto px-4 py-10">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+                장바구니
+              </h1>
+              <p className="mt-1 text-sm text-neutral-500">
+                담은 상품 {itemCount}개
+              </p>
+            </div>
+            <Link to="/" className="text-sm text-neutral-600 hover:text-neutral-900">
+              계속 쇼핑하기 →
+            </Link>
+          </div>
+
+          {loading && items.length === 0 && (
+            <div className="text-center py-20 text-neutral-500 text-sm">불러오는 중…</div>
+          )}
+
+          {!loading && items.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-sm text-neutral-500">장바구니가 비어 있습니다.</p>
+              <div className="mt-6">
+                <Link
+                  to="/"
+                  className="inline-block text-sm text-neutral-900 underline hover:opacity-70"
+                >
+                  상품 보러가기
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {items.length > 0 && (
+            <>
+              <ul className="border-t border-neutral-200">
+                {items.map((it) => (
+                  <CartLineItem key={it.id} item={it} />
+                ))}
+              </ul>
+
+              <div className="mt-8 bg-neutral-50 rounded-md p-6">
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between text-neutral-600">
+                    <dt>상품 합계 ({itemCount}개)</dt>
+                    <dd>{formatPrice(total)}</dd>
+                  </div>
+                  <div className="flex justify-between text-neutral-600">
+                    <dt>배송비</dt>
+                    <dd>무료</dd>
+                  </div>
+                  <div className="border-t border-neutral-200 my-2" />
+                  <div className="flex justify-between text-base font-semibold text-neutral-900">
+                    <dt>총 결제 금액</dt>
+                    <dd>{formatPrice(total)}</dd>
+                  </div>
+                </dl>
+                <Button
+                  size="lg"
+                  className="w-full mt-6"
+                  onClick={() => alert('결제는 데모에서 지원하지 않습니다')}
+                >
+                  주문하기
+                </Button>
+              </div>
+            </>
+          )}
+        </main>
+      );
+    }
+
+    // ========================================
+    // Page: Not Found
+    // ========================================
+    function NotFoundPage() {
+      return (
+        <main className="max-w-md mx-auto px-4 py-24 text-center">
+          <h1 className="text-2xl font-semibold text-neutral-900">404</h1>
+          <p className="mt-2 text-sm text-neutral-500">페이지를 찾을 수 없습니다.</p>
+          <div className="mt-6">
+            <Link
+              to="/"
+              className="inline-block text-sm text-neutral-900 underline hover:opacity-70"
+            >
+              홈으로
+            </Link>
+          </div>
+        </main>
+      );
+    }
+
+    // ========================================
+    // Routes resolver
+    // ========================================
+    function AppRoutes() {
+      const { path } = useRouter();
+
+      // Home
+      if (path === '/' || path === '') return <HomePage />;
+      // Login
+      if (matchRoute('/login', path)) return <LoginPage />;
+      // Signup
+      if (matchRoute('/signup', path)) return <SignupPage />;
+      // Cart
+      if (matchRoute('/cart', path)) return <CartPage />;
+      // Product detail
+      const detailMatch = matchRoute('/products/:id', path);
+      if (detailMatch) return <ProductDetailPage id={detailMatch.params.id} />;
+
+      return <NotFoundPage />;
+    }
+
+    // ========================================
+    // App
+    // ========================================
+    function App() {
+      return (
+        <Router>
+          <AuthProvider>
+            <CartProvider>
+              <div className="min-h-screen flex flex-col bg-white">
+                <Header />
+                <div className="flex-1">
+                  <AppRoutes />
+                </div>
+                <footer className="border-t border-neutral-200 mt-16">
+                  <div className="max-w-6xl mx-auto px-4 py-8 text-xs text-neutral-400">
+                    © {new Date().getFullYear()} MUJI SHOP. All rights reserved.
+                  </div>
+                </footer>
+              </div>
+            </CartProvider>
+          </AuthProvider>
+        </Router>
+      );
+    }
+
+    // ========================================
+    // Render
+    // ========================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

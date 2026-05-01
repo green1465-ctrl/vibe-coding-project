@@ -1,0 +1,84 @@
+{
+  "source": "notion",
+  "database": "프로젝트(삭제X)",
+  "fetched_at": "2026-05-01T00:00:00.000Z",
+  "projects": [
+    {
+      "id": "35212b31-e4a6-80dc-9eed-d13c2ec6ec49",
+      "name": "로고 브랜딩 가이드 만들기",
+      "icon": "🎯",
+      "status": "계획 중",
+      "priority": "높음",
+      "summary": "",
+      "start": "2026-05-04",
+      "end": null,
+      "url": "https://app.notion.com/p/35212b31e4a680dc9eedd13c2ec6ec49"
+    },
+    {
+      "id": "35212b31-e4a6-8082-9037-e329a04473e0",
+      "name": "프레이머",
+      "icon": "🎯",
+      "status": "계획 중",
+      "priority": "중간",
+      "summary": "",
+      "start": "2026-05-30",
+      "end": null,
+      "url": "https://app.notion.com/p/35212b31e4a680829037e329a04473e0"
+    },
+    {
+      "id": "35212b31-e4a6-81a7-a040-c7067bb87da1",
+      "name": "부트캠프 5주차 - 인증(JWT) & MCP & 리모트 컨트롤",
+      "icon": "🔐",
+      "status": "진행 중",
+      "priority": "높음",
+      "summary": "JWT 기반 인증으로 로그인/회원가입 흐름, MCP로 외부 도구 연결, 리모트 컨트롤로 원격 작업 제어. 현재 과제 진행 중.",
+      "start": "2026-04-18",
+      "end": "2026-04-30",
+      "url": "https://app.notion.com/p/35212b31e4a681a7a040c7067bb87da1"
+    },
+    {
+      "id": "35212b31-e4a6-8174-a245-f0c372e19d0d",
+      "name": "부트캠프 4주차 - DB(JSON/SQLite/Postgres) & Vercel 배포",
+      "icon": "💾",
+      "status": "완료",
+      "priority": "높음",
+      "summary": "데이터 영속화 단계: txt → JSON → SQLite → PostgreSQL(Supabase). 메모장 앱 + todos 미니앱 4종 + 냉장고 재료 + Vercel 배포까지.",
+      "start": "2026-04-11",
+      "end": "2026-04-17",
+      "url": "https://app.notion.com/p/35212b31e4a68174a245f0c372e19d0d"
+    },
+    {
+      "id": "35212b31-e4a6-813e-b35a-ff49ba59eb7d",
+      "name": "부트캠프 3주차 - Node.js / Express / API",
+      "icon": "🟢",
+      "status": "완료",
+      "priority": "높음",
+      "summary": "Node.js → Express 서버 구축. localhost / static 서빙, GET/POST, PokeAPI, NASA APOD, CORS 정책까지 학습.",
+      "start": "2026-04-04",
+      "end": "2026-04-10",
+      "url": "https://app.notion.com/p/35212b31e4a6813eb35aff49ba59eb7d"
+    },
+    {
+      "id": "35212b31-e4a6-8163-bfe9-f3031b63773b",
+      "name": "부트캠프 2주차 - HTML/CSS/JS & React 단일 파일",
+      "icon": "🎨",
+      "status": "완료",
+      "priority": "중간",
+      "summary": "single-react-dev 에이전트로 단일 index.html 프론트엔드 만들기. 나이계산기 미니앱 실습.",
+      "start": "2026-03-28",
+      "end": "2026-04-03",
+      "url": "https://app.notion.com/p/35212b31e4a68163bfe9f3031b63773b"
+    },
+    {
+      "id": "35212b31-e4a6-819c-9f2c-e5d269c95c56",
+      "name": "부트캠프 1주차 - Claude Code 기초 & 환경 설정",
+      "icon": "🤖",
+      "status": "완료",
+      "priority": "중간",
+      "summary": "Claude Code CLI 설치/설정. 프로젝트 vs 퍼스널 설정, 모델(Opus) 선택, CLAUDE.md 메모리, Git 저장 위치 등 기본기.",
+      "start": "2026-03-21",
+      "end": "2026-03-27",
+      "url": "https://app.notion.com/p/35212b31e4a6819c9f2ce5d269c95c56"
+    }
+  ]
+}

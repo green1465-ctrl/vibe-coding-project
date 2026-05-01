@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BAUHAUS BOARD — 익명 커뮤니티</title>
+
+  <!-- Google Fonts: Bauhaus-flavored typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bauRed:    '#E63946',
+            bauYellow: '#F4D03F',
+            bauBlue:   '#1D3557',
+            bauInk:    '#0A0A0A',
+            bauPaper:  '#F5F1E8',
+          },
+          fontFamily: {
+            display: ['"Archivo Black"', 'system-ui', 'sans-serif'],
+            sans:    ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- React 18 + Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    html, body { background: #F5F1E8; }
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      color: #0A0A0A;
+      /* Subtle bauhaus paper texture via radial dots */
+      background-image:
+        radial-gradient(#0A0A0A1A 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: 0 0;
+    }
+
+    .font-display { font-family: 'Archivo Black', system-ui, sans-serif; letter-spacing: -0.02em; }
+
+    /* Hard offset shadow — neo-brutalism / bauhaus */
+    .shadow-hard      { box-shadow: 6px 6px 0 0 #0A0A0A; }
+    .shadow-hard-sm   { box-shadow: 4px 4px 0 0 #0A0A0A; }
+    .shadow-hard-lg   { box-shadow: 10px 10px 0 0 #0A0A0A; }
+    .shadow-hard-red  { box-shadow: 6px 6px 0 0 #E63946; }
+    .shadow-hard-blue { box-shadow: 6px 6px 0 0 #1D3557; }
+
+    .border-ink { border-color: #0A0A0A; }
+
+    /* Button press behavior — shadow collapses on click */
+    .btn-press { transition: transform 80ms ease, box-shadow 80ms ease; }
+    .btn-press:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 #0A0A0A; }
+
+    /* CSS triangle for bauhaus geometric overlay */
+    .tri-down {
+      width: 0; height: 0;
+      border-left: 28px solid transparent;
+      border-right: 28px solid transparent;
+      border-top: 44px solid #1D3557;
+    }
+    .tri-up-red {
+      width: 0; height: 0;
+      border-left: 24px solid transparent;
+      border-right: 24px solid transparent;
+      border-bottom: 38px solid #E63946;
+    }
+    .tri-right-yellow {
+      width: 0; height: 0;
+      border-top: 22px solid transparent;
+      border-bottom: 22px solid transparent;
+      border-left: 36px solid #F4D03F;
+    }
+
+    /* Half-circle (bauhaus signature shape) */
+    .half-circle-top {
+      border-top-left-radius: 9999px;
+      border-top-right-radius: 9999px;
+    }
+
+    /* Diagonal stripe filler */
+    .stripes-ink {
+      background-image: repeating-linear-gradient(
+        45deg, #0A0A0A, #0A0A0A 6px, transparent 6px, transparent 12px
+      );
+    }
+
+    /* Header marquee-ish underline */
+    .ink-rule { height: 6px; background: #0A0A0A; }
+
+    /* Scrollbar (chromium) */
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: #F5F1E8; border-left: 2px solid #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #1D3557; border: 2px solid #0A0A0A; }
+
+    /* Selection */
+    ::selection { background: #F4D03F; color: #0A0A0A; }
+
+    /* List row hover — bauhaus yellow wash */
+    .row-link {
+      transition: background-color 80ms ease, transform 80ms ease;
+      cursor: pointer;
+    }
+    .row-link:hover { background-color: #F4D03F; }
+    .row-link:active { transform: translate(2px, 2px); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="env,react">
+
+    // ========================================
+    // React Hooks
+    // ========================================
+    const { useState, useMemo, useEffect, useRef } = React;
+
+    // ========================================
+    // Utilities
+    // ========================================
+    function timeAgo(date) {
+      const now = new Date();
+      const diff = Math.max(0, Math.floor((now - new Date(date)) / 1000));
+      if (diff < 10)        return '방금 전';
+      if (diff < 60)        return `${diff}초 전`;
+      if (diff < 3600)      return `${Math.floor(diff / 60)}분 전`;
+      if (diff < 86400)     return `${Math.floor(diff / 3600)}시간 전`;
+      if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}일 전`;
+      const d = new Date(date);
+      return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+    }
+
+    const CATEGORIES = [
+      { key: 'all',    label: '전체',   color: '#0A0A0A' },
+      { key: 'free',   label: '자유',   color: '#E63946' },
+      { key: 'study',  label: '공부',   color: '#1D3557' },
+      { key: 'food',   label: '먹방',   color: '#F4D03F' },
+      { key: 'vent',   label: '한탄',   color: '#0A0A0A' },
+    ];
+
+    function categoryMeta(key) {
+      return CATEGORIES.find(c => c.key === key) || CATEGORIES[0];
+    }
+
+    // ========================================
+    // Hash routing — '#/' (list) | '#/post/:id' (detail)
+    // ========================================
+    function parseHash(hash) {
+      const h = (hash || '').replace(/^#/, '');
+      if (!h || h === '/' || h === '') return { name: 'list' };
+      const m = h.match(/^\/post\/(\d+)$/);
+      if (m) return { name: 'detail', id: m[1] };
+      return { name: 'list' };
+    }
+
+    function useHashRoute() {
+      const [route, setRoute] = useState(() => parseHash(window.location.hash));
+      useEffect(() => {
+        function onChange() { setRoute(parseHash(window.location.hash)); }
+        window.addEventListener('hashchange', onChange);
+        return () => window.removeEventListener('hashchange', onChange);
+      }, []);
+      return route;
+    }
+
+    function navigate(hash) {
+      // hash should start with '#/'
+      if (window.location.hash === hash) {
+        // force re-render anyway by dispatching event
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      } else {
+        window.location.hash = hash;
+      }
+    }
+
+    // ========================================
+    // API helpers — token-aware
+    // ========================================
+    const TOKEN_KEY = 'community.token';
+
+    function getToken() {
+      try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
+    }
+    function setToken(t) {
+      try {
+        if (t) localStorage.setItem(TOKEN_KEY, t);
+        else localStorage.removeItem(TOKEN_KEY);
+      } catch {}
+    }
+
+    async function readBody(res) {
+      const text = await res.text().catch(() => '');
+      if (!text) return null;
+      try { return JSON.parse(text); } catch { return text; }
+    }
+
+    async function authFetch(path, opts = {}) {
+      const headers = { ...(opts.headers || {}) };
+      if (opts.body && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+      const tok = getToken();
+      if (tok) headers['Authorization'] = `Bearer ${tok}`;
+      const res = await fetch(path, { ...opts, headers });
+      const body = await readBody(res);
+      if (!res.ok) {
+        const msg = (body && typeof body === 'object' && body.error) ? body.error
+                  : (typeof body === 'string' && body) ? body
+                  : `${opts.method || 'GET'} ${path} failed (${res.status})`;
+        const err = new Error(msg);
+        err.status = res.status;
+        throw err;
+      }
+      return body;
+    }
+
+    async function apiGet(path)            { return authFetch(path, { method: 'GET' }); }
+    async function apiPost(path, body)     { return authFetch(path, { method: 'POST',  body: body == null ? undefined : JSON.stringify(body) }); }
+    async function apiPatch(path, body)    { return authFetch(path, { method: 'PATCH', body: body == null ? undefined : JSON.stringify(body) }); }
+    async function apiDelete(path)         { return authFetch(path, { method: 'DELETE' }); }
+
+    // ========================================
+    // Design System: Geometric Decorations
+    // ========================================
+    function GeoCircle({ color = '#E63946', size = 60, className = '', style = {} }) {
+      return (
+        <div
+          className={`rounded-full border-[3px] border-ink ${className}`}
+          style={{ width: size, height: size, background: color, ...style }}
+          aria-hidden="true"
+        />
+      );
+    }
+
+    function GeoSquare({ color = '#F4D03F', size = 60, className = '', style = {} }) {
+      return (
+        <div
+          className={`border-[3px] border-ink ${className}`}
+          style={{ width: size, height: size, background: color, ...style }}
+          aria-hidden="true"
+        />
+      );
+    }
+
+    function GeoTriangle({ variant = 'down', className = '', style = {} }) {
+      const cls = variant === 'down' ? 'tri-down' : variant === 'up' ? 'tri-up-red' : 'tri-right-yellow';
+      return <div className={`${cls} ${className}`} style={style} aria-hidden="true" />;
+    }
+
+    function GeoHalfCircle({ color = '#1D3557', size = 80, className = '', style = {} }) {
+      return (
+        <div
+          className={`half-circle-top border-[3px] border-ink border-b-0 ${className}`}
+          style={{ width: size, height: size / 2, background: color, ...style }}
+          aria-hidden="true"
+        />
+      );
+    }
+
+    // ========================================
+    // Design System: Buttons / Inputs / Card
+    // ========================================
+    function Button({
+      children, onClick, type = 'button', disabled = false,
+      variant = 'primary', size = 'md', className = '',
+    }) {
+      const variants = {
+        primary:   'bg-bauRed text-white',
+        secondary: 'bg-bauYellow text-bauInk',
+        dark:      'bg-bauInk text-white',
+        ghost:     'bg-bauPaper text-bauInk',
+        blue:      'bg-bauBlue text-white',
+      };
+      const sizes = {
+        sm: 'px-3 py-1.5 text-sm',
+        md: 'px-5 py-2.5 text-base',
+        lg: 'px-7 py-3.5 text-lg',
+      };
+      return (
+        <button
+          type={type}
+          onClick={onClick}
+          disabled={disabled}
+          className={[
+            'btn-press inline-flex items-center justify-center gap-2',
+            'border-[3px] border-ink shadow-hard-sm font-display uppercase tracking-wider',
+            variants[variant], sizes[size],
+            disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
+            className,
+          ].join(' ')}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    function Input({ label, value, onChange, placeholder, maxLength, className = '' }) {
+      return (
+        <label className={`block ${className}`}>
+          {label && (
+            <span className="block font-display uppercase text-sm tracking-widest mb-2">
+              {label}
+            </span>
+          )}
+          <input
+            type="text"
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            maxLength={maxLength}
+            className="w-full bg-white border-[3px] border-ink px-4 py-3 font-sans text-base
+                       focus:outline-none focus:bg-bauYellow placeholder:text-neutral-500"
+          />
+        </label>
+      );
+    }
+
+    function Textarea({ label, value, onChange, placeholder, maxLength, rows = 4, className = '' }) {
+      return (
+        <label className={`block ${className}`}>
+          {label && (
+            <span className="block font-display uppercase text-sm tracking-widest mb-2">
+              {label}
+            </span>
+          )}
+          <textarea
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            maxLength={maxLength}
+            rows={rows}
+            className="w-full bg-white border-[3px] border-ink px-4 py-3 font-sans text-base resize-none
+                       focus:outline-none focus:bg-bauYellow placeholder:text-neutral-500"
+          />
+          {typeof maxLength === 'number' && (
+            <div className="mt-1 text-right text-xs font-display tracking-widest text-neutral-600">
+              {value.length} / {maxLength}
+            </div>
+          )}
+        </label>
+      );
+    }
+
+    function CategoryPill({ category, active = false, onClick, count }) {
+      const meta = categoryMeta(category);
+      const bg = active ? meta.color : '#F5F1E8';
+      const fg = active
+        ? (meta.key === 'food' ? '#0A0A0A' : '#FFFFFF')
+        : '#0A0A0A';
+      return (
+        <button
+          onClick={onClick}
+          className="btn-press inline-flex items-center gap-2 border-[3px] border-ink shadow-hard-sm
+                     px-4 py-2 font-display uppercase tracking-wider text-sm"
+          style={{ background: bg, color: fg }}
+        >
+          <span>{meta.label}</span>
+          {typeof count === 'number' && (
+            <span
+              className="inline-flex items-center justify-center min-w-[24px] h-[22px] px-1.5 text-xs border-[2px] border-ink"
+              style={{ background: active ? '#FFFFFF' : '#F4D03F', color: '#0A0A0A' }}
+            >
+              {count}
+            </span>
+          )}
+        </button>
+      );
+    }
+
+    // ========================================
+    // Layout: Header
+    // ========================================
+    function Header({ totalCount, currentUser, onLogin, onSignup, onLogout }) {
+      return (
+        <header className="relative border-b-[6px] border-ink bg-bauPaper overflow-hidden">
+          <div className="absolute -top-8 -right-8 hidden md:block">
+            <GeoCircle color="#E63946" size={180} />
+          </div>
+          <div className="absolute top-6 right-44 hidden lg:block">
+            <GeoSquare color="#1D3557" size={70} style={{ transform: 'rotate(12deg)' }} />
+          </div>
+          <div className="absolute bottom-0 right-56 hidden md:block">
+            <GeoTriangle variant="up" />
+          </div>
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 hidden md:block">
+            <GeoHalfCircle color="#F4D03F" size={120} />
+          </div>
+
+          <div className="absolute top-4 right-4 md:top-6 md:right-8 z-10 flex items-center gap-2">
+            {currentUser ? (
+              <>
+                <span className="hidden sm:inline-flex items-center gap-2 bg-white border-[3px] border-ink shadow-hard-sm px-3 py-2 font-display uppercase tracking-widest text-xs">
+                  <span className="w-2.5 h-2.5 rounded-full bg-bauRed border-[2px] border-ink" />
+                  {currentUser.displayName}
+                </span>
+                <Button onClick={onLogout} variant="dark" size="sm">▸ Logout</Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={onLogin} variant="dark" size="sm">▸ Log in</Button>
+                <Button onClick={onSignup} variant="secondary" size="sm">▸ Sign up</Button>
+              </>
+            )}
+          </div>
+
+          <div
+            className="max-w-7xl mx-auto px-6 md:px-10 pt-10 pb-8 relative cursor-pointer"
+            onClick={() => navigate('#/')}
+            title="목록으로"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <GeoCircle color="#F4D03F" size={28} />
+              <GeoSquare color="#1D3557" size={28} />
+              <GeoTriangle variant="up" />
+              <span className="ml-2 font-display uppercase tracking-[0.3em] text-xs">
+                Est. 2026 · 5주차 프로젝트
+              </span>
+            </div>
+
+            <h1 className="font-display uppercase leading-[0.85] text-bauInk
+                           text-[64px] sm:text-[96px] md:text-[128px] lg:text-[160px]">
+              <span className="block">BAUHAUS</span>
+              <span className="block">
+                <span className="bg-bauRed text-white px-3">BOARD</span>
+                <span className="text-bauBlue">.</span>
+              </span>
+            </h1>
+
+            <div className="ink-rule mt-6 mb-4 max-w-3xl" />
+
+            <p className="font-sans text-base md:text-lg max-w-2xl">
+              모두가 익명. 누구나 솔직하게.
+              <span className="font-display uppercase tracking-widest mx-2">|</span>
+              현재 <span className="font-display">{totalCount}</span>개의 글이 올라와 있어요.
+            </p>
+          </div>
+        </header>
+      );
+    }
+
+    // ========================================
+    // Auth Modal — login / signup toggle
+    // ========================================
+    function AuthModal({ initialMode = 'login', onClose, onAuthSuccess }) {
+      const [mode, setMode]               = useState(initialMode);
+      const [email, setEmail]             = useState('');
+      const [password, setPassword]       = useState('');
+      const [displayName, setDisplayName] = useState('');
+      const [busy, setBusy]               = useState(false);
+      const [err, setErr]                 = useState(null);
+
+      const isSignup = mode === 'signup';
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        setErr(null);
+        if (!email.trim() || !password) {
+          setErr('이메일과 비밀번호를 입력해주세요.');
+          return;
+        }
+        setBusy(true);
+        try {
+          const path = isSignup ? '/api/auth/signup' : '/api/auth/login';
+          const body = isSignup
+            ? { email: email.trim(), password, displayName: displayName.trim() || undefined }
+            : { email: email.trim(), password };
+          const res = await apiPost(path, body);
+          if (!res || !res.token || !res.user) {
+            throw new Error('서버 응답이 올바르지 않습니다.');
+          }
+          setToken(res.token);
+          onAuthSuccess(res.user);
+        } catch (e) {
+          setErr(e.message || '인증에 실패했어요.');
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      return (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: 'rgba(10,10,10,0.78)' }}
+          onClick={onClose}
+        >
+          <div
+            className="relative bg-bauPaper border-[4px] border-ink shadow-hard-lg w-full max-w-md p-6 md:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute -top-5 -left-5">
+              <GeoCircle color="#E63946" size={40} />
+            </div>
+            <div className="absolute -top-4 right-10 hidden sm:block">
+              <GeoSquare color="#F4D03F" size={32} style={{ transform: 'rotate(15deg)' }} />
+            </div>
+            <div className="absolute -bottom-4 -right-4">
+              <GeoTriangle variant="up" />
+            </div>
+
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-3 h-8 bg-bauBlue border-[2px] border-ink" />
+              <h2 className="font-display uppercase text-2xl tracking-tight">
+                {isSignup ? '회원가입' : '로그인'}
+              </h2>
+            </div>
+            <div className="ink-rule my-3 max-w-[120px]" />
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <Input
+                label="이메일"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                maxLength={120}
+              />
+              <Input
+                label={`비밀번호${isSignup ? ' (6자 이상)' : ''}`}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="******"
+                maxLength={120}
+              />
+              <style>{`
+                .pw-mask input { -webkit-text-security: disc; text-security: disc; }
+              `}</style>
+              {isSignup && (
+                <Input
+                  label="표시 이름 (선택)"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="비우면 이메일 앞부분으로 자동 설정"
+                  maxLength={40}
+                />
+              )}
+
+              {err && (
+                <div className="bg-bauRed text-white border-[3px] border-ink px-3 py-2 font-display uppercase tracking-widest text-xs">
+                  ⚠ {err}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-3 pt-1">
+                <button
+                  type="button"
+                  className="font-display uppercase tracking-widest text-xs underline underline-offset-4"
+                  onClick={() => { setErr(null); setMode(isSignup ? 'login' : 'signup'); }}
+                >
+                  {isSignup ? '이미 계정이 있어요 · 로그인' : '계정이 없어요 · 회원가입'}
+                </button>
+                <div className="flex items-center gap-2">
+                  <Button onClick={onClose} variant="ghost" size="sm" type="button">취소</Button>
+                  <Button type="submit" disabled={busy} variant="primary" size="md">
+                    {busy ? '처리 중…' : (isSignup ? '▸ 가입' : '▸ 로그인')}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Composer (글 작성) — gated by auth
+    // ========================================
+    function ComposerGate({ currentUser, onLogin, children }) {
+      if (currentUser) return children;
+      return (
+        <section className="relative bg-white border-[4px] border-ink shadow-hard-lg p-6 md:p-8">
+          <div className="absolute -top-5 -left-5">
+            <GeoCircle color="#1D3557" size={40} />
+          </div>
+          <div className="absolute -top-4 right-10 hidden sm:block">
+            <GeoSquare color="#E63946" size={32} style={{ transform: 'rotate(15deg)' }} />
+          </div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-3 h-8 bg-bauBlue border-[2px] border-ink" />
+            <h2 className="font-display uppercase text-2xl md:text-3xl tracking-tight">
+              새 글 쓰기
+            </h2>
+          </div>
+          <p className="font-sans text-sm md:text-base mb-4">
+            로그인 후 작성할 수 있습니다. 좋아요는 비로그인도 가능해요.
+          </p>
+          <Button onClick={onLogin} variant="primary" size="lg">▸ 로그인하기</Button>
+        </section>
+      );
+    }
+
+    function Composer({ onSubmit, currentUser }) {
+      const [nickname, setNickname]  = useState('');
+      const [title, setTitle]        = useState('');
+      const [content, setContent]    = useState('');
+      const [category, setCategory]  = useState('free');
+
+      const trimmedTitle = title.trim();
+      const trimmedContent = content.trim();
+      const canSubmit =
+        trimmedTitle.length >= 1 && trimmedTitle.length <= 80 &&
+        trimmedContent.length >= 1 && trimmedContent.length <= 280;
+      const displayName = currentUser ? currentUser.displayName : '';
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        if (!canSubmit) return;
+        onSubmit({
+          nickname: nickname.trim(),
+          title: trimmedTitle,
+          content: trimmedContent,
+          category,
+        });
+        setNickname('');
+        setTitle('');
+        setContent('');
+        setCategory('free');
+      }
+
+      return (
+        <section className="relative bg-white border-[4px] border-ink shadow-hard-lg p-6 md:p-8">
+          <div className="absolute -top-5 -left-5">
+            <GeoCircle color="#E63946" size={40} />
+          </div>
+          <div className="absolute -top-4 right-10 hidden sm:block">
+            <GeoSquare color="#F4D03F" size={32} style={{ transform: 'rotate(15deg)' }} />
+          </div>
+
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-3 h-8 bg-bauRed border-[2px] border-ink" />
+            <h2 className="font-display uppercase text-2xl md:text-3xl tracking-tight">
+              새 글 쓰기
+            </h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-1">
+              <Input
+                label="닉네임 (선택)"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder={`비우면 ${displayName || '내 표시 이름'}`}
+                maxLength={20}
+              />
+              <div className="mt-4">
+                <span className="block font-display uppercase text-sm tracking-widest mb-2">
+                  카테고리
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.filter(c => c.key !== 'all').map(c => (
+                    <button
+                      key={c.key}
+                      type="button"
+                      onClick={() => setCategory(c.key)}
+                      className="btn-press border-[3px] border-ink px-3 py-1.5 font-display uppercase
+                                 tracking-wider text-xs shadow-hard-sm"
+                      style={{
+                        background: category === c.key ? c.color : '#FFFFFF',
+                        color: category === c.key
+                          ? (c.key === 'food' ? '#0A0A0A' : '#FFFFFF')
+                          : '#0A0A0A',
+                      }}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 flex flex-col gap-4">
+              <Input
+                label="제목"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="포스터처럼, 한 줄로 (최대 80자)"
+                maxLength={80}
+              />
+              <Textarea
+                label="내용"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="여기는 익명입니다. 마음껏 적어보세요…"
+                maxLength={280}
+                rows={5}
+              />
+              <div className="flex items-center justify-between">
+                <p className="font-sans text-sm text-neutral-700">
+                  <span className="font-display uppercase tracking-widest mr-1">Tip</span>
+                  · 닉네임 비우면 <b>{displayName || '표시 이름'}</b> 으로 표시됩니다.
+                </p>
+                <Button type="submit" disabled={!canSubmit} variant="primary" size="lg">
+                  ▸ 게시
+                </Button>
+              </div>
+            </div>
+          </form>
+        </section>
+      );
+    }
+
+    // ========================================
+    // Post Row (목록 행)
+    // ========================================
+    function PostRow({ post, onLike, onOpen, currentUser, index }) {
+      const meta = categoryMeta(post.category);
+      const accents = ['#E63946', '#F4D03F', '#1D3557', '#0A0A0A'];
+      const accent = accents[index % accents.length];
+
+      const [, force] = useState(0);
+      useEffect(() => {
+        const id = setInterval(() => force(t => t + 1), 30000);
+        return () => clearInterval(id);
+      }, []);
+
+      const isOwner = !!(currentUser
+        && post.user_id != null
+        && String(post.user_id) === String(currentUser.id));
+
+      function handleLikeClick(e) {
+        e.stopPropagation();
+        onLike(post.id);
+      }
+
+      return (
+        <div
+          className="row-link relative bg-white border-b-[4px] border-ink px-5 md:px-6 py-5 md:py-6 flex items-center gap-4 md:gap-6"
+          onClick={() => onOpen(post.id)}
+          role="link"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(post.id); } }}
+        >
+          {/* category color strip on left */}
+          <div
+            className="absolute top-0 left-0 h-full w-[8px] border-r-[3px] border-ink"
+            style={{ background: meta.color }}
+            aria-hidden="true"
+          />
+
+          {/* index marker */}
+          <div
+            className="hidden sm:flex shrink-0 items-center justify-center w-12 h-12 border-[3px] border-ink font-display text-lg"
+            style={{ background: accent, color: accent === '#F4D03F' ? '#0A0A0A' : '#FFFFFF' }}
+            aria-hidden="true"
+          >
+            {String(index + 1).padStart(2, '0')}
+          </div>
+
+          {/* main: title + meta */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span
+                className="inline-block border-[2px] border-ink px-2 py-0.5 text-[11px] font-display uppercase tracking-widest"
+                style={{
+                  background: meta.color,
+                  color: meta.key === 'food' ? '#0A0A0A' : '#FFFFFF',
+                }}
+              >
+                {meta.label}
+              </span>
+              {isOwner && (
+                <span
+                  className="inline-block border-[2px] border-ink bg-bauYellow text-bauInk px-2 py-0.5 text-[11px] font-display uppercase tracking-widest"
+                >
+                  MY
+                </span>
+              )}
+              <span className="text-xs font-sans text-neutral-700">
+                <b className="font-display uppercase tracking-wide">{post.nickname}</b>
+                <span className="mx-1.5 text-neutral-400">·</span>
+                {timeAgo(post.created_at)}
+              </span>
+            </div>
+
+            <h3 className="font-display uppercase text-bauInk tracking-tight leading-[1.05]
+                           text-xl md:text-2xl lg:text-[28px] truncate">
+              {post.title}
+            </h3>
+          </div>
+
+          {/* like button (stops propagation) */}
+          <button
+            onClick={handleLikeClick}
+            className="btn-press shrink-0 inline-flex items-center gap-2 border-[3px] border-ink
+                       bg-bauYellow shadow-hard-sm px-3 py-1.5 font-display uppercase tracking-widest text-sm"
+            aria-label="좋아요"
+          >
+            <span aria-hidden="true">♥</span>
+            <span
+              className="inline-flex items-center justify-center min-w-[28px] h-[22px] px-1
+                         border-[2px] border-ink bg-white text-bauInk"
+            >
+              {post.likes}
+            </span>
+          </button>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Sidebar (통계 + 카테고리 필터)
+    // ========================================
+    function Sidebar({ posts, activeCategory, onSelectCategory }) {
+      const totals = useMemo(() => {
+        const map = { all: posts.length };
+        for (const c of CATEGORIES) if (c.key !== 'all') map[c.key] = 0;
+        for (const p of posts) map[p.category] = (map[p.category] || 0) + 1;
+        return map;
+      }, [posts]);
+
+      const totalLikes = useMemo(
+        () => posts.reduce((s, p) => s + (p.likes || 0), 0),
+        [posts]
+      );
+
+      const topPost = useMemo(() => {
+        if (posts.length === 0) return null;
+        return [...posts].sort((a, b) => b.likes - a.likes)[0];
+      }, [posts]);
+
+      return (
+        <aside className="space-y-6">
+          {/* Stats */}
+          <div className="relative bg-bauBlue text-white border-[4px] border-ink shadow-hard p-5">
+            <div className="absolute -top-4 -right-4">
+              <GeoCircle color="#F4D03F" size={36} />
+            </div>
+            <h3 className="font-display uppercase tracking-widest text-sm mb-3">통계</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white text-bauInk border-[3px] border-ink p-3">
+                <div className="text-[11px] font-display uppercase tracking-widest">전체 글</div>
+                <div className="font-display text-3xl leading-none mt-1">{posts.length}</div>
+              </div>
+              <div className="bg-bauYellow text-bauInk border-[3px] border-ink p-3">
+                <div className="text-[11px] font-display uppercase tracking-widest">좋아요</div>
+                <div className="font-display text-3xl leading-none mt-1">{totalLikes}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Categories */}
+          <div className="relative bg-white border-[4px] border-ink shadow-hard p-5">
+            <div className="absolute -top-4 -left-4">
+              <GeoSquare color="#E63946" size={36} style={{ transform: 'rotate(15deg)' }} />
+            </div>
+            <h3 className="font-display uppercase tracking-widest text-sm mb-3">카테고리</h3>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map(c => (
+                <CategoryPill
+                  key={c.key}
+                  category={c.key}
+                  active={activeCategory === c.key}
+                  onClick={() => onSelectCategory(c.key)}
+                  count={totals[c.key] || 0}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Top post */}
+          {topPost && (
+            <div className="relative bg-bauRed text-white border-[4px] border-ink shadow-hard p-5">
+              <div className="absolute -top-4 -right-4">
+                <GeoTriangle variant="down" />
+              </div>
+              <h3 className="font-display uppercase tracking-widest text-sm mb-3">
+                ★ 인기 글
+              </h3>
+              <button
+                className="block w-full text-left bg-white text-bauInk border-[3px] border-ink p-3 hover:bg-bauYellow transition-colors"
+                onClick={() => navigate(`#/post/${topPost.id}`)}
+              >
+                <div className="font-display uppercase text-sm mb-1">{topPost.nickname}</div>
+                <div className="font-display uppercase text-base leading-tight break-words line-clamp-2">
+                  {topPost.title}
+                </div>
+                <div className="mt-2 inline-flex items-center gap-1 border-[2px] border-ink bg-bauYellow px-2 py-0.5 font-display text-xs">
+                  ♥ {topPost.likes}
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* Manifesto block */}
+          <div className="relative bg-bauYellow border-[4px] border-ink shadow-hard p-5">
+            <div className="font-display uppercase text-2xl leading-none mb-2">FORM<br />FOLLOWS<br />FUNCTION.</div>
+            <div className="ink-rule my-3" />
+            <p className="text-xs font-display uppercase tracking-widest">
+              · Bauhaus Board / 1919–2026<br />
+              · 빨강 · 노랑 · 파랑 · 검정
+            </p>
+          </div>
+        </aside>
+      );
+    }
+
+    // ========================================
+    // Footer
+    // ========================================
+    function Footer() {
+      return (
+        <footer className="relative mt-16 border-t-[6px] border-ink bg-bauInk text-bauPaper overflow-hidden">
+          <div className="absolute -bottom-10 -left-10">
+            <GeoCircle color="#F4D03F" size={140} />
+          </div>
+          <div className="absolute -top-6 right-20 hidden md:block">
+            <GeoSquare color="#E63946" size={70} style={{ transform: 'rotate(8deg)' }} />
+          </div>
+
+          <div className="max-w-7xl mx-auto px-6 md:px-10 py-10 relative grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <div className="font-display uppercase text-3xl leading-none">BAUHAUS</div>
+              <div className="font-display uppercase text-3xl leading-none">BOARD.</div>
+              <div className="ink-rule bg-bauPaper my-3 max-w-[120px]" />
+              <p className="text-xs font-display uppercase tracking-widest">
+                Anonymous · Geometric · Honest
+              </p>
+            </div>
+            <div className="text-sm font-sans">
+              <div className="font-display uppercase tracking-widest text-xs mb-2">규칙</div>
+              <ul className="space-y-1 text-bauPaper/80">
+                <li>· 서로 존중. 욕설 금지.</li>
+                <li>· 개인정보 노출 금지.</li>
+                <li>· 정치/광고 게시물 자제.</li>
+              </ul>
+            </div>
+            <div className="text-sm font-sans">
+              <div className="font-display uppercase tracking-widest text-xs mb-2">색</div>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-bauRed border-[2px] border-bauPaper" />
+                <div className="w-7 h-7 bg-bauYellow border-[2px] border-bauPaper" />
+                <div className="w-7 h-7 bg-bauBlue border-[2px] border-bauPaper" />
+                <div className="w-7 h-7 bg-bauInk border-[2px] border-bauPaper" />
+                <div className="w-7 h-7 bg-bauPaper border-[2px] border-bauPaper" />
+              </div>
+              <div className="mt-4 text-xs text-bauPaper/70">
+                © 2026 Week-5 Project · Single index.html
+              </div>
+            </div>
+          </div>
+        </footer>
+      );
+    }
+
+    // ========================================
+    // Loading / Error states (Bauhaus tone)
+    // ========================================
+    function LoadingBlock() {
+      return (
+        <div className="relative bg-bauInk text-bauPaper border-[4px] border-ink shadow-hard p-10 text-center">
+          <div className="absolute -top-4 -left-4">
+            <GeoCircle color="#F4D03F" size={36} />
+          </div>
+          <div className="absolute -top-4 -right-4">
+            <GeoSquare color="#E63946" size={36} style={{ transform: 'rotate(15deg)' }} />
+          </div>
+          <div className="font-display uppercase tracking-[0.4em] text-2xl">
+            LOADING…
+          </div>
+          <div className="ink-rule bg-bauPaper my-4 max-w-[160px] mx-auto" />
+          <p className="text-xs font-display uppercase tracking-widest text-bauPaper/80">
+            서버에서 글을 가져오고 있어요
+          </p>
+        </div>
+      );
+    }
+
+    function ErrorBlock({ message, onRetry }) {
+      return (
+        <div className="relative bg-bauRed text-white border-[4px] border-ink shadow-hard p-6">
+          <div className="absolute -top-4 -right-4">
+            <GeoTriangle variant="down" />
+          </div>
+          <div className="font-display uppercase tracking-widest text-lg mb-2">
+            ⚠ ERROR
+          </div>
+          <div className="bg-white text-bauInk border-[3px] border-ink p-3 font-sans text-sm break-words">
+            {message}
+          </div>
+          {onRetry && (
+            <div className="mt-4">
+              <Button onClick={onRetry} variant="dark" size="sm">
+                ▸ 다시 시도
+              </Button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ========================================
+    // Detail View — full post on its own page
+    // ========================================
+    function DetailView({ id, currentUser, onBack, onAfterDelete, onAfterUpdate }) {
+      const [post, setPost]       = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError]     = useState(null);
+
+      const [editing, setEditing]       = useState(false);
+      const [draftTitle, setDraftTitle] = useState('');
+      const [draftContent, setDraftContent] = useState('');
+      const [draftCategory, setDraftCategory] = useState('free');
+      const [busy, setBusy]             = useState(false);
+      const [errMsg, setErrMsg]         = useState(null);
+
+      // tick — for relative timestamps
+      const [, force] = useState(0);
+      useEffect(() => {
+        const tid = setInterval(() => force(t => t + 1), 30000);
+        return () => clearInterval(tid);
+      }, []);
+
+      async function load() {
+        setLoading(true);
+        setError(null);
+        try {
+          const data = await apiGet(`/api/posts/${id}`);
+          setPost(data);
+        } catch (e) {
+          setError(e.message || '글을 불러오지 못했어요.');
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+
+      if (loading) return <LoadingBlock />;
+      if (error) return <ErrorBlock message={error} onRetry={load} />;
+      if (!post) return null;
+
+      const meta = categoryMeta(post.category);
+      const isOwner = !!(currentUser
+        && post.user_id != null
+        && String(post.user_id) === String(currentUser.id));
+
+      function startEdit() {
+        setDraftTitle(post.title);
+        setDraftContent(post.content);
+        setDraftCategory(post.category);
+        setErrMsg(null);
+        setEditing(true);
+      }
+      function cancelEdit() {
+        setEditing(false);
+        setErrMsg(null);
+      }
+      async function saveEdit() {
+        const t = draftTitle.trim();
+        const c = draftContent.trim();
+        if (t.length < 1 || t.length > 80) {
+          setErrMsg('제목은 1~80자여야 합니다.');
+          return;
+        }
+        if (c.length < 1 || c.length > 280) {
+          setErrMsg('내용은 1~280자여야 합니다.');
+          return;
+        }
+        setBusy(true); setErrMsg(null);
+        try {
+          const updated = await apiPatch(`/api/posts/${post.id}`, {
+            title: t, content: c, category: draftCategory,
+          });
+          setPost(updated);
+          setEditing(false);
+          if (onAfterUpdate) onAfterUpdate(updated);
+        } catch (e) {
+          setErrMsg(e.message || '수정에 실패했어요.');
+        } finally {
+          setBusy(false);
+        }
+      }
+      async function handleDelete() {
+        if (!window.confirm('이 글을 삭제할까요? 되돌릴 수 없어요.')) return;
+        setBusy(true); setErrMsg(null);
+        try {
+          await apiDelete(`/api/posts/${post.id}`);
+          if (onAfterDelete) onAfterDelete(post.id);
+          onBack();
+        } catch (e) {
+          setErrMsg(e.message || '삭제에 실패했어요.');
+          setBusy(false);
+        }
+      }
+      async function handleLike() {
+        try {
+          const updated = await apiPost(`/api/posts/${post.id}/like`);
+          setPost(updated);
+          if (onAfterUpdate) onAfterUpdate(updated);
+        } catch (e) {
+          setErrMsg(e.message || '좋아요에 실패했어요.');
+        }
+      }
+
+      return (
+        <div className="space-y-6">
+          {/* Back button */}
+          <div>
+            <Button onClick={onBack} variant="dark" size="md">▸ 목록으로</Button>
+          </div>
+
+          <article className="relative bg-white border-[4px] border-ink shadow-hard-lg p-6 md:p-10">
+            {/* category strip */}
+            <div
+              className="absolute top-0 left-0 h-full w-[12px] border-r-[3px] border-ink"
+              style={{ background: meta.color }}
+              aria-hidden="true"
+            />
+
+            {/* corner decorations */}
+            <div className="absolute -top-5 -right-5 hidden sm:block">
+              <GeoCircle color="#E63946" size={40} />
+            </div>
+            <div className="absolute -bottom-5 -left-5 hidden sm:block">
+              <GeoSquare color="#1D3557" size={40} style={{ transform: 'rotate(8deg)' }} />
+            </div>
+
+            {/* MY badge */}
+            {isOwner && !editing && (
+              <div
+                className="absolute -top-3 left-10 inline-flex items-center justify-center px-2 h-7
+                           border-[3px] border-ink bg-bauYellow font-display uppercase tracking-widest text-xs text-bauInk"
+              >
+                MY
+              </div>
+            )}
+
+            <div className="pl-4 md:pl-6">
+              {/* category badge */}
+              <div className="mb-4 flex items-center gap-2 flex-wrap">
+                <span
+                  className="inline-block border-[3px] border-ink px-3 py-1 text-xs font-display uppercase tracking-widest"
+                  style={{
+                    background: meta.color,
+                    color: meta.key === 'food' ? '#0A0A0A' : '#FFFFFF',
+                  }}
+                >
+                  {meta.label}
+                </span>
+              </div>
+
+              {!editing ? (
+                <>
+                  {/* title */}
+                  <h1 className="font-display uppercase leading-[0.95] tracking-tight text-bauInk
+                                 text-[40px] sm:text-[56px] md:text-[72px] break-words">
+                    {post.title}
+                  </h1>
+
+                  <div className="ink-rule my-6 max-w-3xl" />
+
+                  {/* meta */}
+                  <div className="flex items-center gap-3 mb-6 flex-wrap">
+                    <span
+                      className="inline-flex items-center justify-center w-11 h-11 border-[3px] border-ink font-display text-lg"
+                      style={{
+                        background: meta.color,
+                        color: meta.key === 'food' ? '#0A0A0A' : '#FFFFFF',
+                      }}
+                    >
+                      {(post.nickname || '?').slice(0, 1).toUpperCase()}
+                    </span>
+                    <div>
+                      <div className="font-display uppercase tracking-wide text-base leading-none">
+                        {post.nickname}
+                      </div>
+                      <div className="text-xs text-neutral-600 mt-1 font-sans">
+                        {timeAgo(post.created_at)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* body */}
+                  <div className="bg-bauPaper border-[3px] border-ink p-5 md:p-6">
+                    <p className="font-sans text-lg md:text-xl leading-[1.8] whitespace-pre-wrap break-words">
+                      {post.content}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <Input
+                    label="제목"
+                    value={draftTitle}
+                    onChange={(e) => setDraftTitle(e.target.value)}
+                    placeholder="포스터처럼, 한 줄로 (최대 80자)"
+                    maxLength={80}
+                  />
+                  <Textarea
+                    label="내용"
+                    value={draftContent}
+                    onChange={(e) => setDraftContent(e.target.value)}
+                    placeholder="수정할 내용"
+                    maxLength={280}
+                    rows={6}
+                  />
+                  <div>
+                    <span className="block font-display uppercase text-xs tracking-widest mb-2">카테고리</span>
+                    <div className="flex flex-wrap gap-2">
+                      {CATEGORIES.filter(c => c.key !== 'all').map(c => (
+                        <button
+                          key={c.key}
+                          type="button"
+                          onClick={() => setDraftCategory(c.key)}
+                          className="btn-press border-[3px] border-ink px-3 py-1.5 font-display uppercase tracking-wider text-xs shadow-hard-sm"
+                          style={{
+                            background: draftCategory === c.key ? c.color : '#FFFFFF',
+                            color: draftCategory === c.key
+                              ? (c.key === 'food' ? '#0A0A0A' : '#FFFFFF')
+                              : '#0A0A0A',
+                          }}
+                        >
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {errMsg && (
+                <div className="mt-4 bg-bauRed text-white border-[3px] border-ink px-3 py-2 font-display uppercase tracking-widest text-xs">
+                  ⚠ {errMsg}
+                </div>
+              )}
+
+              {/* actions */}
+              <div className="mt-8 flex items-center justify-between flex-wrap gap-3">
+                <button
+                  onClick={handleLike}
+                  className="btn-press inline-flex items-center gap-2 border-[3px] border-ink
+                             bg-bauYellow shadow-hard-sm px-4 py-2.5 font-display uppercase tracking-widest text-base"
+                >
+                  <span aria-hidden="true">♥</span>
+                  <span>좋아요</span>
+                  <span className="inline-flex items-center justify-center min-w-[32px] h-[24px] px-1.5
+                                   border-[2px] border-ink bg-white text-bauInk">
+                    {post.likes}
+                  </span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {isOwner && !editing && (
+                    <>
+                      <Button onClick={startEdit} variant="ghost" size="md">▸ 수정</Button>
+                      <Button onClick={handleDelete} variant="dark" size="md" disabled={busy}>▸ 삭제</Button>
+                    </>
+                  )}
+                  {isOwner && editing && (
+                    <>
+                      <Button onClick={cancelEdit} variant="ghost" size="md" disabled={busy}>취소</Button>
+                      <Button onClick={saveEdit} variant="primary" size="md" disabled={busy}>
+                        {busy ? '저장 중…' : '▸ 저장'}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      );
+    }
+
+    // ========================================
+    // List View — composer + sidebar + row list
+    // ========================================
+    function ListView({
+      posts, loading, error, activeCategory, setActiveCategory,
+      currentUser, onLogin, onSubmit, onLike, onOpen, loadPosts,
+    }) {
+      const visiblePosts = useMemo(() => {
+        const filtered = activeCategory === 'all'
+          ? posts
+          : posts.filter(p => p.category === activeCategory);
+        return [...filtered].sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+      }, [posts, activeCategory]);
+
+      return (
+        <>
+          <ComposerGate currentUser={currentUser} onLogin={onLogin}>
+            <Composer onSubmit={onSubmit} currentUser={currentUser} />
+          </ComposerGate>
+
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <section className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-3 h-8 bg-bauBlue border-[2px] border-ink" />
+                <h2 className="font-display uppercase text-2xl md:text-3xl tracking-tight">
+                  피드
+                </h2>
+                <div className="ml-3 inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-bauRed border-[2px] border-ink" />
+                  <span className="w-3 h-3 bg-bauYellow border-[2px] border-ink" />
+                  <span className="w-3 h-3 bg-bauBlue border-[2px] border-ink" />
+                </div>
+                <div className="ml-auto font-display uppercase tracking-widest text-xs text-neutral-700">
+                  {visiblePosts.length}건 · 최신순
+                </div>
+              </div>
+
+              <div className="lg:hidden -mx-1 mb-5 flex flex-wrap gap-2">
+                {CATEGORIES.map(c => (
+                  <CategoryPill
+                    key={c.key}
+                    category={c.key}
+                    active={activeCategory === c.key}
+                    onClick={() => setActiveCategory(c.key)}
+                  />
+                ))}
+              </div>
+
+              {loading ? (
+                <LoadingBlock />
+              ) : error ? (
+                <ErrorBlock message={error} onRetry={loadPosts} />
+              ) : visiblePosts.length === 0 ? (
+                <div className="bg-white border-[4px] border-ink shadow-hard p-10 text-center">
+                  <div className="mx-auto mb-3 w-14 h-14 rounded-full border-[3px] border-ink bg-bauYellow" />
+                  <div className="font-display uppercase tracking-widest">
+                    이 카테고리엔 아직 글이 없어요.
+                  </div>
+                  <p className="mt-2 text-sm text-neutral-700">
+                    위쪽 작성 폼에서 첫 글을 남겨보세요.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white border-[4px] border-ink shadow-hard">
+                  {/* the last row's bottom border doubles with the container border */}
+                  {visiblePosts.map((p, i) => (
+                    <PostRow
+                      key={p.id}
+                      post={p}
+                      onLike={onLike}
+                      onOpen={onOpen}
+                      currentUser={currentUser}
+                      index={i}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <Sidebar
+              posts={posts}
+              activeCategory={activeCategory}
+              onSelectCategory={setActiveCategory}
+            />
+          </div>
+        </>
+      );
+    }
+
+    // ========================================
+    // App
+    // ========================================
+    function App() {
+      const route = useHashRoute();
+
+      const [posts, setPosts]                   = useState([]);
+      const [activeCategory, setActiveCategory] = useState('all');
+      const [loading, setLoading]               = useState(true);
+      const [error, setError]                   = useState(null);
+
+      const [currentUser, setCurrentUser] = useState(null);
+      const [authMode, setAuthMode]       = useState(null);
+
+      // On mount: validate any saved token
+      useEffect(() => {
+        (async () => {
+          const tok = getToken();
+          if (!tok) return;
+          try {
+            const me = await apiGet('/api/auth/me');
+            setCurrentUser(me);
+          } catch {
+            setToken(null);
+            setCurrentUser(null);
+          }
+        })();
+      }, []);
+
+      async function loadPosts() {
+        setLoading(true);
+        setError(null);
+        try {
+          const data = await apiGet('/api/posts');
+          setPosts(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.error(err);
+          setError(err.message || '글을 불러오지 못했어요.');
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      useEffect(() => { loadPosts(); }, []);
+
+      async function handleSubmit({ nickname, title, content, category }) {
+        try {
+          const created = await apiPost('/api/posts', { nickname, title, category, content });
+          // The server returns the full row including content; but list state
+          // shape uses content_preview. Synthesize a compatible row for list:
+          const listShape = {
+            id: created.id,
+            title: created.title,
+            nickname: created.nickname,
+            category: created.category,
+            likes: created.likes,
+            created_at: created.created_at,
+            user_id: created.user_id,
+            content_preview: created.content.length > 60
+              ? created.content.slice(0, 60) + '...'
+              : created.content,
+          };
+          setPosts(prev => [listShape, ...prev]);
+        } catch (err) {
+          console.error(err);
+          setError(err.message || '글 작성에 실패했어요.');
+        }
+      }
+
+      async function handleLike(id) {
+        try {
+          const updated = await apiPost(`/api/posts/${id}/like`);
+          setPosts(prev => prev.map(p =>
+            String(p.id) === String(id)
+              ? {
+                  ...p,
+                  // keep list shape; the server returned full row, so update fields.
+                  title: updated.title,
+                  nickname: updated.nickname,
+                  category: updated.category,
+                  likes: updated.likes,
+                  created_at: updated.created_at,
+                  user_id: updated.user_id,
+                }
+              : p
+          ));
+        } catch (err) {
+          console.error(err);
+          setError(err.message || '좋아요에 실패했어요.');
+        }
+      }
+
+      function handleAuthSuccess(user) {
+        setCurrentUser(user);
+        setAuthMode(null);
+      }
+      function handleLogout() {
+        setToken(null);
+        setCurrentUser(null);
+      }
+
+      function openPost(id) {
+        navigate(`#/post/${id}`);
+      }
+      function backToList() {
+        navigate('#/');
+      }
+
+      // detail-view callbacks bubble back up to keep list in sync
+      function applyUpdated(updated) {
+        setPosts(prev => prev.map(p =>
+          String(p.id) === String(updated.id)
+            ? {
+                ...p,
+                title: updated.title,
+                nickname: updated.nickname,
+                category: updated.category,
+                likes: updated.likes,
+                created_at: updated.created_at,
+                user_id: updated.user_id,
+              }
+            : p
+        ));
+      }
+      function applyDeleted(id) {
+        setPosts(prev => prev.filter(p => String(p.id) !== String(id)));
+      }
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          <Header
+            totalCount={posts.length}
+            currentUser={currentUser}
+            onLogin={() => setAuthMode('login')}
+            onSignup={() => setAuthMode('signup')}
+            onLogout={handleLogout}
+          />
+
+          <main className="max-w-7xl mx-auto px-6 md:px-10 py-10 w-full">
+            {route.name === 'detail' ? (
+              <DetailView
+                id={route.id}
+                currentUser={currentUser}
+                onBack={backToList}
+                onAfterUpdate={applyUpdated}
+                onAfterDelete={applyDeleted}
+              />
+            ) : (
+              <ListView
+                posts={posts}
+                loading={loading}
+                error={error}
+                activeCategory={activeCategory}
+                setActiveCategory={setActiveCategory}
+                currentUser={currentUser}
+                onLogin={() => setAuthMode('login')}
+                onSubmit={handleSubmit}
+                onLike={handleLike}
+                onOpen={openPost}
+                loadPosts={loadPosts}
+              />
+            )}
+          </main>
+
+          <Footer />
+
+          {authMode && (
+            <AuthModal
+              initialMode={authMode}
+              onClose={() => setAuthMode(null)}
+              onAuthSuccess={handleAuthSuccess}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // ========================================
+    // Render
+    // ========================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

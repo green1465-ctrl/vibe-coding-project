@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>가계부 · My Budget Book</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+      min-height: 100vh;
+    }
+    /* Hide spinners on number input */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* Subtle pop-in animation for transaction rows */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up { animation: fadeInUp 0.25s ease-out; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // ========================================
+    // React Hooks Destructuring
+    // ========================================
+    const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+    // ========================================
+    // Constants & Helpers
+    // ========================================
+
+    // Categories — `id` is the internal client-side identifier; `label` is the
+    // value persisted to the database (the schema uses Korean labels, not IDs).
+    // Extra DB-only labels (구독료, 경조사, 주거, etc.) are also defined so seed
+    // rows render with proper emoji/color.
+    const EXPENSE_CATEGORIES = [
+      { id: 'food',         label: '식비',      emoji: '🍽️', color: 'bg-rose-100 text-rose-700',       bar: 'bg-rose-400' },
+      { id: 'transport',    label: '교통',      emoji: '🚗', color: 'bg-sky-100 text-sky-700',         bar: 'bg-sky-400' },
+      { id: 'shopping',     label: '쇼핑',      emoji: '🛍️', color: 'bg-pink-100 text-pink-700',       bar: 'bg-pink-400' },
+      { id: 'cafe',         label: '카페/간식',  emoji: '☕', color: 'bg-amber-100 text-amber-700',     bar: 'bg-amber-400' },
+      { id: 'home',         label: '주거/통신',  emoji: '🏠', color: 'bg-indigo-100 text-indigo-700',   bar: 'bg-indigo-400' },
+      { id: 'home-only',    label: '주거',      emoji: '🏠', color: 'bg-indigo-100 text-indigo-700',   bar: 'bg-indigo-400' },
+      { id: 'subscription', label: '구독료',     emoji: '📺', color: 'bg-indigo-100 text-indigo-700',   bar: 'bg-indigo-500' },
+      { id: 'event',        label: '경조사',     emoji: '💐', color: 'bg-fuchsia-100 text-fuchsia-700', bar: 'bg-fuchsia-400' },
+      { id: 'health',       label: '건강/의료',  emoji: '💊', color: 'bg-emerald-100 text-emerald-700', bar: 'bg-emerald-400' },
+      { id: 'culture',      label: '문화/여가',  emoji: '🎬', color: 'bg-purple-100 text-purple-700',   bar: 'bg-purple-400' },
+      { id: 'etc-out',      label: '기타',      emoji: '📦', color: 'bg-slate-100 text-slate-700',     bar: 'bg-slate-400' },
+    ];
+
+    const INCOME_CATEGORIES = [
+      { id: 'salary',    label: '월급',     emoji: '💼', color: 'bg-blue-100 text-blue-700',       bar: 'bg-blue-400' },
+      { id: 'allowance', label: '용돈',     emoji: '💰', color: 'bg-teal-100 text-teal-700',       bar: 'bg-teal-400' },
+      { id: 'bonus',     label: '보너스',   emoji: '🎁', color: 'bg-green-100 text-green-700',     bar: 'bg-green-400' },
+      { id: 'side',      label: '부수입',   emoji: '✨', color: 'bg-cyan-100 text-cyan-700',       bar: 'bg-cyan-400' },
+      { id: 'etc-in',    label: '기타수입', emoji: '📥', color: 'bg-lime-100 text-lime-700',       bar: 'bg-lime-400' },
+    ];
+
+    // Categories shown in the form (only one entry per display label — '주거'
+    // and '주거/통신' both ship to the same DB label).
+    const FORM_EXPENSE_CATEGORIES = EXPENSE_CATEGORIES.filter(c => c.id !== 'home-only');
+
+    const ALL_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
+    const FALLBACK_CATEGORY = { id: 'unknown', label: '기타', emoji: '📦', color: 'bg-slate-100 text-slate-700', bar: 'bg-slate-400' };
+
+    // Look up by *label* (what the DB stores). Falls back to a neutral style
+    // if the label isn't recognized.
+    const getCategoryByLabel = (label) => {
+      if (!label) return FALLBACK_CATEGORY;
+      return ALL_CATEGORIES.find(c => c.label === label) || { ...FALLBACK_CATEGORY, label };
+    };
+
+    const formatKRW = (n) => {
+      const num = Number(n) || 0;
+      return '₩' + num.toLocaleString('ko-KR');
+    };
+
+    const formatNumberInput = (s) => {
+      const digits = String(s).replace(/[^\d]/g, '');
+      if (!digits) return '';
+      return Number(digits).toLocaleString('ko-KR');
+    };
+
+    const todayISO = () => {
+      const d = new Date();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    };
+
+    const ymKey = (dateStr) => dateStr.slice(0, 7); // 'YYYY-MM'
+
+    const formatYMHeader = (ym) => {
+      const [y, m] = ym.split('-');
+      return `${y}년 ${Number(m)}월`;
+    };
+
+    const formatDateLabel = (dateStr) => {
+      const [y, m, d] = dateStr.split('-');
+      const dt = new Date(Number(y), Number(m) - 1, Number(d));
+      const weekday = ['일', '월', '화', '수', '목', '금', '토'][dt.getDay()];
+      return `${Number(m)}월 ${Number(d)}일 (${weekday})`;
+    };
+
+    const shiftMonth = (ym, delta) => {
+      const [y, m] = ym.split('-').map(Number);
+      const dt = new Date(y, m - 1 + delta, 1);
+      const ny = dt.getFullYear();
+      const nm = String(dt.getMonth() + 1).padStart(2, '0');
+      return `${ny}-${nm}`;
+    };
+
+    // ----------------------------------------------------------------------
+    // API helpers — wrap fetch with consistent error handling
+    // ----------------------------------------------------------------------
+    const api = {
+      async list() {
+        const r = await fetch('/api/transactions');
+        if (!r.ok) throw new Error(`목록 조회 실패 (${r.status})`);
+        const data = await r.json();
+        return data.transactions || [];
+      },
+      async create(payload) {
+        const r = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `등록 실패 (${r.status})`);
+        }
+        const data = await r.json();
+        return data.transaction;
+      },
+      async remove(id) {
+        const r = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+        if (!r.ok && r.status !== 404) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `삭제 실패 (${r.status})`);
+        }
+      },
+      async removeAll() {
+        const r = await fetch('/api/transactions', { method: 'DELETE' });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `전체 삭제 실패 (${r.status})`);
+        }
+      },
+    };
+
+    // The DB stores type as '수입'/'지출' but the UI uses 'income'/'expense'.
+    // These helpers translate at the API boundary.
+    const uiTypeToDb = (t) => (t === 'income' ? '수입' : '지출');
+    const dbTypeToUi = (t) => (t === '수입' ? 'income' : 'expense');
+
+    // ========================================
+    // 🎨 Design System Components
+    // ========================================
+    const Button = ({ variant = 'primary', size = 'md', className = '', children, ...rest }) => {
+      const base = 'inline-flex items-center justify-center font-medium rounded-xl transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-1';
+      const sizes = {
+        sm: 'px-3 py-1.5 text-sm',
+        md: 'px-4 py-2.5 text-sm',
+        lg: 'px-5 py-3 text-base',
+      };
+      const variants = {
+        primary:   'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-200 focus:ring-indigo-400',
+        secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 focus:ring-slate-300',
+        danger:    'bg-rose-500 hover:bg-rose-600 text-white shadow-sm shadow-rose-200 focus:ring-rose-300',
+        ghost:     'bg-transparent hover:bg-slate-100 text-slate-600 focus:ring-slate-200',
+      };
+      return (
+        <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} {...rest}>
+          {children}
+        </button>
+      );
+    };
+
+    const IconButton = ({ className = '', children, ...rest }) => (
+      <button
+        className={`inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 active:scale-95 transition text-slate-500 ${className}`}
+        {...rest}
+      >
+        {children}
+      </button>
+    );
+
+    const Input = ({ label, error, className = '', ...rest }) => (
+      <label className="block">
+        {label && <span className="block text-xs font-medium text-slate-600 mb-1.5">{label}</span>}
+        <input
+          className={`w-full px-3.5 py-2.5 bg-white rounded-xl border ${error ? 'border-rose-300 focus:ring-rose-200' : 'border-slate-200 focus:ring-indigo-200'} text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${className}`}
+          {...rest}
+        />
+        {error && <span className="block text-xs text-rose-500 mt-1">{error}</span>}
+      </label>
+    );
+
+    const Card = ({ className = '', children }) => (
+      <div className={`bg-white rounded-2xl shadow-sm shadow-slate-200/60 border border-slate-100 ${className}`}>
+        {children}
+      </div>
+    );
+
+    const Badge = ({ className = '', children }) => (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
+        {children}
+      </span>
+    );
+
+    const SegmentedToggle = ({ value, onChange, options }) => (
+      <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl">
+        {options.map(opt => {
+          const active = value === opt.value;
+          const activeColor = opt.value === 'income' ? 'bg-white text-blue-600 shadow-sm' : 'bg-white text-rose-600 shadow-sm';
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(opt.value)}
+              className={`py-2 rounded-lg text-sm font-semibold transition ${active ? activeColor : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+
+    // ========================================
+    // 🧩 Layout Components
+    // ========================================
+    const Header = () => (
+      <header className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xl shadow-md shadow-indigo-200">
+            📓
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">나의 가계부</h1>
+            <p className="text-xs text-slate-500">하루하루 모이는 작은 기록</p>
+          </div>
+        </div>
+      </header>
+    );
+
+    // ========================================
+    // 📄 Feature Components
+    // ========================================
+    const MonthSwitcher = ({ ym, onChange }) => {
+      const isCurrent = ym === todayISO().slice(0, 7);
+      return (
+        <Card className="p-3 sm:p-4">
+          <div className="flex items-center justify-between">
+            <IconButton onClick={() => onChange(shiftMonth(ym, -1))} aria-label="이전 달">
+              <span className="text-lg">‹</span>
+            </IconButton>
+            <div className="text-center">
+              <div className="text-xs text-slate-400">선택한 월</div>
+              <div className="text-lg sm:text-xl font-bold text-slate-800">{formatYMHeader(ym)}</div>
+            </div>
+            <IconButton onClick={() => onChange(shiftMonth(ym, 1))} aria-label="다음 달">
+              <span className="text-lg">›</span>
+            </IconButton>
+          </div>
+          {!isCurrent && (
+            <div className="text-center mt-2">
+              <button
+                onClick={() => onChange(todayISO().slice(0, 7))}
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                오늘 달로 이동
+              </button>
+            </div>
+          )}
+        </Card>
+      );
+    };
+
+    const SummaryDashboard = ({ income, expense }) => {
+      const balance = income - expense;
+      const balancePositive = balance >= 0;
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* 수입 */}
+          <Card className="p-4 sm:p-5 relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-blue-50 opacity-70" />
+            <div className="relative">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span>📈</span>
+                <span>이번 달 수입</span>
+              </div>
+              <div className="mt-2 text-xl sm:text-2xl font-bold text-blue-600">
+                +{formatKRW(income)}
+              </div>
+            </div>
+          </Card>
+          {/* 지출 */}
+          <Card className="p-4 sm:p-5 relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-rose-50 opacity-70" />
+            <div className="relative">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span>📉</span>
+                <span>이번 달 지출</span>
+              </div>
+              <div className="mt-2 text-xl sm:text-2xl font-bold text-rose-500">
+                -{formatKRW(expense)}
+              </div>
+            </div>
+          </Card>
+          {/* 잔액 */}
+          <Card className={`p-4 sm:p-5 relative overflow-hidden ${balancePositive ? 'bg-gradient-to-br from-indigo-500 to-purple-600 border-transparent text-white' : 'bg-gradient-to-br from-rose-500 to-orange-500 border-transparent text-white'}`}>
+            <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/20" />
+            <div className="relative">
+              <div className="flex items-center gap-1.5 text-xs opacity-90">
+                <span>💼</span>
+                <span>이번 달 잔액</span>
+              </div>
+              <div className="mt-2 text-xl sm:text-2xl font-bold">
+                {balancePositive ? '' : '-'}{formatKRW(Math.abs(balance))}
+              </div>
+            </div>
+          </Card>
+        </div>
+      );
+    };
+
+    const TransactionForm = ({ onAdd }) => {
+      const [type, setType] = useState('expense');
+      const [date, setDate] = useState(todayISO());
+      const categories = type === 'expense' ? FORM_EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+      const [categoryId, setCategoryId] = useState(categories[0].id);
+      const [amount, setAmount] = useState('');
+      const [memo, setMemo] = useState('');
+      const [error, setError] = useState('');
+      const [submitting, setSubmitting] = useState(false);
+
+      // Reset category when type changes
+      useEffect(() => {
+        const cats = type === 'expense' ? FORM_EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+        setCategoryId(cats[0].id);
+      }, [type]);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        const num = Number(String(amount).replace(/,/g, ''));
+        if (!num || num <= 0) {
+          setError('금액을 입력해 주세요');
+          return;
+        }
+        if (!date) {
+          setError('날짜를 선택해 주세요');
+          return;
+        }
+        const cat = (type === 'expense' ? FORM_EXPENSE_CATEGORIES : INCOME_CATEGORIES)
+          .find(c => c.id === categoryId);
+        if (!cat) {
+          setError('카테고리를 선택해 주세요');
+          return;
+        }
+        setError('');
+        setSubmitting(true);
+        try {
+          await onAdd({
+            date,
+            type,
+            categoryLabel: cat.label, // DB stores Korean label
+            amount: num,
+            memo: memo.trim(),
+          });
+          // Reset (but keep date & type)
+          setAmount('');
+          setMemo('');
+        } catch (err) {
+          setError(err.message || '저장 중 문제가 발생했어요');
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      return (
+        <Card className="p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">✏️</span>
+            <h2 className="font-bold text-slate-800">새 내역 추가</h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <SegmentedToggle
+              value={type}
+              onChange={setType}
+              options={[
+                { value: 'expense', label: '💸 지출' },
+                { value: 'income',  label: '💰 수입' },
+              ]}
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                type="date"
+                label="날짜"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <Input
+                type="text"
+                label="금액 (원)"
+                value={amount}
+                onChange={(e) => setAmount(formatNumberInput(e.target.value))}
+                placeholder="0"
+                inputMode="numeric"
+              />
+            </div>
+
+            <div>
+              <span className="block text-xs font-medium text-slate-600 mb-1.5">카테고리</span>
+              <div className="grid grid-cols-4 gap-1.5">
+                {categories.map(c => {
+                  const active = categoryId === c.id;
+                  return (
+                    <button
+                      type="button"
+                      key={c.id}
+                      onClick={() => setCategoryId(c.id)}
+                      className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border text-xs transition ${active
+                        ? 'border-indigo-300 bg-indigo-50 text-indigo-700 shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}
+                    >
+                      <span className="text-lg leading-none">{c.emoji}</span>
+                      <span className="font-medium">{c.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <Input
+              type="text"
+              label="메모 (선택)"
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder="예: 점심식사, 생일선물"
+              maxLength={40}
+            />
+
+            {error && (
+              <div className="text-xs text-rose-600 bg-rose-50 rounded-lg px-3 py-2">{error}</div>
+            )}
+
+            <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+              {submitting ? '저장 중…' : '＋ 내역 추가하기'}
+            </Button>
+          </form>
+        </Card>
+      );
+    };
+
+    const TransactionItem = ({ tx, onDelete }) => {
+      const cat = getCategoryByLabel(tx.category);
+      const isIncome = tx.type === 'income';
+      return (
+        <div className="group flex items-center gap-3 px-3 py-3 hover:bg-slate-50 rounded-xl transition animate-fade-up">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${cat.color}`}>
+            {cat.emoji}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-slate-800 truncate">{cat.label}</span>
+              {tx.memo && <span className="text-xs text-slate-500 truncate">· {tx.memo}</span>}
+            </div>
+          </div>
+          <div className={`text-sm font-bold tabular-nums ${isIncome ? 'text-blue-600' : 'text-rose-500'}`}>
+            {isIncome ? '+' : '-'}{formatKRW(tx.amount)}
+          </div>
+          <IconButton
+            onClick={() => onDelete(tx.id)}
+            aria-label="삭제"
+            className="opacity-0 group-hover:opacity-100 hover:!bg-rose-100 hover:!text-rose-500"
+          >
+            <span className="text-base">🗑</span>
+          </IconButton>
+        </div>
+      );
+    };
+
+    const TransactionList = ({ transactions, onDelete, filterCategory, onFilterChange }) => {
+      // Group by date (descending). id is a numeric BIGSERIAL from the DB.
+      const groups = useMemo(() => {
+        const map = new Map();
+        transactions
+          .slice()
+          .sort((a, b) => b.date.localeCompare(a.date) || (Number(b.id) - Number(a.id)))
+          .forEach(tx => {
+            if (!map.has(tx.date)) map.set(tx.date, []);
+            map.get(tx.date).push(tx);
+          });
+        return Array.from(map.entries());
+      }, [transactions]);
+
+      // Filter chips key off the Korean label (matches what the DB stores).
+      const filterOptions = [
+        { key: 'all', label: '전체', emoji: '📋' },
+        ...FORM_EXPENSE_CATEGORIES.map(c => ({ key: c.label, label: c.label, emoji: c.emoji })),
+        ...INCOME_CATEGORIES.map(c => ({ key: c.label, label: c.label, emoji: c.emoji })),
+      ];
+
+      return (
+        <Card className="p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">📒</span>
+              <h2 className="font-bold text-slate-800">거래 내역</h2>
+              <Badge className="bg-slate-100 text-slate-600">{transactions.length}건</Badge>
+            </div>
+          </div>
+
+          {/* Category filter chips */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 -mx-1 px-1">
+            {filterOptions.map(opt => {
+              const active = filterCategory === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => onFilterChange(opt.key)}
+                  className={`flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition border ${active
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                >
+                  <span>{opt.emoji}</span>
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {groups.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-5xl mb-3">📭</div>
+              <div className="text-sm font-semibold text-slate-700">아직 등록된 내역이 없어요</div>
+              <div className="text-xs text-slate-500 mt-1">위에서 첫 번째 거래를 추가해 보세요</div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {groups.map(([date, items]) => {
+                const dayIncome = items.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+                const dayExpense = items.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+                return (
+                  <div key={date}>
+                    <div className="flex items-center justify-between px-1 pb-1.5 border-b border-slate-100">
+                      <div className="text-xs font-semibold text-slate-500">{formatDateLabel(date)}</div>
+                      <div className="flex items-center gap-2 text-xs tabular-nums">
+                        {dayIncome > 0 && <span className="text-blue-600">+{formatKRW(dayIncome)}</span>}
+                        {dayExpense > 0 && <span className="text-rose-500">-{formatKRW(dayExpense)}</span>}
+                      </div>
+                    </div>
+                    <div className="mt-1">
+                      {items.map(tx => (
+                        <TransactionItem key={tx.id} tx={tx} onDelete={onDelete} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+      );
+    };
+
+    const CategoryStats = ({ transactions }) => {
+      const expenseStats = useMemo(() => {
+        const expenseTx = transactions.filter(t => t.type === 'expense');
+        const total = expenseTx.reduce((s, t) => s + t.amount, 0);
+        const map = new Map();
+        expenseTx.forEach(t => {
+          map.set(t.category, (map.get(t.category) || 0) + t.amount);
+        });
+        const arr = Array.from(map.entries())
+          .map(([label, amount]) => ({ key: label, amount, cat: getCategoryByLabel(label), pct: total ? (amount / total) * 100 : 0 }))
+          .sort((a, b) => b.amount - a.amount);
+        return { total, arr };
+      }, [transactions]);
+
+      return (
+        <Card className="p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">📊</span>
+            <h2 className="font-bold text-slate-800">카테고리별 지출</h2>
+          </div>
+
+          {expenseStats.total === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-2">🤍</div>
+              <div className="text-sm text-slate-500">이번 달 지출 내역이 없어요</div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {expenseStats.arr.map(item => (
+                <div key={item.key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <span>{item.cat.emoji}</span>
+                      <span className="font-medium text-slate-700">{item.cat.label}</span>
+                      <span className="text-xs text-slate-400">({item.pct.toFixed(0)}%)</span>
+                    </div>
+                    <div className="text-sm font-semibold text-slate-800 tabular-nums">
+                      {formatKRW(item.amount)}
+                    </div>
+                  </div>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${item.cat.bar}`}
+                      style={{ width: `${Math.max(item.pct, 2)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-xs text-slate-500">총 지출</span>
+                <span className="text-sm font-bold text-rose-500 tabular-nums">
+                  -{formatKRW(expenseStats.total)}
+                </span>
+              </div>
+            </div>
+          )}
+        </Card>
+      );
+    };
+
+    const Footer = ({ onClearAll, totalCount }) => (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+          <span>전체 {totalCount}개 내역 · 데이터는 서버 DB에 저장됩니다</span>
+          {totalCount > 0 && (
+            <button
+              onClick={onClearAll}
+              className="text-slate-400 hover:text-rose-500 transition"
+            >
+              모든 데이터 삭제
+            </button>
+          )}
+        </div>
+      </div>
+    );
+
+    // ========================================
+    // 🍞 Toast (used for transient API errors)
+    // ========================================
+    const Toast = ({ message, onClose }) => {
+      useEffect(() => {
+        if (!message) return;
+        const t = setTimeout(onClose, 4000);
+        return () => clearTimeout(t);
+      }, [message, onClose]);
+      if (!message) return null;
+      return (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-up">
+          <div className="bg-rose-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-rose-200 flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{message}</span>
+          </div>
+        </div>
+      );
+    };
+
+    // ========================================
+    // 🚀 App Component
+    // ========================================
+    const App = () => {
+      const [transactions, setTransactions] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [errorMsg, setErrorMsg] = useState('');
+      const [currentYM, setCurrentYM] = useState(todayISO().slice(0, 7));
+      const [filterCategory, setFilterCategory] = useState('all');
+
+      // Convert a server row into the shape the UI expects (type as 'income'/'expense').
+      const toUiTx = (row) => ({
+        id: row.id,
+        date: String(row.date).slice(0, 10),
+        type: dbTypeToUi(row.type),
+        category: row.category, // Korean label
+        amount: Number(row.amount),
+        memo: row.memo || '',
+      });
+
+      // Initial load from API
+      useEffect(() => {
+        let cancelled = false;
+        (async () => {
+          try {
+            const rows = await api.list();
+            if (!cancelled) setTransactions(rows.map(toUiTx));
+          } catch (err) {
+            if (!cancelled) setErrorMsg(err.message || '데이터 조회 실패');
+          } finally {
+            if (!cancelled) setLoading(false);
+          }
+        })();
+        return () => { cancelled = true; };
+      }, []);
+
+      const handleAdd = useCallback(async ({ date, type, categoryLabel, amount, memo }) => {
+        const created = await api.create({
+          type: uiTypeToDb(type),
+          category: categoryLabel,
+          amount,
+          memo,
+          date,
+        });
+        const ui = toUiTx(created);
+        setTransactions(prev => [ui, ...prev]);
+        const txYM = ui.date.slice(0, 7);
+        if (txYM !== currentYM) setCurrentYM(txYM);
+      }, [currentYM]);
+
+      const handleDelete = useCallback(async (id) => {
+        try {
+          await api.remove(id);
+          setTransactions(prev => prev.filter(t => t.id !== id));
+        } catch (err) {
+          setErrorMsg(err.message || '삭제 실패');
+        }
+      }, []);
+
+      const handleClearAll = useCallback(async () => {
+        if (!window.confirm('정말로 모든 데이터를 삭제할까요? 이 작업은 되돌릴 수 없습니다.')) return;
+        try {
+          await api.removeAll();
+          setTransactions([]);
+        } catch (err) {
+          setErrorMsg(err.message || '전체 삭제 실패');
+        }
+      }, []);
+
+      // Filter transactions for the current month + category filter
+      const monthTransactions = useMemo(() => {
+        return transactions.filter(t => ymKey(t.date) === currentYM);
+      }, [transactions, currentYM]);
+
+      const visibleTransactions = useMemo(() => {
+        if (filterCategory === 'all') return monthTransactions;
+        return monthTransactions.filter(t => t.category === filterCategory);
+      }, [monthTransactions, filterCategory]);
+
+      const monthIncome = useMemo(
+        () => monthTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+        [monthTransactions]
+      );
+      const monthExpense = useMemo(
+        () => monthTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+        [monthTransactions]
+      );
+
+      if (loading) {
+        return (
+          <div className="min-h-screen pb-10">
+            <Header />
+            <main className="max-w-5xl mx-auto px-4 sm:px-6">
+              <Card className="p-10">
+                <div className="text-center">
+                  <div className="text-4xl mb-2 animate-pulse">📓</div>
+                  <div className="text-sm text-slate-500">데이터를 불러오는 중…</div>
+                </div>
+              </Card>
+            </main>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen pb-10">
+          <Header />
+
+          <main className="max-w-5xl mx-auto px-4 sm:px-6 space-y-4">
+            {/* Month Switcher */}
+            <MonthSwitcher ym={currentYM} onChange={setCurrentYM} />
+
+            {/* Summary Dashboard */}
+            <SummaryDashboard income={monthIncome} expense={monthExpense} />
+
+            {/* Two-column layout on desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              {/* Left: form + stats */}
+              <div className="lg:col-span-2 space-y-4">
+                <TransactionForm onAdd={handleAdd} />
+                <CategoryStats transactions={monthTransactions} />
+              </div>
+
+              {/* Right: transaction list */}
+              <div className="lg:col-span-3">
+                <TransactionList
+                  transactions={visibleTransactions}
+                  onDelete={handleDelete}
+                  filterCategory={filterCategory}
+                  onFilterChange={setFilterCategory}
+                />
+              </div>
+            </div>
+          </main>
+
+          <Footer onClearAll={handleClearAll} totalCount={transactions.length} />
+
+          <Toast message={errorMsg} onClose={() => setErrorMsg('')} />
+        </div>
+      );
+    };
+
+    // ========================================
+    // Rendering
+    // ========================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

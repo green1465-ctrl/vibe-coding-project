@@ -1,0 +1,8 @@
+node_modules
+.env
+.env.local
+*.sql
+check-tables.js
+setup-db.js
+run-migration.js
+run-title-migration.js
