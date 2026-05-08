@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>당근마켓 - 동네 중고거래</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: #f3f4f6;
+    }
+    .karrot-orange { color: #FF6F0F; }
+    .bg-karrot { background-color: #FF6F0F; }
+    .bg-karrot-soft { background-color: #FFF1E5; }
+    .border-karrot { border-color: #FF6F0F; }
+    .ring-karrot { --tw-ring-color: #FF6F0F; }
+
+    .scroll-hide::-webkit-scrollbar { display: none; }
+    .scroll-hide { scrollbar-width: none; }
+
+    .fade-in { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-up { animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pulse-heart { animation: pulseHeart 0.4s ease-out; }
+    @keyframes pulseHeart {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    /* Mobile frame on desktop */
+    .phone-frame {
+      max-width: 480px;
+      min-height: 100vh;
+      background: white;
+      box-shadow: 0 0 30px rgba(0,0,0,0.08);
+      margin: 0 auto;
+      position: relative;
+    }
+    @media (min-width: 768px) {
+      body { background: #e5e7eb; }
+      .phone-frame {
+        margin: 24px auto;
+        min-height: calc(100vh - 48px);
+        border-radius: 24px;
+        overflow: hidden;
+      }
+    }
+
+    .chat-bubble-mine {
+      background: #FF6F0F;
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+    }
+    .chat-bubble-theirs {
+      background: white;
+      color: #1f2937;
+      border-radius: 18px 18px 18px 4px;
+      border: 1px solid #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useCallback, createContext, useContext } = React;
+
+    // ========================================
+    // STORAGE KEYS (auth only — 데이터는 모두 서버 API)
+    // ========================================
+    const TOKEN_KEY = 'karrot_token';
+    const USER_KEY  = 'karrot_user';
+
+    const REGIONS = ['역삼동', '서교동', '망원동', '연남동', '정자동', '판교동', '잠실동', '여의도동'];
+    const CATEGORIES = ['디지털기기', '생활가전', '가구/인테리어', '유아동', '의류', '뷰티/미용', '스포츠/레저', '취미/게임/음반', '도서', '식물', '반려동물용품', '기타'];
+
+    // ========================================
+    // API HELPER (단일 fetch 래퍼)
+    // - 같은 origin에서 서빙되므로 상대 경로 사용
+    // - 401이면 토큰/유저 삭제 후 /login으로 보냄
+    // ========================================
+    async function api(path, { method = 'GET', body, auth = true } = {}) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (auth) {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+      }
+      const res = await fetch(path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      let data = {};
+      try { data = await res.json(); } catch { /* no json body */ }
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          // 회원가입/로그인 페이지에서의 401은 단순 인증 실패이므로 리다이렉트하지 않음
+          if (!/^\/(login|signup)/.test(window.location.hash.slice(1) || '/')) {
+            window.location.hash = '/login';
+          }
+        }
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      return data;
+    }
+
+    // ========================================
+    // UTILITIES
+    // ========================================
+    function formatPrice(n) {
+      if (n === 0) return '나눔';
+      return Number(n).toLocaleString('ko-KR') + '원';
+    }
+    // ts: number(ms) | string(ISO) | Date
+    function formatTimeAgo(ts) {
+      if (!ts) return '';
+      const t = typeof ts === 'string' ? new Date(ts).getTime() : (ts instanceof Date ? ts.getTime() : ts);
+      const diff = Date.now() - t;
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return '방금 전';
+      if (m < 60) return `${m}분 전`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}시간 전`;
+      const d = Math.floor(h / 24);
+      if (d < 7) return `${d}일 전`;
+      return `${Math.floor(d / 7)}주 전`;
+    }
+    // 서버가 product.images를 [{url, fileId, ...}] 형태로 줌. 첫 이미지의 url 추출.
+    function firstImageUrl(product) {
+      const arr = product?.images || [];
+      if (arr.length === 0) return null;
+      const first = arr[0];
+      return typeof first === 'string' ? first : (first?.url || null);
+    }
+    function imageUrls(product) {
+      const arr = product?.images || [];
+      return arr.map(x => (typeof x === 'string' ? x : x?.url)).filter(Boolean);
+    }
+    // 닉네임 → 이모지 아바타 (서버 user 응답에 avatar가 없으니 결정적으로 매핑)
+    function avatarFor(nickname) {
+      const list = ['🦊','🐻','🐰','🐶','🐱','🐼','🦁','🐸','🐯','🐵','🐨','🐷'];
+      const s = String(nickname || '?');
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+      return list[h % list.length];
+    }
+
+    // ========================================
+    // ROUTER (Hash-based)
+    // ========================================
+    function parseHash() {
+      const raw = window.location.hash.slice(1) || '/';
+      const [path, queryStr] = raw.split('?');
+      const query = {};
+      if (queryStr) {
+        queryStr.split('&').forEach(p => {
+          const [k, v] = p.split('=');
+          if (k) query[decodeURIComponent(k)] = decodeURIComponent(v || '');
+        });
+      }
+      return { path, query };
+    }
+    function navigate(to) {
+      window.location.hash = to.startsWith('/') ? to : '/' + to;
+    }
+    function matchRoute(pattern, path) {
+      const pp = pattern.split('/').filter(Boolean);
+      const ap = path.split('/').filter(Boolean);
+      if (pp.length !== ap.length) return null;
+      const params = {};
+      for (let i = 0; i < pp.length; i++) {
+        if (pp[i].startsWith(':')) params[pp[i].slice(1)] = decodeURIComponent(ap[i]);
+        else if (pp[i] !== ap[i]) return null;
+      }
+      return params;
+    }
+    function useHashRoute() {
+      const [route, setRoute] = useState(parseHash());
+      useEffect(() => {
+        const handler = () => setRoute(parseHash());
+        window.addEventListener('hashchange', handler);
+        return () => window.removeEventListener('hashchange', handler);
+      }, []);
+      return route;
+    }
+
+    // ========================================
+    // APP CONTEXT (Auth Provider — 데이터는 페이지별 API 호출)
+    // ========================================
+    const AppContext = createContext(null);
+    const useApp = () => useContext(AppContext);
+
+    function AppProvider({ children }) {
+      // 로그인 상태: localStorage에서 즉시 복구해 첫 페인트가 깜빡이지 않도록 함
+      const [currentUser, setCurrentUser] = useState(() => {
+        try {
+          const raw = localStorage.getItem(USER_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch { return null; }
+      });
+      // 토큰 유효성 검증(/api/auth/me) 부팅 체크
+      const [authChecked, setAuthChecked] = useState(false);
+
+      // 부팅 시 토큰이 있으면 me 호출 → 유효하면 user 갱신, 401이면 로그아웃
+      useEffect(() => {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (!token) {
+          setAuthChecked(true);
+          return;
+        }
+        let cancelled = false;
+        api('/api/auth/me')
+          .then(({ user }) => {
+            if (cancelled) return;
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+            setCurrentUser(user);
+          })
+          .catch(() => {
+            // api()가 401일 때 토큰/유저를 이미 지움
+            if (cancelled) return;
+            setCurrentUser(null);
+          })
+          .finally(() => {
+            if (!cancelled) setAuthChecked(true);
+          });
+        return () => { cancelled = true; };
+      }, []);
+
+      const login = async (email, password) => {
+        try {
+          const { token, user } = await api('/api/auth/login', {
+            method: 'POST',
+            body: { email, password },
+            auth: false,
+          });
+          localStorage.setItem(TOKEN_KEY, token);
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+          setCurrentUser(user);
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, message: e.message || '로그인에 실패했어요.' };
+        }
+      };
+
+      const signup = async ({ email, password, nickname, region }) => {
+        try {
+          const { token, user } = await api('/api/auth/signup', {
+            method: 'POST',
+            body: { email, password, nickname, region },
+            auth: false,
+          });
+          localStorage.setItem(TOKEN_KEY, token);
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+          setCurrentUser(user);
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, message: e.message || '회원가입에 실패했어요.' };
+        }
+      };
+
+      const logout = () => {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        setCurrentUser(null);
+      };
+
+      // 닉네임/동네 업데이트 — 서버에 PATCH 후 user 갱신
+      const updateMe = async (patch) => {
+        try {
+          const { user } = await api('/api/auth/me', { method: 'PATCH', body: patch });
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+          setCurrentUser(user);
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, message: e.message };
+        }
+      };
+
+      const value = { currentUser, authChecked, login, signup, logout, updateMe, setCurrentUser };
+      return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+    }
+
+    // ========================================
+    // 🎨 DESIGN SYSTEM COMPONENTS
+    // ========================================
+    function Button({ variant = 'primary', size = 'md', disabled, onClick, children, className = '', type = 'button', full = false }) {
+      const sizes = { sm: 'px-3 py-1.5 text-sm', md: 'px-4 py-2.5 text-base', lg: 'px-5 py-3.5 text-base font-semibold' };
+      const variants = {
+        primary: 'bg-karrot text-white hover:brightness-95 active:brightness-90',
+        secondary: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+        danger: 'bg-red-500 text-white hover:bg-red-600',
+        ghost: 'bg-transparent text-gray-700 hover:bg-gray-100',
+        outline: 'bg-white text-gray-800 border border-gray-300 hover:bg-gray-50',
+        karrotOutline: 'bg-white border border-karrot karrot-orange hover:bg-karrot-soft',
+      };
+      const cls = `${sizes[size]} ${variants[variant]} rounded-xl font-medium transition disabled:opacity-50 disabled:cursor-not-allowed ${full ? 'w-full' : ''} ${className}`;
+      return <button type={type} disabled={disabled} onClick={onClick} className={cls}>{children}</button>;
+    }
+
+    function Input({ label, error, className = '', ...rest }) {
+      return (
+        <div className={`w-full ${className}`}>
+          {label && <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>}
+          <input
+            {...rest}
+            className={`w-full px-4 py-3 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-karrot focus:border-transparent transition ${error ? 'border-red-400' : 'border-gray-200'}`}
+          />
+          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+        </div>
+      );
+    }
+
+    function Textarea({ label, className = '', ...rest }) {
+      return (
+        <div className={`w-full ${className}`}>
+          {label && <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>}
+          <textarea
+            {...rest}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-karrot focus:border-transparent transition resize-none"
+          />
+        </div>
+      );
+    }
+
+    function Select({ label, options, className = '', ...rest }) {
+      return (
+        <div className={`w-full ${className}`}>
+          {label && <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>}
+          <select
+            {...rest}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-karrot transition"
+          >
+            {options.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </div>
+      );
+    }
+
+    function Card({ children, className = '', onClick }) {
+      return <div onClick={onClick} className={`bg-white rounded-2xl ${onClick ? 'cursor-pointer' : ''} ${className}`}>{children}</div>;
+    }
+
+    function Badge({ children, className = '' }) {
+      return <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${className}`}>{children}</span>;
+    }
+
+    function Spinner({ className = '' }) {
+      return (
+        <div className={`inline-block w-5 h-5 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin ${className}`} />
+      );
+    }
+
+    function CenteredSpinner() {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Spinner className="w-7 h-7" />
+        </div>
+      );
+    }
+
+    // 간단한 토스트 — 페이지 어디서든 띄우기 위해 모듈 변수로 큐를 관리
+    const __toastBus = { listeners: new Set() };
+    function showToast(msg, kind = 'info') {
+      __toastBus.listeners.forEach(fn => fn({ id: Date.now() + Math.random(), msg, kind }));
+    }
+    function ToastHost() {
+      const [items, setItems] = useState([]);
+      useEffect(() => {
+        const fn = (t) => {
+          setItems(prev => [...prev, t]);
+          setTimeout(() => {
+            setItems(prev => prev.filter(x => x.id !== t.id));
+          }, 2400);
+        };
+        __toastBus.listeners.add(fn);
+        return () => { __toastBus.listeners.delete(fn); };
+      }, []);
+      if (items.length === 0) return null;
+      return (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none">
+          {items.map(t => (
+            <div key={t.id} className={`px-4 py-2 rounded-full text-sm text-white shadow-lg slide-up ${t.kind === 'error' ? 'bg-red-500' : 'bg-gray-900'}`}>
+              {t.msg}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function Modal({ isOpen, onClose, title, children }) {
+      if (!isOpen) return null;
+      return (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40" onClick={onClose}>
+          <div className="bg-white rounded-t-2xl md:rounded-2xl w-full max-w-md slide-up" onClick={e => e.stopPropagation()}>
+            {title && (
+              <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+                <h3 className="text-lg font-bold">{title}</h3>
+                <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+              </div>
+            )}
+            <div className="px-5 pb-5">{children}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // Tiny icon set (inline SVG)
+    const Icon = {
+      Search: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>,
+      Bell: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+      Heart: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill={p.filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>,
+      Home: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill={p.filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+      Chat: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill={p.filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+      User: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill={p.filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+      Plus: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
+      ArrowLeft: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>,
+      ChevronRight: (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m9 18 6-6-6-6"/></svg>,
+      ChevronLeft: (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m15 18-6-6 6-6"/></svg>,
+      Camera: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+      MapPin: (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
+      MoreVert: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>,
+      Send: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>,
+      X: (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+      Edit: (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+      Trash: (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+    };
+
+    // ========================================
+    // 🧩 LAYOUT COMPONENTS
+    // ========================================
+    function TopBar({ title, left, right, sticky = true }) {
+      return (
+        <div className={`${sticky ? 'sticky top-0 z-30' : ''} bg-white border-b border-gray-100 h-14 flex items-center justify-between px-3`}>
+          <div className="flex items-center gap-2 flex-1">{left}</div>
+          {title && <div className="text-base font-semibold text-gray-900 absolute left-1/2 -translate-x-1/2">{title}</div>}
+          <div className="flex items-center gap-1">{right}</div>
+        </div>
+      );
+    }
+
+    function BackButton() {
+      return (
+        <button onClick={() => window.history.length > 1 ? window.history.back() : navigate('/')} className="p-2 -ml-2 rounded-full hover:bg-gray-100">
+          <Icon.ArrowLeft />
+        </button>
+      );
+    }
+
+    function BottomNav({ active }) {
+      const items = [
+        { key: 'home', label: '홈', icon: Icon.Home, path: '/' },
+        { key: 'chats', label: '채팅', icon: Icon.Chat, path: '/chats' },
+        { key: 'me', label: '나의 당근', icon: Icon.User, path: '/me' },
+      ];
+      return (
+        <div className="sticky bottom-0 bg-white border-t border-gray-100 flex justify-around py-2 z-30">
+          {items.map(it => {
+            const I = it.icon;
+            const isActive = active === it.key;
+            return (
+              <button key={it.key} onClick={() => navigate(it.path)} className={`flex flex-col items-center gap-1 px-4 py-1 ${isActive ? 'karrot-orange' : 'text-gray-400'}`}>
+                <I filled={isActive} />
+                <span className="text-xs font-medium">{it.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    function FAB({ onClick }) {
+      return (
+        <button
+          onClick={onClick}
+          className="fixed bottom-20 right-4 md:right-[calc(50vw-220px)] w-14 h-14 bg-karrot text-white rounded-full shadow-lg flex items-center justify-center hover:brightness-95 transition active:scale-95 z-20"
+          aria-label="글쓰기"
+        >
+          <Icon.Plus />
+        </button>
+      );
+    }
+
+    function EmptyState({ emoji, title, subtitle, action }) {
+      return (
+        <div className="flex flex-col items-center justify-center text-center py-20 px-6">
+          <div className="text-6xl mb-4">{emoji}</div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">{title}</h3>
+          {subtitle && <p className="text-sm text-gray-500 mb-5">{subtitle}</p>}
+          {action}
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🛒 PRODUCT-RELATED COMPONENTS
+    // ========================================
+    function ProductCard({ product, onClick }) {
+      // 서버 응답 컬럼: created_at, region, like_count, status, images:[{url,...}]
+      const lc = Number(product.like_count || 0);
+      const thumb = firstImageUrl(product);
+      const isSold = product.status === 'sold';
+      return (
+        <div onClick={onClick} className="flex gap-3 py-4 cursor-pointer active:bg-gray-50 transition px-4">
+          <div className="relative w-24 h-24 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+            {thumb
+              ? <img src={thumb} alt={product.title} className="w-full h-full object-cover" />
+              : <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>}
+            {isSold && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">거래완료</span>
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base text-gray-900 line-clamp-2 leading-snug">{product.title}</h3>
+            <p className="text-xs text-gray-500 mt-1">{product.region} · {formatTimeAgo(product.created_at)}</p>
+            <p className="text-base font-bold text-gray-900 mt-1">{formatPrice(product.price)}</p>
+            <div className="flex items-center justify-end gap-3 text-xs text-gray-400 mt-1">
+              {lc > 0 && (
+                <span className="flex items-center gap-1">
+                  <Icon.Heart width="14" height="14" />{lc}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ImageSlider({ images }) {
+      // images: string[] (URL 배열)
+      const [idx, setIdx] = useState(0);
+      const urls = (images || []).map(x => typeof x === 'string' ? x : x?.url).filter(Boolean);
+      if (urls.length === 0) {
+        return <div className="w-full aspect-square bg-gray-100 flex items-center justify-center text-5xl">📦</div>;
+      }
+      return (
+        <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
+          <img src={urls[idx]} alt="" className="w-full h-full object-cover" />
+          {urls.length > 1 && (
+            <>
+              <button
+                onClick={() => setIdx((idx - 1 + urls.length) % urls.length)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center hover:bg-black/60"
+              >
+                <Icon.ChevronLeft />
+              </button>
+              <button
+                onClick={() => setIdx((idx + 1) % urls.length)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center hover:bg-black/60"
+              >
+                <Icon.ChevronRight />
+              </button>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {urls.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setIdx(i)}
+                    className={`w-2 h-2 rounded-full transition ${i === idx ? 'bg-white' : 'bg-white/50'}`}
+                  />
+                ))}
+              </div>
+              <div className="absolute top-3 right-3 px-2 py-1 bg-black/50 text-white text-xs rounded-full">
+                {idx + 1}/{urls.length}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    function TemperatureBar({ value }) {
+      const v = Math.max(0, Math.min(100, value));
+      const colorClass = v >= 50 ? 'bg-red-400' : v >= 40 ? 'bg-orange-400' : v >= 36.5 ? 'bg-green-400' : 'bg-blue-400';
+      const widthPct = Math.min(100, (v / 80) * 100);
+      return (
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div className={`h-full ${colorClass}`} style={{ width: widthPct + '%' }} />
+          </div>
+          <span className="text-xs font-semibold text-gray-700">{v.toFixed(1)}°C</span>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 💬 CHAT COMPONENTS
+    // ========================================
+    function ChatBubble({ mine, text, time }) {
+      return (
+        <div className={`flex ${mine ? 'justify-end' : 'justify-start'} mb-2`}>
+          <div className="flex items-end gap-1.5 max-w-[75%]">
+            {!mine && <span className="text-[10px] text-gray-400 mb-1">{time}</span>}
+            <div className={`px-3.5 py-2 ${mine ? 'chat-bubble-mine' : 'chat-bubble-theirs'}`}>
+              <p className="text-sm whitespace-pre-wrap break-words">{text}</p>
+            </div>
+            {mine && <span className="text-[10px] text-gray-400 mb-1">{time}</span>}
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: LOGIN
+    // ========================================
+    function LoginPage() {
+      const { login, currentUser } = useApp();
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+      const [submitting, setSubmitting] = useState(false);
+
+      useEffect(() => { if (currentUser) navigate('/'); }, [currentUser]);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        if (!email || !password) { setError('이메일과 비밀번호를 입력해주세요.'); return; }
+        setSubmitting(true);
+        const r = await login(email, password);
+        setSubmitting(false);
+        if (r.ok) navigate('/');
+        else setError(r.message);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col px-6 pt-16 pb-8 fade-in">
+          <div className="text-center mb-10">
+            <div className="text-6xl mb-3">🥕</div>
+            <h1 className="text-2xl font-bold karrot-orange">당근마켓</h1>
+            <p className="text-sm text-gray-500 mt-2">동네 사람들과 가깝고 따뜻한 거래</p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <Input type="email" placeholder="이메일" value={email} onChange={e => setEmail(e.target.value)} disabled={submitting} />
+            <Input type="password" placeholder="비밀번호" value={password} onChange={e => setPassword(e.target.value)} disabled={submitting} />
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <Button type="submit" full size="lg" disabled={submitting}>
+              {submitting ? '로그인 중…' : '로그인'}
+            </Button>
+          </form>
+          <div className="text-center mt-6">
+            <button onClick={() => navigate('/signup')} className="text-sm text-gray-600 underline">
+              아직 회원이 아니신가요? <span className="karrot-orange font-medium">회원가입</span>
+            </button>
+          </div>
+          <div className="mt-10 p-4 bg-gray-50 rounded-xl text-xs text-gray-500 leading-relaxed">
+            <p className="font-semibold text-gray-700 mb-1">💡 안내</p>
+            <p>회원가입 후 바로 사용할 수 있어요.</p>
+            <p>비밀번호는 6자 이상이어야 합니다.</p>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: SIGNUP
+    // ========================================
+    function SignupPage() {
+      const { signup } = useApp();
+      const [step, setStep] = useState(1);
+      const [form, setForm] = useState({ email: '', password: '', nickname: '', region: REGIONS[0] });
+      const [error, setError] = useState('');
+      const [submitting, setSubmitting] = useState(false);
+
+      const next = () => {
+        setError('');
+        if (step === 1) {
+          if (!form.email.includes('@')) return setError('올바른 이메일을 입력해주세요.');
+          if (form.password.length < 6) return setError('비밀번호는 6자 이상이어야 해요.');
+        }
+        if (step === 2) {
+          if (form.nickname.trim().length < 2) return setError('닉네임은 2자 이상 입력해주세요.');
+        }
+        setStep(s => s + 1);
+      };
+      const submit = async () => {
+        setError('');
+        setSubmitting(true);
+        const r = await signup(form);
+        setSubmitting(false);
+        if (r.ok) navigate('/');
+        else setError(r.message);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col fade-in">
+          <TopBar left={<button onClick={() => step > 1 ? setStep(step - 1) : navigate('/login')} className="p-2 -ml-2"><Icon.ArrowLeft /></button>} title="회원가입" />
+          <div className="px-6 pt-6 flex-1">
+            <div className="flex gap-1 mb-6">
+              {[1,2,3].map(s => <div key={s} className={`flex-1 h-1 rounded-full ${s <= step ? 'bg-karrot' : 'bg-gray-200'}`} />)}
+            </div>
+
+            {step === 1 && (
+              <div className="space-y-4 fade-in">
+                <h2 className="text-xl font-bold mb-1">이메일과 비밀번호를<br/>입력해주세요</h2>
+                <p className="text-sm text-gray-500 mb-4">로그인할 때 사용해요.</p>
+                <Input label="이메일" type="email" placeholder="example@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                <Input label="비밀번호" type="password" placeholder="비밀번호 (4자 이상)" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+              </div>
+            )}
+            {step === 2 && (
+              <div className="space-y-4 fade-in">
+                <h2 className="text-xl font-bold mb-1">사용할 닉네임을<br/>알려주세요</h2>
+                <p className="text-sm text-gray-500 mb-4">동네 이웃들에게 보여질 이름이에요.</p>
+                <Input label="닉네임" placeholder="예: 망원동주민" value={form.nickname} onChange={e => setForm({ ...form, nickname: e.target.value })} />
+              </div>
+            )}
+            {step === 3 && (
+              <div className="space-y-4 fade-in">
+                <h2 className="text-xl font-bold mb-1">우리 동네를<br/>설정해주세요</h2>
+                <p className="text-sm text-gray-500 mb-4">동네 이웃과 거래해요. 언제든 변경할 수 있어요.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {REGIONS.map(r => (
+                    <button
+                      key={r}
+                      onClick={() => setForm({ ...form, region: r })}
+                      className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition ${form.region === r ? 'border-karrot bg-karrot-soft karrot-orange' : 'border-gray-200 bg-white text-gray-700'}`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {error && <p className="text-sm text-red-500 mt-4">{error}</p>}
+          </div>
+
+          <div className="p-4">
+            {step < 3
+              ? <Button full size="lg" onClick={next}>다음</Button>
+              : <Button full size="lg" onClick={submit} disabled={submitting}>
+                  {submitting ? '가입 중…' : '당근마켓 시작하기'}
+                </Button>
+            }
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: HOME (Product List)
+    // ========================================
+    function HomePage() {
+      const { currentUser, updateMe } = useApp();
+      const [keyword, setKeyword] = useState('');
+      const [showRegion, setShowRegion] = useState(false);
+      const [products, setProducts] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState('');
+
+      const region = currentUser?.region || null;
+
+      // 동네 + 키워드(클라 검색은 그대로) 변경 시 재조회
+      useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError('');
+        const params = new URLSearchParams();
+        if (region) params.set('region', region);
+        api(`/api/products${params.toString() ? '?' + params.toString() : ''}`, { auth: !!currentUser })
+          .then(({ products }) => {
+            if (cancelled) return;
+            setProducts(products || []);
+          })
+          .catch(e => { if (!cancelled) setError(e.message || '상품을 불러오지 못했어요.'); })
+          .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+      }, [region]);
+
+      const filtered = useMemo(() => {
+        if (!keyword.trim()) return products;
+        const k = keyword.trim().toLowerCase();
+        return products.filter(p =>
+          (p.title || '').toLowerCase().includes(k) ||
+          (p.description || '').toLowerCase().includes(k)
+        );
+      }, [products, keyword]);
+
+      const handleNew = () => {
+        if (!currentUser) { navigate('/login'); return; }
+        navigate('/new');
+      };
+
+      const changeRegion = async (r) => {
+        if (!currentUser) { setShowRegion(false); navigate('/login'); return; }
+        const result = await updateMe({ region: r });
+        if (!result.ok) showToast(result.message || '동네 변경 실패', 'error');
+        setShowRegion(false);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col fade-in pb-2">
+          <TopBar
+            left={
+              <button onClick={() => setShowRegion(true)} className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-gray-100">
+                <span className="text-lg font-bold text-gray-900">{region || '내 동네'}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            }
+            right={
+              <>
+                <button onClick={() => navigate('/search')} className="p-2 rounded-full hover:bg-gray-100"><Icon.Search /></button>
+                <button className="p-2 rounded-full hover:bg-gray-100"><Icon.Bell /></button>
+              </>
+            }
+          />
+          <div className="px-4 py-3">
+            <div className="flex items-center bg-gray-100 rounded-xl px-3 py-2.5 gap-2">
+              <Icon.Search className="text-gray-400" />
+              <input
+                value={keyword}
+                onChange={e => setKeyword(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && keyword.trim()) navigate(`/search?q=${encodeURIComponent(keyword.trim())}`); }}
+                placeholder={`${region || '동네'}에서 검색하기`}
+                className="bg-transparent flex-1 outline-none text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="flex-1">
+            {loading ? (
+              <CenteredSpinner />
+            ) : error ? (
+              <EmptyState emoji="😢" title="불러오기 실패" subtitle={error} action={<Button onClick={() => window.location.reload()}>다시 시도</Button>} />
+            ) : filtered.length === 0 ? (
+              <EmptyState
+                emoji="🥕"
+                title={keyword ? '검색 결과가 없어요' : '아직 등록된 상품이 없어요'}
+                subtitle={keyword ? '다른 키워드로 검색해보세요' : '첫 번째 판매글을 등록해보세요!'}
+                action={!keyword && <Button onClick={handleNew}>상품 등록하기</Button>}
+              />
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {filtered.map(p => (
+                  <ProductCard key={p.id} product={p} onClick={() => navigate(`/product/${p.id}`)} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <FAB onClick={handleNew} />
+          <BottomNav active="home" />
+
+          <Modal isOpen={showRegion} onClose={() => setShowRegion(false)} title="동네 선택">
+            <div className="grid grid-cols-2 gap-2">
+              {REGIONS.map(r => (
+                <button
+                  key={r}
+                  onClick={() => changeRegion(r)}
+                  className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${region === r ? 'border-karrot bg-karrot-soft karrot-orange' : 'border-gray-200 bg-white text-gray-700'}`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            {!currentUser && <p className="text-xs text-gray-400 mt-3 text-center">동네를 변경하려면 로그인이 필요해요</p>}
+          </Modal>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: PRODUCT DETAIL
+    // ========================================
+    function ProductDetailPage({ id }) {
+      const { currentUser } = useApp();
+      const [product, setProduct] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [notFound, setNotFound] = useState(false);
+
+      const [liked, setLiked] = useState(false);     // 클라이언트가 좋아요 상태를 별도 조회 (me/likes)
+      const [likeCount, setLikeCount] = useState(0);
+      const [confirmDelete, setConfirmDelete] = useState(false);
+      const [heartBeat, setHeartBeat] = useState(false);
+      const [chatLoading, setChatLoading] = useState(false);
+
+      // 상품 + (로그인 시) 내 좋아요 상태 로드
+      useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setNotFound(false);
+        api(`/api/products/${id}`, { auth: !!currentUser })
+          .then(({ product }) => {
+            if (cancelled) return;
+            setProduct(product);
+            setLikeCount(Number(product.like_count || 0));
+          })
+          .catch((e) => { if (!cancelled) { setNotFound(true); } })
+          .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+      }, [id, currentUser?.id]);
+
+      // 내 좋아요 여부는 me/likes에서 추론
+      useEffect(() => {
+        if (!currentUser) { setLiked(false); return; }
+        let cancelled = false;
+        api('/api/me/likes')
+          .then(({ products }) => {
+            if (cancelled) return;
+            setLiked((products || []).some(p => p.id === id));
+          })
+          .catch(() => {});
+        return () => { cancelled = true; };
+      }, [id, currentUser?.id]);
+
+      if (loading) {
+        return (
+          <div className="min-h-screen flex flex-col">
+            <TopBar left={<BackButton />} />
+            <CenteredSpinner />
+          </div>
+        );
+      }
+      if (notFound || !product) {
+        return (
+          <div className="min-h-screen flex flex-col">
+            <TopBar left={<BackButton />} />
+            <EmptyState emoji="🤔" title="상품을 찾을 수 없어요" action={<Button onClick={() => navigate('/')}>홈으로</Button>} />
+          </div>
+        );
+      }
+
+      const isMine = currentUser?.id === product.seller_id;
+      const sellerNickname = product.seller_nickname || '알수없음';
+      const sellerRegion = product.seller_region || product.region;
+      const sellerTemp = Number(product.seller_manner_temp || 36.5);
+
+      const handleLike = async () => {
+        if (!currentUser) { navigate('/login'); return; }
+        // 낙관적 업데이트
+        const prevLiked = liked;
+        const prevCount = likeCount;
+        setLiked(!prevLiked);
+        setLikeCount(prevCount + (prevLiked ? -1 : 1));
+        setHeartBeat(true);
+        setTimeout(() => setHeartBeat(false), 400);
+        try {
+          const r = await api(`/api/products/${product.id}/like`, { method: 'POST' });
+          setLiked(!!r.liked);
+          setLikeCount(Number(r.likeCount || 0));
+        } catch (e) {
+          // 롤백
+          setLiked(prevLiked);
+          setLikeCount(prevCount);
+          showToast(e.message || '관심 처리 실패', 'error');
+        }
+      };
+
+      const handleChat = async () => {
+        if (!currentUser) { navigate('/login'); return; }
+        if (isMine) return;
+        setChatLoading(true);
+        try {
+          const { room } = await api('/api/chats', { method: 'POST', body: { productId: product.id } });
+          navigate(`/chat/${room.id}`);
+        } catch (e) {
+          showToast(e.message || '채팅방 생성 실패', 'error');
+        } finally {
+          setChatLoading(false);
+        }
+      };
+
+      const handleDelete = async () => {
+        try {
+          await api(`/api/products/${product.id}`, { method: 'DELETE' });
+          showToast('삭제되었어요');
+          navigate('/');
+        } catch (e) {
+          showToast(e.message || '삭제 실패', 'error');
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-white fade-in">
+          <TopBar
+            left={<BackButton />}
+            right={isMine && (
+              <div className="flex">
+                <button onClick={() => navigate(`/edit/${product.id}`)} className="p-2 rounded-full hover:bg-gray-100" title="수정"><Icon.Edit /></button>
+                <button onClick={() => setConfirmDelete(true)} className="p-2 rounded-full hover:bg-gray-100 text-red-500" title="삭제"><Icon.Trash /></button>
+              </div>
+            )}
+          />
+          <ImageSlider images={imageUrls(product)} />
+
+          {/* Seller card */}
+          <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-karrot-soft flex items-center justify-center text-2xl">{avatarFor(sellerNickname)}</div>
+              <div>
+                <p className="font-semibold text-gray-900">{sellerNickname}</p>
+                <p className="text-xs text-gray-500">{sellerRegion}</p>
+              </div>
+            </div>
+            <div className="text-right w-32">
+              <TemperatureBar value={sellerTemp} />
+              <p className="text-[10px] text-gray-400 mt-0.5">매너온도</p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="px-4 py-5 flex-1">
+            <Badge className="bg-gray-100 text-gray-600">{product.category}</Badge>
+            {product.status === 'sold' && <Badge className="bg-gray-700 text-white ml-2">거래완료</Badge>}
+            {product.status === 'reserved' && <Badge className="bg-blue-100 text-blue-700 ml-2">예약중</Badge>}
+            <h1 className="text-xl font-bold text-gray-900 mt-2">{product.title}</h1>
+            <p className="text-xs text-gray-500 mt-1">{formatTimeAgo(product.created_at)}</p>
+            <p className="text-base text-gray-800 mt-4 whitespace-pre-wrap leading-relaxed">{product.description}</p>
+            <p className="text-sm text-gray-400 mt-6">관심 {likeCount} · 조회 {product.view_count || 0}</p>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 py-3 flex items-center gap-3">
+            <button onClick={handleLike} className={`p-2 ${liked ? 'karrot-orange' : 'text-gray-500'} ${heartBeat ? 'pulse-heart' : ''}`}>
+              <Icon.Heart filled={liked} width="26" height="26" />
+            </button>
+            <div className="w-px h-7 bg-gray-200" />
+            <p className="font-bold text-lg text-gray-900 flex-1">{formatPrice(product.price)}</p>
+            {isMine ? (
+              <Button onClick={() => navigate(`/edit/${product.id}`)}>게시글 수정</Button>
+            ) : (
+              <Button onClick={handleChat} disabled={chatLoading}>{chatLoading ? '연결 중…' : '채팅하기'}</Button>
+            )}
+          </div>
+
+          <Modal isOpen={confirmDelete} onClose={() => setConfirmDelete(false)} title="게시글을 삭제할까요?">
+            <p className="text-sm text-gray-600 mb-5">삭제한 게시글은 복구할 수 없어요.</p>
+            <div className="flex gap-2">
+              <Button variant="secondary" full onClick={() => setConfirmDelete(false)}>취소</Button>
+              <Button variant="danger" full onClick={handleDelete}>삭제</Button>
+            </div>
+          </Modal>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: PRODUCT FORM (NEW / EDIT)
+    // ========================================
+    // ImageKit 직업로드: /api/imagekit/auth로 인증 토큰을 받아 upload.imagekit.io로 multipart POST
+    async function uploadToImageKit(file) {
+      const auth = await api('/api/imagekit/auth'); // { token, expire, signature, publicKey, urlEndpoint }
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('fileName', file.name || `karrot_${Date.now()}.jpg`);
+      fd.append('publicKey', auth.publicKey);
+      fd.append('signature', auth.signature);
+      fd.append('expire', String(auth.expire));
+      fd.append('token', auth.token);
+      // 폴더 구분(선택)
+      fd.append('folder', '/karrot/products');
+      const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || 'ImageKit 업로드 실패');
+      }
+      return { url: data.url, fileId: data.fileId };
+    }
+
+    function ProductFormPage({ editId = null }) {
+      const { currentUser } = useApp();
+      const editing = !!editId;
+      const [loadingProduct, setLoadingProduct] = useState(editing);
+      const [title, setTitle] = useState('');
+      const [category, setCategory] = useState(CATEGORIES[0]);
+      const [price, setPrice] = useState('');
+      const [description, setDescription] = useState('');
+      // images: [{ url, fileId, uploading? }] — uploading=true는 아직 업로드 중인 항목
+      const [images, setImages] = useState([]);
+      const [submitting, setSubmitting] = useState(false);
+      const fileRef = useRef(null);
+
+      // 로그인 체크
+      useEffect(() => {
+        if (!currentUser) { navigate('/login'); }
+      }, [currentUser]);
+
+      // 수정 모드일 때 원본 로드
+      useEffect(() => {
+        if (!editing) return;
+        let cancelled = false;
+        setLoadingProduct(true);
+        api(`/api/products/${editId}`)
+          .then(({ product }) => {
+            if (cancelled) return;
+            if (currentUser && product.seller_id !== currentUser.id) {
+              showToast('본인이 작성한 게시글만 수정할 수 있어요.', 'error');
+              navigate('/');
+              return;
+            }
+            setTitle(product.title || '');
+            setCategory(product.category || CATEGORIES[0]);
+            setPrice(product.price ?? '');
+            setDescription(product.description || '');
+            setImages((product.images || []).map(img => ({ url: img.url, fileId: img.fileId || null })));
+          })
+          .catch(() => {
+            showToast('상품을 불러오지 못했어요.', 'error');
+            navigate('/');
+          })
+          .finally(() => { if (!cancelled) setLoadingProduct(false); });
+        return () => { cancelled = true; };
+      }, [editId, currentUser?.id]);
+
+      const uploading = images.some(i => i.uploading);
+
+      const handleFiles = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (fileRef.current) fileRef.current.value = '';
+        if (files.length === 0) return;
+        const remaining = 3 - images.length;
+        if (files.length > remaining) {
+          alert(`이미지는 최대 3장까지 등록할 수 있어요. (현재 ${images.length}장)`);
+        }
+        const allowed = files.slice(0, remaining);
+        // 1) 즉시 미리보기 추가 (uploading=true)
+        const placeholders = allowed.map((f) => ({
+          url: URL.createObjectURL(f),
+          fileId: null,
+          uploading: true,
+          _localKey: Math.random().toString(36).slice(2),
+          _file: f,
+        }));
+        setImages(prev => [...prev, ...placeholders]);
+
+        // 2) 각각 업로드, 완료될 때마다 해당 placeholder 교체
+        for (const ph of placeholders) {
+          try {
+            const { url, fileId } = await uploadToImageKit(ph._file);
+            setImages(prev => prev.map(it => it._localKey === ph._localKey
+              ? { url, fileId, uploading: false }
+              : it
+            ));
+            // blob URL revoke
+            try { URL.revokeObjectURL(ph.url); } catch {}
+          } catch (err) {
+            showToast(err.message || '이미지 업로드 실패', 'error');
+            setImages(prev => prev.filter(it => it._localKey !== ph._localKey));
+            try { URL.revokeObjectURL(ph.url); } catch {}
+          }
+        }
+      };
+
+      const removeImage = (i) => {
+        setImages(prev => {
+          const target = prev[i];
+          if (target?.url?.startsWith('blob:')) {
+            try { URL.revokeObjectURL(target.url); } catch {}
+          }
+          return prev.filter((_, idx) => idx !== i);
+        });
+      };
+
+      const submit = async () => {
+        if (!title.trim()) return alert('제목을 입력해주세요.');
+        if (price === '' || isNaN(Number(price))) return alert('가격을 숫자로 입력해주세요.');
+        if (!description.trim()) return alert('설명을 입력해주세요.');
+        if (uploading) return alert('이미지 업로드가 끝나기를 기다려주세요.');
+        if (images.length === 0) return alert('이미지를 1장 이상 등록해주세요.');
+
+        const payload = {
+          title: title.trim(),
+          category,
+          price: Number(price),
+          description: description.trim(),
+          region: currentUser?.region,
+          images: images.map(({ url, fileId }) => ({ url, fileId })),
+        };
+
+        setSubmitting(true);
+        try {
+          if (editing) {
+            const { product } = await api(`/api/products/${editId}`, { method: 'PATCH', body: payload });
+            showToast('수정되었어요');
+            navigate(`/product/${editId}`);
+          } else {
+            const { product } = await api('/api/products', { method: 'POST', body: payload });
+            showToast('등록되었어요');
+            navigate(`/product/${product.id}`);
+          }
+        } catch (e) {
+          showToast(e.message || '저장 실패', 'error');
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      if (loadingProduct) {
+        return (
+          <div className="min-h-screen flex flex-col bg-white">
+            <TopBar left={<BackButton />} title="게시글 수정" />
+            <CenteredSpinner />
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen flex flex-col bg-white fade-in">
+          <TopBar
+            left={<BackButton />}
+            title={editing ? '게시글 수정' : '내 물건 팔기'}
+            right={
+              <button
+                onClick={submit}
+                disabled={submitting || uploading}
+                className={`px-3 py-1.5 text-sm font-bold ${submitting || uploading ? 'text-gray-300' : 'karrot-orange'}`}
+              >
+                {submitting ? '저장 중…' : '완료'}
+              </button>
+            }
+          />
+
+          {/* Image picker */}
+          <div className="px-4 py-4 border-b border-gray-100">
+            <div className="flex gap-2 overflow-x-auto scroll-hide">
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="flex-shrink-0 w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400"
+              >
+                <Icon.Camera />
+                <span className="text-xs mt-0.5">{images.length}/3</span>
+              </button>
+              {images.map((img, i) => (
+                <div key={img._localKey || img.url || i} className="relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-gray-100">
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  {img.uploading && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <Spinner className="w-5 h-5 border-white/60 border-t-white" />
+                    </div>
+                  )}
+                  <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white">
+                    <Icon.X width="12" height="12" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
+            {uploading && <p className="text-xs text-gray-400 mt-2">이미지 업로드 중…</p>}
+          </div>
+
+          <div className="px-4 py-4 space-y-4 flex-1">
+            <Input placeholder="제목" value={title} onChange={e => setTitle(e.target.value)} />
+            <Select label="" options={CATEGORIES} value={category} onChange={e => setCategory(e.target.value)} />
+            <div>
+              <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-karrot">
+                <span className="text-gray-700 font-bold mr-1">₩</span>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={e => setPrice(e.target.value)}
+                  placeholder="가격을 입력해주세요"
+                  className="flex-1 outline-none bg-transparent"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-1">0원으로 입력 시 나눔으로 등록돼요</p>
+            </div>
+            <Textarea
+              rows={6}
+              placeholder={`${currentUser?.region || ''}에 올릴 게시글 내용을 작성해주세요.\n(판매 금지 물품은 게시가 제한될 수 있어요)`}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: SEARCH
+    // ========================================
+    function SearchPage({ initialQuery = '' }) {
+      const { currentUser } = useApp();
+      const [query, setQuery] = useState(initialQuery);
+      const [results, setResults] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+
+      useEffect(() => { setQuery(initialQuery); }, [initialQuery]);
+
+      // 쿼리 변경 시 서버에 검색 — initialQuery가 곧 진짜 검색 트리거
+      useEffect(() => {
+        const q = (initialQuery || '').trim();
+        if (!q) {
+          setResults([]);
+          setLoading(false);
+          return;
+        }
+        let cancelled = false;
+        setLoading(true);
+        setError('');
+        const params = new URLSearchParams({ q });
+        api(`/api/products?${params.toString()}`, { auth: !!currentUser })
+          .then(({ products }) => { if (!cancelled) setResults(products || []); })
+          .catch((e) => { if (!cancelled) setError(e.message); })
+          .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+      }, [initialQuery]);
+
+      const submit = () => {
+        if (query.trim()) {
+          window.location.hash = `/search?q=${encodeURIComponent(query.trim())}`;
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-white fade-in">
+          <div className="sticky top-0 bg-white border-b border-gray-100 z-30 flex items-center px-3 h-14 gap-2">
+            <BackButton />
+            <div className="flex-1 flex items-center bg-gray-100 rounded-xl px-3 py-2 gap-2">
+              <Icon.Search className="text-gray-400" width="18" height="18" />
+              <input
+                autoFocus
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && submit()}
+                placeholder="검색어를 입력하세요"
+                className="bg-transparent flex-1 outline-none text-sm"
+              />
+              {query && <button onClick={() => setQuery('')}><Icon.X width="16" height="16" /></button>}
+            </div>
+          </div>
+          {!initialQuery.trim() ? (
+            <EmptyState emoji="🔍" title="키워드를 입력해보세요" subtitle="동네에서 거래되는 상품을 찾아드릴게요" />
+          ) : loading ? (
+            <CenteredSpinner />
+          ) : error ? (
+            <EmptyState emoji="😢" title="검색 실패" subtitle={error} />
+          ) : results.length === 0 ? (
+            <EmptyState emoji="😶" title={`"${initialQuery}" 검색 결과가 없어요`} subtitle="다른 키워드로 검색해보세요" />
+          ) : (
+            <>
+              <p className="px-4 py-3 text-sm text-gray-500"><span className="font-bold karrot-orange">{results.length}</span>개의 상품</p>
+              <div className="divide-y divide-gray-100">
+                {results.map(p => (
+                  <ProductCard key={p.id} product={p} onClick={() => navigate(`/product/${p.id}`)} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: CHATS LIST
+    // ========================================
+    function ChatsPage() {
+      const { currentUser } = useApp();
+      const [rooms, setRooms] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      // 5초 폴링 (마운트 즉시 1번 + 5000ms 간격)
+      useEffect(() => {
+        if (!currentUser) { setLoading(false); return; }
+        let cancelled = false;
+        const fetchRooms = async () => {
+          if (cancelled) return;
+          try {
+            const { rooms } = await api('/api/chats');
+            if (!cancelled) setRooms(rooms || []);
+          } catch (e) {
+            // 무시 (다음 폴링에서 다시 시도)
+          } finally {
+            if (!cancelled) setLoading(false);
+          }
+        };
+        fetchRooms();
+        const id = setInterval(fetchRooms, 5000);
+        return () => { cancelled = true; clearInterval(id); };
+      }, [currentUser?.id]);
+
+      if (!currentUser) {
+        return (
+          <div className="min-h-screen flex flex-col">
+            <TopBar title="채팅" />
+            <EmptyState emoji="💬" title="로그인이 필요해요" action={<Button onClick={() => navigate('/login')}>로그인하기</Button>} />
+            <BottomNav active="chats" />
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen flex flex-col fade-in">
+          <TopBar title="채팅" />
+          {loading ? (
+            <CenteredSpinner />
+          ) : rooms.length === 0 ? (
+            <EmptyState
+              emoji="💬"
+              title="아직 채팅이 없어요"
+              subtitle="관심 있는 상품에 채팅을 보내보세요"
+              action={<Button onClick={() => navigate('/')}>홈으로</Button>}
+            />
+          ) : (
+            <div className="divide-y divide-gray-100 flex-1">
+              {rooms.map(c => {
+                const otherNickname = c.other_nickname || '알수없음';
+                const lastTs = c.last_message_at || c.created_at;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => navigate(`/chat/${c.id}`)}
+                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 text-left"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-karrot-soft flex items-center justify-center text-2xl flex-shrink-0">
+                      {avatarFor(otherNickname)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-semibold text-gray-900 truncate">{otherNickname}</span>
+                        {lastTs && <span className="text-[11px] text-gray-400 ml-auto flex-shrink-0">{formatTimeAgo(lastTs)}</span>}
+                      </div>
+                      <p className="text-sm text-gray-600 truncate mt-0.5">{c.last_message || '대화를 시작해보세요'}</p>
+                    </div>
+                    {c.product_thumbnail && (
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                        <img src={c.product_thumbnail} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <BottomNav active="chats" />
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: CHAT ROOM
+    // ========================================
+    function ChatRoomPage({ roomId }) {
+      const { currentUser } = useApp();
+      const [messages, setMessages] = useState([]);
+      const [roomMeta, setRoomMeta] = useState(null);   // /api/chats 결과 중 해당 방
+      const [loaded, setLoaded] = useState(false);
+      const [text, setText] = useState('');
+      const [sending, setSending] = useState(false);
+      const scrollRef = useRef(null);
+      const lastIdRef = useRef(null);
+
+      // 방 메타(상대방, 상품 썸네일/제목)는 /api/chats 응답에서 1회 가져옴
+      useEffect(() => {
+        if (!currentUser) return;
+        let cancelled = false;
+        api('/api/chats').then(({ rooms }) => {
+          if (cancelled) return;
+          const found = (rooms || []).find(r => r.id === roomId);
+          setRoomMeta(found || null);
+        }).catch(() => {});
+        return () => { cancelled = true; };
+      }, [roomId, currentUser?.id]);
+
+      // 메시지 2초 폴링
+      useEffect(() => {
+        if (!currentUser) return;
+        let cancelled = false;
+        const fetchMessages = async () => {
+          if (cancelled) return;
+          try {
+            const { messages } = await api(`/api/chats/${roomId}/messages`);
+            if (cancelled) return;
+            setMessages(messages || []);
+            setLoaded(true);
+          } catch (e) {
+            // 403/404면 더 이상 폴링 의미 없음
+            if (/HTTP (403|404)/.test(e.message)) {
+              if (!cancelled) setLoaded(true);
+              return;
+            }
+            // 그 외는 무시 (다음 폴링에서 재시도)
+          }
+        };
+        fetchMessages();
+        const id = setInterval(fetchMessages, 2000);
+        return () => { cancelled = true; clearInterval(id); };
+      }, [roomId, currentUser?.id]);
+
+      // 새 메시지 도착 시 스크롤 자동 하단
+      useEffect(() => {
+        if (messages.length === 0) return;
+        const last = messages[messages.length - 1];
+        if (last.id !== lastIdRef.current) {
+          lastIdRef.current = last.id;
+          if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+          }
+        }
+      }, [messages]);
+
+      if (!currentUser) {
+        return (
+          <div className="min-h-screen flex flex-col">
+            <TopBar left={<BackButton />} />
+            <EmptyState emoji="🔒" title="로그인이 필요해요" action={<Button onClick={() => navigate('/login')}>로그인</Button>} />
+          </div>
+        );
+      }
+
+      if (loaded && messages.length === 0 && !roomMeta) {
+        // /api/chats에도 없고 메시지도 못 읽었으면 채팅방 없음/권한 없음
+        return (
+          <div className="min-h-screen flex flex-col">
+            <TopBar left={<BackButton />} />
+            <EmptyState emoji="🤔" title="채팅방을 찾을 수 없어요" action={<Button onClick={() => navigate('/chats')}>채팅 목록으로</Button>} />
+          </div>
+        );
+      }
+
+      const otherNickname = roomMeta?.other_nickname || '...';
+      const productTitle = roomMeta?.product_title;
+      const productPrice = roomMeta?.product_price;
+      const productThumb = roomMeta?.product_thumbnail;
+      const productId = roomMeta?.product_id;
+      const productStatus = roomMeta?.product_status;
+
+      const handleSend = async () => {
+        if (!text.trim() || sending) return;
+        const content = text.trim();
+        setText('');
+        setSending(true);
+        // 낙관적 추가
+        const optimistic = {
+          id: 'tmp_' + Date.now(),
+          room_id: roomId,
+          sender_id: currentUser.id,
+          content,
+          created_at: new Date().toISOString(),
+          _pending: true,
+        };
+        setMessages(prev => [...prev, optimistic]);
+        try {
+          const { message } = await api(`/api/chats/${roomId}/messages`, {
+            method: 'POST',
+            body: { content },
+          });
+          // 낙관적 항목을 실제 메시지로 교체. 다음 폴링에서 어차피 동기화됨.
+          setMessages(prev => {
+            const without = prev.filter(m => m.id !== optimistic.id);
+            return [...without, message];
+          });
+        } catch (e) {
+          showToast(e.message || '전송 실패', 'error');
+          setMessages(prev => prev.filter(m => m.id !== optimistic.id));
+          setText(content);
+        } finally {
+          setSending(false);
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-gray-50 fade-in">
+          <TopBar
+            left={
+              <>
+                <BackButton />
+                <div className="flex flex-col leading-tight">
+                  <span className="font-bold text-gray-900">{otherNickname}</span>
+                </div>
+              </>
+            }
+            right={<button className="p-2 rounded-full hover:bg-gray-100"><Icon.MoreVert /></button>}
+          />
+
+          {productTitle && (
+            <div className="px-4 py-3 bg-white border-b border-gray-100 flex items-center gap-3 cursor-pointer" onClick={() => productId && navigate(`/product/${productId}`)}>
+              <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                {productThumb
+                  ? <img src={productThumb} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500">{productStatus === 'sold' ? '거래완료' : productStatus === 'reserved' ? '예약중' : '판매중'}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{productTitle}</p>
+                <p className="text-sm font-bold text-gray-900">{formatPrice(productPrice)}</p>
+              </div>
+            </div>
+          )}
+
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+            {!loaded ? (
+              <CenteredSpinner />
+            ) : messages.length === 0 ? (
+              <div className="text-center text-sm text-gray-400 mt-10">
+                <p>{otherNickname}님과의 대화를 시작해보세요</p>
+                <p className="mt-1">😊 따뜻한 인사로 시작해볼까요?</p>
+              </div>
+            ) : (
+              messages.map(m => (
+                <ChatBubble
+                  key={m.id}
+                  mine={m.sender_id === currentUser.id}
+                  text={m.content}
+                  time={new Date(m.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                />
+              ))
+            )}
+          </div>
+
+          <div className="bg-white border-t border-gray-100 px-3 py-2 flex items-center gap-2">
+            <button className="p-2 text-gray-500"><Icon.Plus /></button>
+            <input
+              value={text}
+              onChange={e => setText(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
+              placeholder="메시지 보내기"
+              className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full outline-none text-sm"
+              disabled={sending}
+            />
+            <button onClick={handleSend} disabled={!text.trim() || sending} className="p-2 disabled:opacity-30 karrot-orange">
+              <Icon.Send />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 📄 PAGE: ME (My Page)
+    // ========================================
+    function MePage() {
+      const { currentUser, logout, updateMe } = useApp();
+      const [tab, setTab] = useState('selling'); // selling | sold | liked
+      const [showRegion, setShowRegion] = useState(false);
+      const [showNickname, setShowNickname] = useState(false);
+      const [nicknameInput, setNicknameInput] = useState('');
+
+      const [myProducts, setMyProducts] = useState([]);
+      const [likedProducts, setLikedProducts] = useState([]);
+      const [loadingMine, setLoadingMine] = useState(true);
+      const [loadingLikes, setLoadingLikes] = useState(true);
+
+      // 내 상품 목록 (sellerId 필터)
+      useEffect(() => {
+        if (!currentUser) { setLoadingMine(false); return; }
+        let cancelled = false;
+        setLoadingMine(true);
+        api(`/api/products?sellerId=${encodeURIComponent(currentUser.id)}`)
+          .then(({ products }) => { if (!cancelled) setMyProducts(products || []); })
+          .catch(() => { if (!cancelled) setMyProducts([]); })
+          .finally(() => { if (!cancelled) setLoadingMine(false); });
+        return () => { cancelled = true; };
+      }, [currentUser?.id]);
+
+      // 관심 목록
+      useEffect(() => {
+        if (!currentUser) { setLoadingLikes(false); return; }
+        let cancelled = false;
+        setLoadingLikes(true);
+        api('/api/me/likes')
+          .then(({ products }) => { if (!cancelled) setLikedProducts(products || []); })
+          .catch(() => { if (!cancelled) setLikedProducts([]); })
+          .finally(() => { if (!cancelled) setLoadingLikes(false); });
+        return () => { cancelled = true; };
+      }, [currentUser?.id]);
+
+      if (!currentUser) {
+        return (
+          <div className="min-h-screen flex flex-col">
+            <TopBar title="나의 당근" />
+            <EmptyState emoji="👋" title="로그인이 필요해요" action={<Button onClick={() => navigate('/login')}>로그인하기</Button>} />
+            <BottomNav active="me" />
+          </div>
+        );
+      }
+
+      const selling = myProducts.filter(p => p.status === 'selling' || p.status === 'reserved');
+      const sold    = myProducts.filter(p => p.status === 'sold');
+      const list = tab === 'selling' ? selling : tab === 'sold' ? sold : likedProducts;
+      const tabLoading = (tab === 'liked' ? loadingLikes : loadingMine);
+
+      const changeRegion = async (r) => {
+        const result = await updateMe({ region: r });
+        if (!result.ok) showToast(result.message || '동네 변경 실패', 'error');
+        setShowRegion(false);
+      };
+
+      const openNickname = () => {
+        setNicknameInput(currentUser.nickname || '');
+        setShowNickname(true);
+      };
+      const saveNickname = async () => {
+        const result = await updateMe({ nickname: nicknameInput.trim() });
+        if (!result.ok) {
+          showToast(result.message || '닉네임 변경 실패', 'error');
+          return;
+        }
+        showToast('닉네임이 변경되었어요');
+        setShowNickname(false);
+      };
+
+      const temperature = Number(currentUser.manner_temp || 36.5);
+
+      return (
+        <div className="min-h-screen flex flex-col fade-in">
+          <TopBar title="나의 당근" />
+
+          <div className="px-4 py-5 border-b border-gray-100 flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-karrot-soft flex items-center justify-center text-3xl">
+              {avatarFor(currentUser.nickname)}
+            </div>
+            <div className="flex-1">
+              <button onClick={openNickname} className="font-bold text-lg text-gray-900 flex items-center gap-1">
+                {currentUser.nickname}
+                <Icon.Edit width="14" height="14" />
+              </button>
+              <p className="text-xs text-gray-500">{currentUser.email}</p>
+              <div className="mt-2 max-w-[180px]">
+                <TemperatureBar value={temperature} />
+              </div>
+            </div>
+          </div>
+
+          {/* Region setting */}
+          <button
+            onClick={() => setShowRegion(true)}
+            className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 border-b border-gray-100"
+          >
+            <div className="flex items-center gap-3">
+              <Icon.MapPin />
+              <span className="text-gray-900 font-medium">내 동네</span>
+            </div>
+            <div className="flex items-center gap-1 text-gray-500">
+              <span>{currentUser.region}</span>
+              <Icon.ChevronRight />
+            </div>
+          </button>
+
+          {/* Tabs */}
+          <div className="flex border-b border-gray-100 sticky top-14 bg-white z-10">
+            {[
+              { key: 'selling', label: `판매중 ${selling.length}` },
+              { key: 'sold',    label: `판매완료 ${sold.length}` },
+              { key: 'liked',   label: `관심목록 ${likedProducts.length}` },
+            ].map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex-1 py-3 text-sm font-medium relative ${tab === t.key ? 'text-gray-900' : 'text-gray-400'}`}
+              >
+                {t.label}
+                {tab === t.key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-karrot" />}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1">
+            {tabLoading ? (
+              <CenteredSpinner />
+            ) : list.length === 0 ? (
+              <EmptyState
+                emoji={tab === 'liked' ? '🤍' : '📦'}
+                title={tab === 'liked' ? '관심목록이 비어있어요' : '아직 등록한 상품이 없어요'}
+                subtitle={tab === 'liked' ? '맘에 드는 상품에 ♡를 눌러보세요' : '내 동네에 판매글을 등록해보세요'}
+              />
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {list.map(p => <ProductCard key={p.id} product={p} onClick={() => navigate(`/product/${p.id}`)} />)}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 border-t border-gray-100">
+            <Button variant="outline" full onClick={() => { logout(); navigate('/login'); }}>로그아웃</Button>
+          </div>
+
+          <BottomNav active="me" />
+
+          <Modal isOpen={showRegion} onClose={() => setShowRegion(false)} title="동네 변경">
+            <div className="grid grid-cols-2 gap-2">
+              {REGIONS.map(r => (
+                <button
+                  key={r}
+                  onClick={() => changeRegion(r)}
+                  className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${currentUser.region === r ? 'border-karrot bg-karrot-soft karrot-orange' : 'border-gray-200 bg-white text-gray-700'}`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </Modal>
+
+          <Modal isOpen={showNickname} onClose={() => setShowNickname(false)} title="닉네임 변경">
+            <Input
+              value={nicknameInput}
+              onChange={e => setNicknameInput(e.target.value)}
+              placeholder="닉네임 (2자 이상)"
+            />
+            <div className="flex gap-2 mt-4">
+              <Button variant="secondary" full onClick={() => setShowNickname(false)}>취소</Button>
+              <Button full onClick={saveNickname} disabled={nicknameInput.trim().length < 2}>저장</Button>
+            </div>
+          </Modal>
+        </div>
+      );
+    }
+
+    // ========================================
+    // 🚀 APP ROOT
+    // ========================================
+    function AppContent() {
+      const route = useHashRoute();
+      const { authChecked } = useApp();
+      const { path, query } = route;
+
+      // 부팅 시 토큰 검증 중에는 잠깐 스피너만 (깜빡임 방지)
+      if (!authChecked) {
+        return (
+          <div className="phone-frame min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-5xl mb-3">🥕</div>
+              <CenteredSpinner />
+            </div>
+          </div>
+        );
+      }
+
+      let page;
+      let m;
+
+      if (path === '/' || path === '/home') page = <HomePage />;
+      else if (path === '/login') page = <LoginPage />;
+      else if (path === '/signup') page = <SignupPage />;
+      else if (path === '/new') page = <ProductFormPage />;
+      else if (path === '/search') page = <SearchPage initialQuery={query.q || ''} />;
+      else if (path === '/chats') page = <ChatsPage />;
+      else if (path === '/me') page = <MePage />;
+      else if ((m = matchRoute('/product/:id', path))) page = <ProductDetailPage id={m.id} />;
+      else if ((m = matchRoute('/edit/:id', path))) page = <ProductFormPage editId={m.id} />;
+      else if ((m = matchRoute('/chat/:roomId', path))) page = <ChatRoomPage roomId={m.roomId} />;
+      else page = (
+        <div className="min-h-screen flex flex-col">
+          <TopBar left={<BackButton />} title="404" />
+          <EmptyState emoji="🤷" title="페이지를 찾을 수 없어요" action={<Button onClick={() => navigate('/')}>홈으로</Button>} />
+        </div>
+      );
+
+      return (
+        <div className="phone-frame">
+          {page}
+          <ToastHost />
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

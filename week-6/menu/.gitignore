@@ -1,0 +1,6 @@
+node_modules/
+.env
+data/campaigns.json
+slides/
+*.log
+.DS_Store
