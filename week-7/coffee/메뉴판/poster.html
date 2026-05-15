@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>COFFEE LIGHT — NEW Hojicha Oat Latte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Cormorant+Garamond:ital,wght@0,600;1,500;1,700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  :root{
+    --teal-deep:  #0C4845;
+    --teal-mid:   #3E8D85;
+    --teal-pale:  #DCEAE5;
+    --paper:      #F6F2EA;
+    --ink:        #161F1E;
+    --muted:      #6B807D;
+    --gold:       #E0B068;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    background:#2c2c2c;font-family:'Pretendard',sans-serif;
+    color:var(--ink);-webkit-font-smoothing:antialiased;
+  }
+  .poster{
+    width:1080px;height:1350px;
+    background:var(--paper);
+    margin:24px auto;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+    display:flex;flex-direction:column;
+  }
+
+  /* ============ HERO PHOTO ============ */
+  .hero{
+    position:relative;
+    width:100%;
+    height:670px;
+    overflow:hidden;
+  }
+  .hero img{
+    width:100%;height:100%;object-fit:cover;display:block;
+    filter:saturate(1.05) contrast(1.02);
+  }
+  .hero::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(12,72,69,.25) 0%, transparent 25%, transparent 60%, rgba(12,72,69,.55) 100%);
+  }
+  /* top bar */
+  .topbar{
+    position:absolute;top:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:36px 56px;
+    z-index:3;color:var(--paper);
+  }
+  .brand{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:22px;letter-spacing:.28em;
+    margin-top:14px;
+  }
+  /* big NEW badge */
+  .new-badge{
+    background:var(--gold);
+    padding:14px 22px 12px;
+    color:var(--teal-deep);
+    text-align:right;
+    box-shadow:0 8px 30px rgba(0,0,0,.25);
+    border:2.5px solid var(--paper);
+  }
+  .new-badge .big{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:38px;line-height:.92;letter-spacing:.04em;
+    display:block;
+  }
+  .new-badge .kor{
+    font-family:'Pretendard',sans-serif;font-weight:900;
+    font-size:16px;letter-spacing:.36em;
+    margin-top:4px;
+    display:block;color:var(--teal-deep);
+  }
+
+  /* diagonal NEW stamp on hero */
+  .stamp{
+    position:absolute;
+    top:300px;right:60px;
+    z-index:2;
+    width:170px;height:170px;
+    border-radius:50%;
+    background:transparent;
+    border:3px solid var(--gold);
+    color:var(--gold);
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    transform:rotate(-12deg);
+    text-align:center;
+    box-shadow:0 6px 30px rgba(0,0,0,.3);
+  }
+  .stamp::before, .stamp::after{
+    content:'';position:absolute;left:8px;right:8px;
+    border-top:1px dashed var(--gold);
+  }
+  .stamp::before{top:14px}
+  .stamp::after{bottom:14px}
+  .stamp .top{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:14px;letter-spacing:.34em;
+  }
+  .stamp .mid{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:34px;letter-spacing:.04em;
+    line-height:.95;margin:6px 0 4px;
+  }
+  .stamp .bot{
+    font-family:'Pretendard',sans-serif;font-weight:900;
+    font-size:14px;letter-spacing:.32em;
+  }
+
+  /* hero caption (overlay on photo) */
+  .hero-caption{
+    position:absolute;left:56px;bottom:42px;right:56px;
+    color:var(--paper);z-index:2;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  }
+  .hero-caption .left{display:flex;flex-direction:column;gap:14px}
+  .hero-caption .cat{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:15px;letter-spacing:.36em;
+    color:var(--teal-deep);
+    background:var(--gold);
+    padding:8px 14px 6px;
+    display:inline-block;width:max-content;
+  }
+  .hero-caption .tag{
+    font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+    font-size:32px;letter-spacing:.01em;
+    color:var(--paper);
+    text-shadow:0 2px 12px rgba(0,0,0,.5);
+  }
+
+  /* ============ INFO PANEL ============ */
+  .info{
+    flex:1;
+    padding:52px 56px 40px;
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    gap:40px;
+    background:var(--paper);
+    position:relative;
+  }
+  .info::before{
+    content:'';position:absolute;top:0;left:56px;right:56px;height:2px;
+    background:var(--teal-deep);
+  }
+  /* left: menu name + tagline */
+  .info-left{display:flex;flex-direction:column;justify-content:space-between}
+  .menu-name{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:84px;line-height:.88;letter-spacing:-.025em;
+    color:var(--teal-deep);
+    margin-top:4px;
+  }
+  .menu-name .dot{color:var(--teal-mid)}
+  .menu-name-kor{
+    font-family:'Pretendard',sans-serif;font-weight:800;
+    font-size:24px;letter-spacing:.18em;
+    color:var(--teal-mid);
+    margin-top:18px;
+  }
+  .copy{
+    font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+    font-size:30px;line-height:1.2;letter-spacing:-.005em;
+    color:var(--ink);
+    margin-top:24px;
+    max-width:440px;
+  }
+  .copy-kor{
+    font-family:'Pretendard',sans-serif;font-weight:600;
+    font-size:15px;letter-spacing:.04em;
+    color:var(--muted);
+    margin-top:10px;
+  }
+
+  /* right: reasons */
+  .reasons{
+    display:flex;flex-direction:column;gap:18px;
+    padding-top:6px;
+  }
+  .reasons-label{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:14px;letter-spacing:.32em;
+    color:var(--teal-deep);
+    padding-bottom:12px;
+    border-bottom:1.5px solid var(--teal-deep);
+    margin-bottom:8px;
+  }
+  .reason{
+    display:flex;align-items:flex-start;gap:18px;
+    padding:6px 0;
+  }
+  .reason .num{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:34px;line-height:1;
+    color:var(--teal-mid);
+    min-width:46px;
+  }
+  .reason .text{
+    font-family:'Pretendard',sans-serif;font-weight:700;
+    font-size:22px;line-height:1.45;letter-spacing:-.005em;
+    color:var(--ink);
+    flex:1;
+  }
+  .reason .text b{color:var(--teal-deep);font-weight:900}
+
+  /* ============ FOOTER ============ */
+  .footer{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:end;
+    padding:0 56px 44px;
+    gap:30px;
+    background:var(--paper);
+  }
+  .price-block{
+    display:flex;align-items:flex-end;gap:18px;
+  }
+  .price-now{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:68px;line-height:.9;letter-spacing:-.015em;
+    color:var(--teal-deep);
+  }
+  .price-now::after{
+    content:'₩';font-size:36px;color:var(--ink);
+    margin-left:6px;
+  }
+  .price-meta{
+    display:flex;flex-direction:column;gap:6px;
+    padding-bottom:8px;
+  }
+  .price-old{
+    font-family:'Archivo',sans-serif;font-weight:700;
+    font-size:20px;color:var(--muted);
+    text-decoration:line-through;
+  }
+  .price-off{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:14px;letter-spacing:.18em;
+    color:var(--paper);background:var(--teal-mid);
+    padding:5px 10px;display:inline-block;width:max-content;
+  }
+  .period{
+    text-align:right;
+    display:flex;flex-direction:column;gap:6px;
+    padding-bottom:8px;
+  }
+  .period .label{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:11px;letter-spacing:.32em;
+    color:var(--muted);
+  }
+  .period .date{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:22px;letter-spacing:.06em;
+    color:var(--teal-deep);
+  }
+  .period .small{
+    font-family:'Pretendard',sans-serif;font-weight:600;
+    font-size:11px;letter-spacing:.16em;
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="topbar">
+      <div class="brand">COFFEE&nbsp;LIGHT</div>
+      <div class="new-badge">
+        <span class="big">NEW</span>
+        <span class="kor">신 메 뉴</span>
+      </div>
+    </div>
+    <img src="tabitha-turner-PSqT-lQAt7A-unsplash.jpg" alt="hojicha oat latte">
+    <div class="stamp">
+      <div class="top">JUST</div>
+      <div class="mid">LAUNCHED</div>
+      <div class="bot">신메뉴 출시</div>
+    </div>
+    <div class="hero-caption">
+      <div class="left">
+        <div class="cat">신메뉴 출시 · NEW MENU LAUNCH</div>
+        <div class="tag">— roasted, mellow, lightly yours.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="info">
+    <div class="info-left">
+      <div>
+        <div class="menu-name">HOJICHA<br>OAT LATTE<span class="dot">.</span></div>
+        <div class="menu-name-kor">호지차 오트 라떼</div>
+      </div>
+      <div>
+        <div class="copy">Deep-roasted Japanese hojicha,<br>cradled in oat milk.</div>
+        <div class="copy-kor">깊게 볶은 호지차를 귀리우유로 가볍게 감싸다.</div>
+      </div>
+    </div>
+
+    <div class="reasons">
+      <div class="reasons-label">WHY YOU'LL LOVE IT</div>
+      <div class="reason">
+        <div class="num">01</div>
+        <div class="text">카페인 일반 라떼의 <b>1/3</b><br>저녁에도 부담 없이 한 잔</div>
+      </div>
+      <div class="reason">
+        <div class="num">02</div>
+        <div class="text">정제당 <b>0g</b> · 1잔 <b>95kcal</b><br>귀리우유의 자연스러운 단맛만</div>
+      </div>
+      <div class="reason">
+        <div class="num">03</div>
+        <div class="text">후쿠오카산 <b>호지차</b> 원두 사용<br>고소한 풍미 · 폴리페놀 함유</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="price-block">
+      <div class="price-now">5,500</div>
+      <div class="price-meta">
+        <div class="price-old">6,500₩</div>
+        <div class="price-off">LAUNCH · 15% OFF</div>
+      </div>
+    </div>
+    <div class="period">
+      <div class="label">EVENT PERIOD</div>
+      <div class="date">2026.05.15 — 06.30</div>
+      <div class="small">전국 매장 한정 · @coffeelight.kr</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

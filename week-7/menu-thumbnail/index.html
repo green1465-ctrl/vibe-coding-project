@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu — 시즌 캠페인 카드뉴스 자동 생성</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: auto;
+    }
+
+    /* Center the 1920x1080 thumbnail on screen */
+    .stage {
+      min-height: 100vh;
+      min-width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Exact 1920x1080 container */
+    #thumbnail {
+      width: 1920px;
+      height: 1080px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(163, 230, 53, 0.22) 0%, rgba(163, 230, 53, 0) 42%),
+        radial-gradient(circle at 88% 14%, rgba(16, 185, 129, 0.20) 0%, rgba(16, 185, 129, 0) 45%),
+        radial-gradient(circle at 75% 92%, rgba(16, 185, 129, 0.10) 0%, rgba(16, 185, 129, 0) 40%),
+        linear-gradient(135deg, #0a0a0a 0%, #0e0f12 100%);
+    }
+
+    /* Subtle grid texture */
+    #thumbnail::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+      pointer-events: none;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, #d9f99d 45%, #a3e635 70%, #10b981 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    .tight {
+      letter-spacing: -0.035em;
+    }
+
+    .glass {
+      background: rgba(20, 22, 26, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-mock {
+      width: 320px;
+      height: 320px;
+      border-radius: 24px;
+      position: absolute;
+      overflow: hidden;
+      box-shadow:
+        0 30px 60px -15px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+      transition: transform 0.4s ease;
+    }
+
+    .card-mock::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.55) 100%);
+      pointer-events: none;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+    .pulse-dot {
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+
+    @keyframes float-slow {
+      0%, 100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+      50% { transform: translateY(-8px) rotate(var(--rot, 0deg)); }
+    }
+    .float-1 { animation: float-slow 5.5s ease-in-out infinite; }
+    .float-2 { animation: float-slow 6.2s ease-in-out infinite 0.4s; }
+    .float-3 { animation: float-slow 5.8s ease-in-out infinite 0.8s; }
+    .float-4 { animation: float-slow 6.5s ease-in-out infinite 1.2s; }
+    .float-5 { animation: float-slow 5.9s ease-in-out infinite 1.6s; }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div id="root"></div>
+  </div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // ========================================
+    // Design System — Small UI primitives
+    // ========================================
+
+    function LabelChip({ children }) {
+      return (
+        <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-lime-400/10 border border-lime-400/25">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-lime-400 pulse-dot"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-400"></span>
+          </span>
+          <span className="text-lime-300 text-[13px] font-medium tracking-[0.18em] uppercase">
+            {children}
+          </span>
+        </div>
+      );
+    }
+
+    function StackPill({ children }) {
+      return (
+        <span className="px-4 py-2 rounded-full glass text-slate-300 text-base font-medium tight">
+          {children}
+        </span>
+      );
+    }
+
+    // ========================================
+    // Card mockup — single carousel slide preview
+    // ========================================
+
+    function CardMock({ style, className, bg, children, label }) {
+      return (
+        <div
+          className={`card-mock ${className}`}
+          style={{ ...style, background: bg }}
+        >
+          {/* slide number / label */}
+          {label && (
+            <div className="absolute top-4 left-4 z-10 px-2.5 py-1 rounded-md bg-black/40 border border-white/10 backdrop-blur-sm">
+              <span className="text-[11px] tracking-[0.15em] uppercase text-white/80 font-semibold">
+                {label}
+              </span>
+            </div>
+          )}
+          <div className="relative z-10 h-full flex flex-col justify-end p-7">
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Visual side — stack of card news mockups
+    // ========================================
+
+    function CardStack() {
+      return (
+        <div className="relative w-full h-full">
+
+          {/* Card 1 — Cover (정담한정식, 따뜻한 한 끼) */}
+          <CardMock
+            label="01 · COVER"
+            className="float-1"
+            style={{ left: '40px', top: '60px', '--rot': '-7deg', transform: 'rotate(-7deg)' }}
+            bg="linear-gradient(135deg, #1a2e1a 0%, #0d1f14 60%, #061a10 100%)"
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-6xl">
+              🍽️
+            </div>
+            <div>
+              <div className="text-lime-300/90 text-[11px] tracking-[0.25em] uppercase mb-2 font-semibold">
+                Spring Menu · 2026
+              </div>
+              <div className="text-white text-[26px] font-black leading-[1.15] tight">
+                정담한정식<br/>
+                <span className="text-lime-200">따뜻한 한 끼</span>
+              </div>
+            </div>
+          </CardMock>
+
+          {/* Card 2 — Seasonal ingredients */}
+          <CardMock
+            label="02 · 제철 메뉴"
+            className="float-2"
+            style={{ left: '340px', top: '20px', '--rot': '4deg', transform: 'rotate(4deg)' }}
+            bg="linear-gradient(160deg, #1a1f12 0%, #14180e 100%)"
+          >
+            <div className="absolute top-16 left-7 right-7">
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 flex items-center gap-2">
+                  <span className="text-xl">🎋</span>
+                  <span className="text-white/90 text-sm font-medium">죽순</span>
+                </div>
+                <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 flex items-center gap-2">
+                  <span className="text-xl">🌿</span>
+                  <span className="text-white/90 text-sm font-medium">두릅</span>
+                </div>
+                <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 flex items-center gap-2">
+                  <span className="text-xl">🍃</span>
+                  <span className="text-white/90 text-sm font-medium">쑥</span>
+                </div>
+                <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 flex items-center gap-2">
+                  <span className="text-xl">🌱</span>
+                  <span className="text-white/90 text-sm font-medium">머위</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="text-emerald-300/90 text-[11px] tracking-[0.25em] uppercase mb-1.5 font-semibold">
+                In Season
+              </div>
+              <div className="text-white text-[22px] font-black leading-[1.2] tight">
+                5월의 제철 메뉴
+              </div>
+            </div>
+          </CardMock>
+
+          {/* Card 3 — Featured dish (비빔밥) */}
+          <CardMock
+            label="03 · 추천"
+            className="float-3"
+            style={{ left: '120px', top: '380px', '--rot': '-3deg', transform: 'rotate(-3deg)' }}
+            bg="linear-gradient(150deg, #2a1810 0%, #1a0f08 100%)"
+          >
+            <div className="absolute top-14 left-1/2 -translate-x-1/2 text-[88px] leading-none">
+              🍱
+            </div>
+            <div>
+              <div className="text-amber-200/90 text-[11px] tracking-[0.25em] uppercase mb-1.5 font-semibold">
+                Signature ①
+              </div>
+              <div className="text-white text-[26px] font-black leading-[1.15] tight">
+                추천 메뉴<br/>
+                <span className="text-amber-200">비빔밥</span>
+              </div>
+            </div>
+          </CardMock>
+
+          {/* Card 4 — Calendar (5월 일정) */}
+          <CardMock
+            label="04 · CALENDAR"
+            className="float-4"
+            style={{ left: '420px', top: '410px', '--rot': '6deg', transform: 'rotate(6deg)' }}
+            bg="linear-gradient(155deg, #16181f 0%, #0f1015 100%)"
+          >
+            <div className="absolute top-14 left-7 right-7 space-y-2.5">
+              <div className="flex items-center gap-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                <div className="text-lime-300 text-xs font-bold tracking-wider">05/08</div>
+                <div className="w-px h-4 bg-white/15"></div>
+                <div className="text-white/85 text-sm font-medium">어버이날</div>
+              </div>
+              <div className="flex items-center gap-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                <div className="text-lime-300 text-xs font-bold tracking-wider">05/15</div>
+                <div className="w-px h-4 bg-white/15"></div>
+                <div className="text-white/85 text-sm font-medium">스승의 날</div>
+              </div>
+              <div className="flex items-center gap-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                <div className="text-lime-300 text-xs font-bold tracking-wider">05/20</div>
+                <div className="w-px h-4 bg-white/15"></div>
+                <div className="text-white/85 text-sm font-medium">성년의 날</div>
+              </div>
+            </div>
+            <div>
+              <div className="text-lime-300/90 text-[11px] tracking-[0.25em] uppercase mb-1.5 font-semibold">
+                May Schedule
+              </div>
+              <div className="text-white text-[22px] font-black leading-[1.2] tight">
+                5월의 일정
+              </div>
+            </div>
+          </CardMock>
+
+          {/* Card 5 — CTA */}
+          <CardMock
+            label="05 · CTA"
+            className="float-5"
+            style={{ left: '710px', top: '210px', '--rot': '-2deg', transform: 'rotate(-2deg)' }}
+            bg="linear-gradient(135deg, #14532d 0%, #0a3d20 50%, #052e16 100%)"
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-7">
+              <div className="text-[11px] tracking-[0.25em] uppercase text-lime-200/80 font-semibold mb-3">
+                지금 예약하세요
+              </div>
+              <div className="text-white text-[28px] font-black leading-[1.15] tight mb-5">
+                정담한정식<br/>
+                <span className="text-lime-300">5월 특선</span>
+              </div>
+              <div className="px-5 py-2.5 rounded-full bg-lime-400 text-emerald-950 text-sm font-bold tracking-wide">
+                예약 문의 →
+              </div>
+            </div>
+          </CardMock>
+
+        </div>
+      );
+    }
+
+    // ========================================
+    // App — full 1920x1080 thumbnail
+    // ========================================
+
+    function App() {
+      const stack = ['OpenAI', 'fal.ai', 'Playwright', 'ImageKit', 'Express', 'React'];
+
+      return (
+        <div id="thumbnail">
+          {/* Top-left brand mark */}
+          <div className="absolute top-12 left-20 flex items-center gap-3 z-10">
+            <div className="w-2 h-2 rounded-full bg-lime-400 pulse-dot"></div>
+            <span className="text-white/50 text-sm font-medium tracking-[0.25em] uppercase">
+              Bootcamp · Week 06
+            </span>
+          </div>
+
+          {/* Top-right page indicator */}
+          <div className="absolute top-12 right-20 flex items-center gap-2 z-10">
+            <span className="text-white/40 text-sm font-medium tracking-[0.2em] uppercase">
+              Slide 01
+            </span>
+            <div className="w-8 h-px bg-white/20"></div>
+            <span className="text-white/70 text-sm font-bold tracking-[0.2em] uppercase">
+              Cover
+            </span>
+          </div>
+
+          {/* Main grid — left text 60% / right visual 40% */}
+          <div className="absolute inset-0 grid grid-cols-[1.35fr_1fr] gap-0">
+
+            {/* LEFT — hero copy */}
+            <div className="flex flex-col justify-center pl-20 pr-12 py-32">
+
+              <LabelChip>Season Campaign Auto-Generator</LabelChip>
+
+              <h1 className="mt-8 text-[200px] leading-[0.92] font-black tight gradient-text">
+                <span className="inline-block">🍽️</span> Menu
+              </h1>
+
+              <p className="mt-10 text-[34px] leading-[1.25] font-bold tight text-white">
+                외식 가맹점 시즌 캠페인 카드뉴스를<br/>
+                <span className="text-lime-300">한 번의 클릭</span>으로 자동 생성
+              </p>
+
+              <p className="mt-6 text-[20px] leading-[1.6] font-medium text-slate-400 tight max-w-[760px]">
+                트렌드 자동 수집 · AI 카피 재창조 · 슬라이드 합성까지<br/>
+                <span className="text-slate-300">한 사이클 30분 이내</span>에 완성되는 캠페인 파이프라인.
+              </p>
+
+              {/* Stack pills */}
+              <div className="mt-12 flex flex-wrap gap-2.5 max-w-[780px]">
+                {stack.map((s, i) => (
+                  <StackPill key={s}>{s}</StackPill>
+                ))}
+              </div>
+
+              {/* Footer line */}
+              <div className="mt-auto pt-16 flex items-center gap-4 text-slate-500">
+                <div className="w-10 h-px bg-slate-700"></div>
+                <span className="text-sm font-medium tracking-[0.18em] uppercase">
+                  2026.05 · 부트캠프 6주차 발표
+                </span>
+              </div>
+            </div>
+
+            {/* RIGHT — card stack visual */}
+            <div className="relative">
+              {/* corner glow accent */}
+              <div className="absolute -top-20 -right-20 w-[500px] h-[500px] rounded-full"
+                   style={{ background: 'radial-gradient(circle, rgba(163,230,53,0.15) 0%, transparent 70%)' }}></div>
+              <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full"
+                   style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 70%)' }}></div>
+
+              {/* Side label */}
+              <div className="absolute top-20 right-20 flex flex-col items-end gap-2 z-20">
+                <div className="text-white/40 text-xs font-medium tracking-[0.25em] uppercase">
+                  Output Preview
+                </div>
+                <div className="text-white/85 text-xl font-black tight">
+                  5장 카드뉴스 · 1080×1080
+                </div>
+              </div>
+
+              {/* The cards */}
+              <div className="absolute inset-0 pl-4 pr-20 pt-32 pb-20">
+                <CardStack />
+              </div>
+
+              {/* bottom-right meta */}
+              <div className="absolute bottom-12 right-20 text-right z-10">
+                <div className="text-white/30 text-xs tracking-[0.2em] uppercase font-semibold">
+                  Auto-Generated
+                </div>
+                <div className="text-white/60 text-sm font-medium tight mt-1">
+                  ~ 30 min per campaign
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom edge fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+               style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%)' }}></div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

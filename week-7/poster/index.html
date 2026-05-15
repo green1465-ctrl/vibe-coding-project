@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기리고 (If Wishes Could Kill) — Poster Gallery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <style>
+    /* 눈누 양진체 — 호러/스릴러 영화 포스터용 굵고 거친 명조 (격동명조 무료 대안) */
+    @font-face {
+      font-family: 'Yangjin';
+      src: url('https://cdn.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+      font-weight: normal;
+      font-display: swap;
+    }
+    :root {
+      --netflix-red: #E50914;
+      --blood-red: #8B0000;
+      --deep-red: #4a0000;
+      --ghost-cyan: #00d4ff;
+      --bone-white: #f3eee2;
+    }
+
+    html, body {
+      background: #000;
+      color: #f3eee2;
+      font-family: 'Noto Sans KR', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-hangul-title { font-family: 'Yangjin', 'Noto Serif KR', 'Nanum Myeongjo', serif; letter-spacing: -0.01em; font-weight: 400; }
+    .font-myeongjo    { font-family: 'Nanum Myeongjo', 'Noto Serif KR', serif; }
+    .font-mono-tech   { font-family: 'Share Tech Mono', monospace; }
+    .font-bebas       { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.08em; }
+
+    /* ========== Glitch / chromatic aberration ========== */
+    .glitch-title {
+      position: relative;
+      color: var(--netflix-red);
+      text-shadow:
+        2px 0 #ff0040,
+        -2px 0 #00d4ff,
+        0 0 28px rgba(229,9,20,0.45),
+        0 0 60px rgba(139,0,0,0.6);
+      animation: glitch-shake 5.5s infinite steps(1);
+    }
+    .glitch-title::before,
+    .glitch-title::after {
+      content: attr(data-text);
+      position: absolute; left: 0; top: 0; width: 100%;
+      pointer-events: none;
+    }
+    .glitch-title::before {
+      color: #ff0040;
+      transform: translate(2px, 0);
+      mix-blend-mode: screen;
+      opacity: .85;
+      animation: glitch-anim-1 3.7s infinite linear alternate;
+      clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+    }
+    .glitch-title::after {
+      color: #00d4ff;
+      transform: translate(-2px, 0);
+      mix-blend-mode: screen;
+      opacity: .7;
+      animation: glitch-anim-2 4.3s infinite linear alternate;
+      clip-path: polygon(0 66%, 100% 66%, 100% 100%, 0 100%);
+    }
+    @keyframes glitch-shake {
+      0%, 92%, 100% { transform: translate(0,0); }
+      93% { transform: translate(-1px, 1px); }
+      94% { transform: translate(2px, -1px); }
+      95% { transform: translate(-2px, 0); }
+      96% { transform: translate(1px, 2px); }
+      97% { transform: translate(0, -1px); }
+    }
+    @keyframes glitch-anim-1 {
+      0%, 100% { transform: translate(2px, 0); }
+      20%      { transform: translate(3px, -1px); }
+      40%      { transform: translate(1px, 1px); }
+      60%      { transform: translate(4px, 0); }
+      80%      { transform: translate(2px, -2px); }
+    }
+    @keyframes glitch-anim-2 {
+      0%, 100% { transform: translate(-2px, 0); }
+      25%      { transform: translate(-3px, 1px); }
+      50%      { transform: translate(-1px, -1px); }
+      75%      { transform: translate(-4px, 0); }
+    }
+
+    /* ========== Grain / noise overlay (SVG) ========== */
+    .grain::before {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+      background-size: 220px 220px;
+      mix-blend-mode: overlay;
+      opacity: 0.55;
+      z-index: 30;
+    }
+    .grain-soft::before {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.35'/></svg>");
+      background-size: 200px 200px;
+      mix-blend-mode: overlay;
+      opacity: 0.35;
+      z-index: 30;
+    }
+
+    /* Scanline (faint horizontal lines) */
+    .scanlines::after {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.04) 0px,
+        rgba(255,255,255,0.04) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      mix-blend-mode: overlay;
+      z-index: 25;
+    }
+
+    /* ========== Poster card hover ========== */
+    .poster-card {
+      transition: transform .55s cubic-bezier(.2,.7,.2,1), box-shadow .55s ease, filter .55s ease;
+      will-change: transform;
+    }
+    .poster-card:hover {
+      transform: scale(1.035) translateY(-4px);
+      box-shadow:
+        0 0 0 1px rgba(229,9,20,0.5),
+        0 25px 60px -10px rgba(229,9,20,0.55),
+        0 0 90px -10px rgba(229,9,20,0.45);
+      filter: brightness(1.05);
+    }
+
+    /* ========== Cinematic image filter ========== */
+    .img-cinematic { filter: brightness(0.62) contrast(1.22) saturate(0.85); }
+    .img-cold      { filter: brightness(0.65) contrast(1.25) saturate(1.05) hue-rotate(160deg); }
+    .img-coldgreen { filter: brightness(0.6)  contrast(1.3)  saturate(1.15) hue-rotate(135deg); }
+    .img-bw        { filter: grayscale(1) brightness(0.7) contrast(1.35); }
+    .img-sepia     { filter: sepia(0.7) brightness(0.55) contrast(1.3) saturate(0.9); }
+    .img-redshift  { filter: brightness(0.55) contrast(1.4) saturate(1.4) hue-rotate(-20deg); }
+
+    /* ========== Pulsing red glow (countdown) ========== */
+    .red-pulse {
+      animation: red-pulse 1.6s infinite;
+      text-shadow: 0 0 10px #ff0040, 0 0 30px #8B0000;
+    }
+    @keyframes red-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.55; }
+    }
+
+    /* ========== Talisman / 부적 vertical text ========== */
+    .talisman-vert {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 0.4em;
+    }
+
+    /* ========== Modal fade ========== */
+    .modal-fade { animation: modalFade .35s ease forwards; }
+    @keyframes modalFade {
+      from { opacity: 0; transform: scale(.96); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Hide scrollbar in modal */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+
+    /* Slow flicker like a bad fluorescent light */
+    .flicker { animation: flicker 6s infinite; }
+    @keyframes flicker {
+      0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+      20%, 21.999%, 63%, 63.999%, 65%, 69.999%           { opacity: .55; }
+    }
+
+    /* Vertical countdown bar pulse */
+    .blink-dot { animation: blink 1.05s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useMemo } = React;
+
+    // ========================================
+    // 🎨 DESIGN SYSTEM — Reusable primitives
+    // ========================================
+
+    /** Netflix red ribbon / brand chip */
+    const NetflixChip = ({ className = "" }) => (
+      <div className={`inline-flex items-center gap-2 ${className}`}>
+        <span className="font-bebas text-[var(--netflix-red)] text-xl md:text-2xl tracking-[0.25em]"
+              style={{ color: '#E50914' }}>
+          N
+        </span>
+        <span className="font-bebas text-white/85 text-[10px] md:text-xs tracking-[0.35em]">
+          A NETFLIX SERIES
+        </span>
+      </div>
+    );
+
+    /** Small uppercase tag pill */
+    const Tag = ({ children, color = "red" }) => {
+      const palette = {
+        red:   "border-red-700/60 text-red-200 bg-red-900/30",
+        bone:  "border-stone-300/30 text-stone-200 bg-black/40",
+        cyan:  "border-cyan-300/40 text-cyan-100 bg-cyan-900/20",
+      }[color];
+      return (
+        <span className={`inline-block px-2.5 py-[3px] text-[10px] md:text-xs tracking-[0.25em] uppercase border ${palette} font-bebas`}>
+          {children}
+        </span>
+      );
+    };
+
+    /** SVG ornament — 부적 / talisman strip */
+    const TalismanMark = ({ className = "" }) => (
+      <svg viewBox="0 0 60 200" className={className} aria-hidden="true">
+        <defs>
+          <linearGradient id="tlm" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ffe7c0" stopOpacity=".95"/>
+            <stop offset="100%" stopColor="#e8c98a" stopOpacity=".85"/>
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="56" height="196" fill="url(#tlm)" stroke="#8B0000" strokeWidth="2"/>
+        <g fill="#8B0000" fontFamily="serif" fontWeight="900" textAnchor="middle">
+          <text x="30" y="38" fontSize="28">呪</text>
+          <text x="30" y="78" fontSize="28">具</text>
+          <text x="30" y="118" fontSize="28">祈</text>
+          <text x="30" y="158" fontSize="28">禱</text>
+        </g>
+        <path d="M30 175 L18 188 L42 188 Z" fill="#8B0000"/>
+        <circle cx="30" cy="190" r="3" fill="#8B0000"/>
+      </svg>
+    );
+
+    /** Fake countdown timer — purely visual */
+    const Countdown = ({ className = "" }) => {
+      const [t, setT] = useState({ h: 23, m: 59, s: 47 });
+      useEffect(() => {
+        const id = setInterval(() => {
+          setT(prev => {
+            let { h, m, s } = prev;
+            s -= 1;
+            if (s < 0) { s = 59; m -= 1; }
+            if (m < 0) { m = 59; h -= 1; }
+            if (h < 0) { h = 23; m = 59; s = 59; }
+            return { h, m, s };
+          });
+        }, 1000);
+        return () => clearInterval(id);
+      }, []);
+      const pad = n => String(n).padStart(2, '0');
+      return (
+        <div className={`font-mono-tech text-[var(--netflix-red)] red-pulse ${className}`}>
+          <div className="text-[10px] tracking-[0.35em] text-red-300/80 mb-1">TIME LEFT</div>
+          <div className="text-2xl md:text-4xl font-bold">
+            {pad(t.h)}<span className="blink-dot">:</span>{pad(t.m)}<span className="blink-dot">:</span>{pad(t.s)}
+          </div>
+        </div>
+      );
+    };
+
+    /** Modal — fullscreen poster zoom */
+    const Modal = ({ open, onClose, children }) => {
+      useEffect(() => {
+        if (!open) return;
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', onKey);
+        document.body.style.overflow = 'hidden';
+        return () => {
+          window.removeEventListener('keydown', onKey);
+          document.body.style.overflow = '';
+        };
+      }, [open, onClose]);
+      if (!open) return null;
+      return (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-10 overflow-auto no-scrollbar"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            className="absolute top-4 right-4 md:top-6 md:right-8 text-white/70 hover:text-red-400 text-3xl font-bebas tracking-widest"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            CLOSE ✕
+          </button>
+          <div className="modal-fade w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+            {children}
+          </div>
+        </div>
+      );
+    };
+
+    // ========================================
+    // 🎬 POSTER 1 — 주구(呪具) / 저주의 폰 (티저 톤)
+    // ========================================
+    const PosterTeaserCurse = ({ onOpen }) => {
+      return (
+        <div
+          className="poster-card relative aspect-[2/3] w-full overflow-hidden bg-black cursor-zoom-in select-none"
+          onClick={onOpen}
+          role="button"
+          aria-label="포스터 1 확대 보기 — 주구 컨셉"
+        >
+          {/* base image — dark teaser still */}
+          <img
+            src="./stills/13_teaser_poster.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover img-cinematic"
+            style={{ filter: 'brightness(0.42) contrast(1.35) saturate(0.7)' }}
+            draggable="false"
+          />
+
+          {/* heavy black vertical fade */}
+          <div className="absolute inset-0"
+               style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 35%, rgba(0,0,0,0.65) 70%, #000 100%)' }} />
+          {/* blood red wash from bottom */}
+          <div className="absolute inset-0"
+               style={{ background: 'radial-gradient(ellipse at 50% 110%, rgba(229,9,20,0.55) 0%, rgba(139,0,0,0.4) 25%, transparent 60%)', mixBlendMode: 'screen' }} />
+          {/* side red vignette */}
+          <div className="absolute inset-0 pointer-events-none"
+               style={{ boxShadow: 'inset 0 0 200px 30px rgba(139,0,0,0.85), inset 0 0 60px 10px rgba(0,0,0,0.95)' }} />
+
+          {/* grain + scanlines */}
+          <div className="grain absolute inset-0" />
+          <div className="scanlines absolute inset-0" />
+
+          {/* TOP — Netflix chip */}
+          <div className="absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-6 flex items-center justify-between z-40">
+            <NetflixChip />
+            <Tag>Teaser</Tag>
+          </div>
+
+          {/* CENTER — gigantic glitch title */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-40 px-4 text-center">
+            <div className="font-myeongjo text-[10px] md:text-sm tracking-[0.6em] text-red-200/90 mb-3 md:mb-5 uppercase">
+              呪具 · WISH · DEATH
+            </div>
+            <h2
+              data-text="기리고"
+              className="glitch-title font-hangul-title leading-none"
+              style={{ fontSize: 'clamp(72px, 18vw, 180px)' }}
+            >
+              기리고
+            </h2>
+            <div className="mt-2 md:mt-3 font-bebas text-stone-200/80 text-[11px] md:text-base tracking-[0.45em]">
+              IF&nbsp;&nbsp;WISHES&nbsp;&nbsp;COULD&nbsp;&nbsp;KILL
+            </div>
+
+            {/* English tagline */}
+            <div className="mt-8 md:mt-10 font-myeongjo italic text-stone-200/95 text-base md:text-2xl">
+              "Got a wish worth dying for?"
+            </div>
+            {/* Korean tagline */}
+            <div className="mt-2 md:mt-3 font-myeongjo text-red-300/95 text-sm md:text-lg tracking-tight">
+              넌 있어? 죽도록 빌고 싶은 소원
+            </div>
+          </div>
+
+          {/* talisman side strip */}
+          <div className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 w-7 md:w-9 h-44 md:h-60 z-40 opacity-90 mix-blend-screen">
+            <TalismanMark className="w-full h-full" />
+          </div>
+
+          {/* BOTTOM — fixed copy */}
+          <div className="absolute left-0 right-0 bottom-0 px-4 md:px-6 pb-4 md:pb-6 z-40">
+            <div className="border-t border-red-700/50 pt-3 flex items-center justify-between">
+              <div className="font-bebas text-white/90 text-[10px] md:text-sm tracking-[0.3em]">
+                ONLY ON NETFLIX
+              </div>
+              <div className="font-bebas text-[var(--netflix-red)] text-[11px] md:text-base tracking-[0.3em]"
+                   style={{ color: '#E50914' }}>
+                4월 24일 공개
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ========================================
+    // 🎬 POSTER 2 — 5인 메인 비주얼 (메인 포스터 톤)
+    // ========================================
+    const PosterMainEnsemble = ({ onOpen }) => {
+      return (
+        <div
+          className="poster-card relative aspect-[2/3] w-full overflow-hidden bg-black cursor-zoom-in select-none"
+          onClick={onOpen}
+          role="button"
+          aria-label="포스터 2 확대 보기 — 5인 메인 비주얼"
+        >
+          <img
+            src="./stills/01_main_poster.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover img-coldgreen flicker"
+            draggable="false"
+          />
+
+          {/* cool teal/cyan tone wash */}
+          <div className="absolute inset-0"
+               style={{ background: 'linear-gradient(180deg, rgba(7,30,38,0.55) 0%, rgba(0,15,25,0.25) 40%, rgba(0,0,0,0.92) 100%)', mixBlendMode: 'multiply' }} />
+          <div className="absolute inset-0"
+               style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(0,200,255,0.18) 0%, transparent 55%)', mixBlendMode: 'screen' }} />
+          {/* fluorescent flicker top bar */}
+          <div className="absolute inset-x-0 top-0 h-16 pointer-events-none"
+               style={{ background: 'linear-gradient(180deg, rgba(180,255,255,0.18) 0%, transparent 100%)', mixBlendMode: 'screen' }} />
+          {/* heavy black at bottom for title */}
+          <div className="absolute inset-x-0 bottom-0 h-2/5"
+               style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 35%, #000 100%)' }} />
+          {/* red bleed from bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none"
+               style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(229,9,20,0.55) 0%, rgba(139,0,0,0.3) 30%, transparent 65%)', mixBlendMode: 'screen' }} />
+          {/* vignette */}
+          <div className="absolute inset-0 pointer-events-none"
+               style={{ boxShadow: 'inset 0 0 180px 20px rgba(0,0,0,0.95)' }} />
+
+          <div className="grain-soft absolute inset-0" />
+          <div className="scanlines absolute inset-0" />
+
+          {/* TOP HEADER */}
+          <div className="absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-6 flex items-center justify-between z-40">
+            <div>
+              <NetflixChip />
+              <div className="font-bebas text-cyan-100/70 text-[9px] md:text-[11px] mt-1 tracking-[0.3em]">
+                K-OCCULT &nbsp;·&nbsp; 8 EPISODES
+              </div>
+            </div>
+            <Tag color="cyan">Original</Tag>
+          </div>
+
+          {/* center vertical caption */}
+          <div className="absolute right-3 md:right-5 top-24 md:top-28 z-40">
+            <div className="font-myeongjo text-cyan-100/70 text-[10px] md:text-sm talisman-vert">
+              欲望의 알고리즘
+            </div>
+          </div>
+
+          {/* BOTTOM TITLE BLOCK */}
+          <div className="absolute inset-x-0 bottom-0 z-40 px-4 md:px-6 pb-4 md:pb-6">
+            {/* sub copy */}
+            <div className="font-myeongjo text-stone-200/95 text-[11px] md:text-base mb-3 md:mb-4 leading-snug">
+              욕망의 알고리즘,<br/>그 잔인한 주구(呪具) <span className="text-red-400">기리고</span>
+            </div>
+
+            {/* glitch title — large */}
+            <h2
+              data-text="기리고"
+              className="glitch-title font-hangul-title leading-[0.85]"
+              style={{ fontSize: 'clamp(64px, 16vw, 150px)' }}
+            >
+              기리고
+            </h2>
+
+            <div className="mt-2 font-bebas text-stone-200/80 text-[10px] md:text-sm tracking-[0.45em]">
+              IF&nbsp;WISHES&nbsp;COULD&nbsp;KILL
+            </div>
+
+            {/* fixed bottom strip */}
+            <div className="mt-4 md:mt-5 border-t border-red-700/60 pt-3 flex items-center justify-between">
+              <div className="font-bebas text-white/90 text-[10px] md:text-sm tracking-[0.3em]">
+                ONLY ON NETFLIX
+              </div>
+              <div className="font-bebas text-[var(--netflix-red)] text-[11px] md:text-base tracking-[0.3em]"
+                   style={{ color: '#E50914' }}>
+                4월 24일 공개
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ========================================
+    // 🎬 POSTER 3 — 캐릭터 5분할 그리드 + 카운트다운
+    // ========================================
+    const characters = [
+      { src: './stills/19_char_seah.jpg',     name: '유세아',   actor: '전소영', tone: 'img-bw',     mark: '咒' },
+      { src: './stills/20_char_nari.jpg',     name: '임나리',   actor: '강미나', tone: 'img-sepia',  mark: '祈' },
+      { src: './stills/21_char_geonwoo.jpg',  name: '김건우',   actor: '백선호', tone: 'img-bw',     mark: '禱' },
+      { src: './stills/22_char_hajun.jpg',    name: '강하준',   actor: '현우석', tone: 'img-sepia',  mark: '具' },
+      { src: './stills/23_char_hyeonguk.jpg', name: '최형욱',   actor: '이효제', tone: 'img-redshift', mark: '亡', dead: true },
+    ];
+
+    const PosterCharactersGrid = ({ onOpen }) => {
+      return (
+        <div
+          className="poster-card relative aspect-[2/3] w-full overflow-hidden bg-black cursor-zoom-in select-none"
+          onClick={onOpen}
+          role="button"
+          aria-label="포스터 3 확대 보기 — 캐릭터 단독 컷 합성"
+        >
+          {/* 5-row character strips */}
+          <div className="absolute inset-0 grid grid-rows-5">
+            {characters.map((c, i) => (
+              <div key={i} className="relative overflow-hidden border-b border-red-900/30 last:border-b-0">
+                <img
+                  src={c.src}
+                  alt=""
+                  className={`absolute inset-0 w-full h-full object-cover ${c.tone}`}
+                  draggable="false"
+                />
+                {/* per-row red wash */}
+                <div className="absolute inset-0"
+                     style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.15) 70%, rgba(139,0,0,0.85) 100%)' }} />
+
+                {/* hanja talisman mark — right edge */}
+                <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30">
+                  <div
+                    className="font-myeongjo text-red-500 leading-none"
+                    style={{
+                      fontSize: 'clamp(28px, 6vw, 56px)',
+                      textShadow: '0 0 18px rgba(229,9,20,0.85), 0 0 4px #000',
+                      writingMode: 'vertical-rl',
+                      textOrientation: 'upright',
+                    }}
+                  >
+                    {c.mark}
+                  </div>
+                </div>
+
+                {/* name label — left edge */}
+                <div className="absolute left-2 md:left-4 bottom-2 md:bottom-3 z-30">
+                  <div className={`font-myeongjo text-[11px] md:text-base font-bold ${c.dead ? 'text-red-500 line-through decoration-red-500/80' : 'text-stone-100'}`}>
+                    {c.name}
+                  </div>
+                  <div className="font-bebas text-[8px] md:text-[10px] tracking-[0.25em] text-stone-300/70">
+                    {c.actor}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* heavy red vignette */}
+          <div className="absolute inset-0 pointer-events-none"
+               style={{ boxShadow: 'inset 0 0 220px 25px rgba(139,0,0,0.95), inset 0 0 50px 8px rgba(0,0,0,0.85)' }} />
+          {/* red gradient over whole */}
+          <div className="absolute inset-0 pointer-events-none"
+               style={{ background: 'radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(139,0,0,0.45) 90%)', mixBlendMode: 'multiply' }} />
+
+          <div className="grain absolute inset-0" />
+          <div className="scanlines absolute inset-0" />
+
+          {/* TOP — Netflix + tag */}
+          <div className="absolute top-3 md:top-5 left-3 md:left-5 right-3 md:right-5 flex items-start justify-between z-40">
+            <NetflixChip />
+            <Tag>Character</Tag>
+          </div>
+
+          {/* CENTER OVERLAY — title strip */}
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-40 px-3 md:px-5 text-center pointer-events-none">
+            <div className="bg-black/65 backdrop-blur-[2px] py-3 md:py-4 border-y border-red-700/60">
+              <h2
+                data-text="기리고"
+                className="glitch-title font-hangul-title leading-none"
+                style={{ fontSize: 'clamp(54px, 14vw, 120px)' }}
+              >
+                기리고
+              </h2>
+              <div className="mt-1 font-myeongjo text-stone-200/95 text-[10px] md:text-sm leading-snug px-2">
+                소원이 이루어지는 순간,<br/>멈출 수 없는 죽음의 타이머가 시작된다
+              </div>
+            </div>
+          </div>
+
+          {/* COUNTDOWN — corner */}
+          <div className="absolute top-16 md:top-20 right-3 md:right-5 z-40 bg-black/70 border border-red-700/70 px-2 md:px-3 py-2 backdrop-blur-sm">
+            <Countdown />
+          </div>
+
+          {/* BOTTOM strip */}
+          <div className="absolute inset-x-0 bottom-0 z-40 px-3 md:px-5 pb-3 md:pb-5">
+            <div className="border-t border-red-700/60 pt-2 md:pt-3 flex items-center justify-between bg-black/55 -mx-3 md:-mx-5 px-3 md:px-5">
+              <div className="font-bebas text-white/90 text-[10px] md:text-sm tracking-[0.3em]">
+                ONLY ON NETFLIX
+              </div>
+              <div className="font-bebas text-[var(--netflix-red)] text-[11px] md:text-base tracking-[0.3em]"
+                   style={{ color: '#E50914' }}>
+                4월 24일 공개
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ========================================
+    // 🧩 LAYOUT — Header
+    // ========================================
+    const Header = () => (
+      <header className="relative pt-10 md:pt-16 pb-6 md:pb-10 px-5 md:px-10 text-center overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-60"
+             style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(139,0,0,0.35) 0%, transparent 60%)' }} />
+        <div className="relative z-10">
+          <div className="font-bebas text-stone-400/70 text-xs md:text-sm tracking-[0.4em] mb-3">
+            NETFLIX SERIES &nbsp;·&nbsp; K-OCCULT YA HORROR
+          </div>
+          <h1
+            data-text="기리고"
+            className="glitch-title font-hangul-title leading-none mx-auto"
+            style={{ fontSize: 'clamp(64px, 11vw, 130px)' }}
+          >
+            기리고
+          </h1>
+          <div className="mt-2 md:mt-3 font-bebas text-stone-200/85 text-sm md:text-lg tracking-[0.4em]">
+            IF&nbsp;WISHES&nbsp;COULD&nbsp;KILL
+          </div>
+          <div className="mt-5 md:mt-7 font-myeongjo italic text-stone-300/90 text-base md:text-xl">
+            "Got a wish worth dying for?"
+          </div>
+          <div className="mt-1 font-myeongjo text-red-400/95 text-sm md:text-lg">
+            넌 있어? 죽도록 빌고 싶은 소원
+          </div>
+
+          <div className="mt-6 md:mt-8 inline-flex flex-wrap items-center justify-center gap-2 md:gap-3">
+            <Tag>2026.04.24</Tag>
+            <Tag color="bone">8 Episodes</Tag>
+            <Tag color="cyan">K-Occult / YA Horror</Tag>
+          </div>
+
+          <p className="mt-7 md:mt-9 max-w-2xl mx-auto font-myeongjo text-stone-300/80 text-xs md:text-sm leading-relaxed">
+            소원을 들어주는 앱 '기리고'에 소원을 빌면 24시간 안에 죽음의 카운트다운이 시작된다.
+            현대 스마트폰 앱과 한국 무속신앙(무당·부적·굿)이 충돌하는 잔혹한 청춘 호러.
+          </p>
+        </div>
+      </header>
+    );
+
+    // ========================================
+    // 🧩 Section divider
+    // ========================================
+    const SectionDivider = ({ label }) => (
+      <div className="flex items-center gap-3 md:gap-5 px-5 md:px-10 my-8 md:my-12 max-w-7xl mx-auto">
+        <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-red-700/40 to-red-700/70" />
+        <span className="font-bebas text-red-300/80 text-xs md:text-sm tracking-[0.5em]">{label}</span>
+        <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-red-700/40 to-red-700/70" />
+      </div>
+    );
+
+    // ========================================
+    // 🧩 Poster Card Wrapper (with caption + frame)
+    // ========================================
+    const PosterFrame = ({ index, title, desc, children }) => (
+      <div className="flex flex-col">
+        <div className="relative">
+          {/* Concept index badge floating */}
+          <div className="absolute -top-3 -left-3 md:-top-4 md:-left-4 z-50 bg-[var(--netflix-red)] text-black font-bebas text-xs md:text-base px-2.5 py-1 tracking-[0.25em] shadow-[0_8px_24px_rgba(229,9,20,0.6)]"
+               style={{ background: '#E50914' }}>
+            CONCEPT {String(index).padStart(2,'0')}
+          </div>
+          {children}
+        </div>
+        <div className="mt-4 md:mt-5 px-1">
+          <div className="font-bebas text-red-300/90 text-[11px] md:text-sm tracking-[0.35em] mb-1">
+            CONCEPT {index} — {title.toUpperCase()}
+          </div>
+          <div className="font-myeongjo text-stone-300/85 text-xs md:text-sm leading-relaxed">
+            {desc}
+          </div>
+        </div>
+      </div>
+    );
+
+    // ========================================
+    // 🚀 APP
+    // ========================================
+    const App = () => {
+      const [zoomed, setZoomed] = useState(null); // 1 | 2 | 3 | null
+
+      const posters = useMemo(() => ([
+        {
+          id: 1,
+          title: '주구(呪具)',
+          desc: '소원을 빌면 죽음을 부르는 저주의 앱. 암흑과 핏빛 적색 위에 떨리는 글리치 타이틀이 떠오르는 티저 톤.',
+          render: (onOpen) => <PosterTeaserCurse onOpen={onOpen} />,
+        },
+        {
+          id: 2,
+          title: '5인 메인 비주얼',
+          desc: '교실 형광등 깜빡임 같은 차가운 청록빛 위에 선 다섯 학생, 그 아래 핏빛으로 번지는 메인 타이틀.',
+          render: (onOpen) => <PosterMainEnsemble onOpen={onOpen} />,
+        },
+        {
+          id: 3,
+          title: '카운트다운',
+          desc: '5인 캐릭터를 흑백·세피아·붉은 톤으로 분할. 부적의 한자가 얹히고, 코너에는 24시간 죽음의 타이머.',
+          render: (onOpen) => <PosterCharactersGrid onOpen={onOpen} />,
+        },
+      ]), []);
+
+      const close = useCallback(() => setZoomed(null), []);
+
+      return (
+        <div className="min-h-screen bg-black text-stone-100">
+          {/* sticky top thin nav */}
+          <div className="sticky top-0 z-50 backdrop-blur-md bg-black/60 border-b border-red-900/30">
+            <div className="max-w-7xl mx-auto px-5 md:px-10 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="font-bebas text-[var(--netflix-red)] text-2xl tracking-[0.25em]" style={{ color: '#E50914' }}>N</span>
+                <span className="font-myeongjo text-stone-100 text-sm md:text-base font-bold">기리고</span>
+                <span className="hidden md:inline font-bebas text-stone-400 text-xs tracking-[0.3em] ml-2">IF&nbsp;WISHES&nbsp;COULD&nbsp;KILL</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="hidden sm:inline font-bebas text-stone-300 text-[11px] md:text-xs tracking-[0.35em]">POSTER GALLERY</span>
+                <span className="font-bebas text-[var(--netflix-red)] text-[11px] md:text-xs tracking-[0.3em]" style={{ color: '#E50914' }}>2026.04.24</span>
+              </div>
+            </div>
+          </div>
+
+          <Header />
+
+          <SectionDivider label="HORROR&nbsp;·&nbsp;POSTER&nbsp;·&nbsp;3 CONCEPTS" />
+
+          {/* Poster grid */}
+          <main className="max-w-7xl mx-auto px-5 md:px-10 pb-16 md:pb-24">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14 lg:gap-10">
+              {posters.map(p => (
+                <PosterFrame key={p.id} index={p.id} title={p.title} desc={p.desc}>
+                  {p.render(() => setZoomed(p.id))}
+                </PosterFrame>
+              ))}
+            </div>
+
+            {/* Footer copy */}
+            <div className="mt-16 md:mt-24 text-center">
+              <div className="font-myeongjo italic text-stone-300/85 text-base md:text-xl mb-1">
+                "Got a wish worth dying for?"
+              </div>
+              <div className="font-myeongjo text-red-400/95 text-sm md:text-lg mb-6">
+                넌 있어? 죽도록 빌고 싶은 소원
+              </div>
+
+              <div className="inline-flex items-center gap-4 border-y border-red-800/50 py-3 px-6">
+                <span className="font-bebas text-stone-100 text-xs md:text-sm tracking-[0.4em]">
+                  ONLY ON NETFLIX
+                </span>
+                <span className="text-red-700">|</span>
+                <span className="font-bebas text-[var(--netflix-red)] text-sm md:text-base tracking-[0.35em]" style={{ color: '#E50914' }}>
+                  2026 · 4월 24일 공개
+                </span>
+              </div>
+
+              <div className="mt-8 font-bebas text-stone-500/60 text-[10px] md:text-xs tracking-[0.4em]">
+                © NETFLIX, INC.&nbsp;·&nbsp;FOR DEMO ONLY&nbsp;·&nbsp;POSTER CONCEPT GALLERY
+              </div>
+            </div>
+          </main>
+
+          {/* ========== ZOOM MODALS ========== */}
+          <Modal open={zoomed === 1} onClose={close}>
+            <PosterTeaserCurse onOpen={() => {}} />
+          </Modal>
+          <Modal open={zoomed === 2} onClose={close}>
+            <PosterMainEnsemble onOpen={() => {}} />
+          </Modal>
+          <Modal open={zoomed === 3} onClose={close}>
+            <PosterCharactersGrid onOpen={() => {}} />
+          </Modal>
+        </div>
+      );
+    };
+
+    // ========================================
+    // RENDER
+    // ========================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

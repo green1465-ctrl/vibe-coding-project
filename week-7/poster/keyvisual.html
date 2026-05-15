@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>기리고 (If Wishes Could Kill) — Netflix Key Visual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Yangjin';
+      src: url('https://cdn.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+      font-display: swap;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Noto Sans KR', sans-serif;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 30px 16px; gap: 16px;
+    }
+    .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      background: #E50914; color: white; border: none;
+      padding: 10px 20px; border-radius: 4px; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 14px;
+    }
+    .btn:hover { background: #ff0a1a; }
+    .btn.ghost { background: transparent; border: 1px solid #444; color: #ccc; }
+    .info { color: #888; font-size: 12px; font-family: 'Share Tech Mono', monospace; }
+
+    .stage {
+      position: relative;
+      width: min(1024px, 100vw - 32px);
+      aspect-ratio: 1024 / 1536;
+    }
+
+    .poster {
+      position: absolute; left: 0; top: 0;
+      width: 1024px; height: 1536px;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+      transform-origin: top left;
+      transform: scale(var(--s, 1));
+    }
+
+    .poster .base {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: contrast(1.05) saturate(0.95);
+    }
+
+    .poster .placeholder {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      gap: 24px; padding: 80px;
+      background: linear-gradient(180deg, #1F3D44 0%, #0F1418 100%);
+      color: #C7CDD0; text-align: center;
+    }
+    .placeholder .ph-mark {
+      font-family: 'Share Tech Mono', monospace;
+      color: #FF1A1A; font-size: 28px; letter-spacing: 0.3em;
+    }
+    .placeholder .ph-msg { font-size: 22px; line-height: 1.8; }
+    .placeholder code {
+      display: block; background: #000; padding: 16px 20px; color: #FF1A1A;
+      font-size: 18px; border-left: 4px solid #FF1A1A; text-align: left;
+      margin-top: 8px; word-break: break-all;
+    }
+
+    .top-veil {
+      position: absolute; left: 0; right: 0; top: 0; height: 280px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 50%, transparent 100%);
+      z-index: 2;
+    }
+    .nfx {
+      position: absolute; top: 60px; left: 64px;
+      display: flex; align-items: center; gap: 18px; z-index: 3;
+    }
+    .nfx-n {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 64px; color: #E50914; line-height: 1;
+      font-weight: 900; letter-spacing: -0.02em;
+      text-shadow: 0 4px 22px rgba(229,9,20,0.55);
+    }
+    .nfx-label {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 20px; letter-spacing: 0.5em; color: #fff;
+      font-weight: 400; padding-left: 18px;
+      border-left: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .bottom-veil {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 760px;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.9) 65%, rgba(0,0,0,0.97) 100%);
+      z-index: 2;
+    }
+
+    .title-block {
+      position: absolute; left: 0; right: 0; bottom: 240px;
+      text-align: center; z-index: 4; padding: 0 64px;
+    }
+
+    .copy {
+      font-family: 'Noto Serif KR', serif; font-weight: 400;
+      font-size: 34px; color: #f3eee2; letter-spacing: 0.05em;
+      margin-bottom: 32px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.95);
+    }
+    .copy strong { color: #FF1A1A; font-weight: 900; }
+
+    .title-kr {
+      font-family: 'Yangjin', 'Noto Serif KR', serif;
+      font-size: 296px; line-height: 0.92;
+      color: #E50914; letter-spacing: -0.04em; font-weight: 900;
+      display: inline-block; position: relative;
+      text-shadow:
+        0 0 32px rgba(229,9,20,0.55),
+        4px 0 0 rgba(255, 26, 60, 0.8),
+        -4px 0 0 rgba(0, 212, 255, 0.45),
+        0 6px 24px rgba(0,0,0,0.9);
+    }
+
+    .title-en {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px; letter-spacing: 0.42em; color: #f3eee2;
+      margin-top: 22px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.95);
+    }
+
+    .badge {
+      position: absolute; left: 0; right: 0; bottom: 90px;
+      text-align: center; z-index: 4;
+    }
+    .badge-line {
+      display: inline-flex; gap: 22px; align-items: center;
+    }
+    .badge-only {
+      font-size: 17px; letter-spacing: 0.5em; color: #fff; font-weight: 700;
+    }
+    .badge-sep { width: 1px; height: 22px; background: rgba(255,255,255,0.5); }
+    .badge-date {
+      font-size: 24px; color: #FF1A1A; font-weight: 900;
+      letter-spacing: 0.05em; font-family: 'Noto Serif KR', serif;
+    }
+    .badge-date small {
+      color: #fff; font-size: 15px; font-weight: 400;
+      letter-spacing: 0.3em; margin-left: 10px;
+    }
+
+    .scan {
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0px, rgba(0,0,0,0.16) 1px, transparent 2px, transparent 4px);
+      mix-blend-mode: multiply;
+      pointer-events: none; z-index: 5;
+    }
+    .grain {
+      position: absolute; inset: 0;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0"/></filter><rect width="100%" height="100%" filter="url(%23n)"/></svg>');
+      mix-blend-mode: overlay; opacity: 0.55;
+      pointer-events: none; z-index: 5;
+    }
+
+    .vignette {
+      position: absolute; inset: 0; pointer-events: none; z-index: 4;
+      background: radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%);
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="btn" id="exportBtn">PNG로 내보내기 (1024×1536)</button>
+    <button class="btn ghost" id="reloadBtn">베이스 새로고침</button>
+    <span class="info">stills/generated/v3_gptimage_keyvisual/01_main_base.png</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="poster" id="poster">
+      <img class="base" id="baseImg"
+           src="stills/generated/v3_gptimage_keyvisual/01_main_base.png" alt=""
+           crossorigin="anonymous"
+           onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+
+      <div class="placeholder" id="placeholder" style="display:none;">
+        <div class="ph-mark">// AWAITING BASE IMAGE //</div>
+        <div class="ph-msg">
+          gpt-image-1 베이스 이미지가 아직 없습니다.<br>
+          아래 명령으로 생성한 뒤 새로고침하세요.
+          <code>powershell -ExecutionPolicy Bypass -File stills\generated\generate-gpt-image.ps1</code>
+        </div>
+      </div>
+
+      <div class="vignette"></div>
+      <div class="scan"></div>
+      <div class="grain"></div>
+
+      <div class="top-veil"></div>
+      <div class="nfx">
+        <div class="nfx-n">N</div>
+        <div class="nfx-label">넷플릭스 시리즈</div>
+      </div>
+
+      <div class="bottom-veil"></div>
+      <div class="title-block">
+        <div class="copy">넌 있어? <strong>죽도록</strong> 빌고 싶은 소원</div>
+        <div class="title-kr">기리고</div>
+        <div class="title-en">IF WISHES COULD KILL</div>
+      </div>
+
+      <div class="badge">
+        <div class="badge-line">
+          <span class="badge-only">ONLY ON NETFLIX</span>
+          <span class="badge-sep"></span>
+          <span class="badge-date">4월 24일<small>공개</small></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    function fitScale() {
+      const stage = document.getElementById('stage');
+      const poster = document.getElementById('poster');
+      const w = stage.clientWidth;
+      const s = w / 1024;
+      poster.style.setProperty('--s', s);
+      stage.style.height = (1536 * s) + 'px';
+    }
+    window.addEventListener('resize', fitScale);
+    window.addEventListener('load', fitScale);
+    fitScale();
+
+    document.getElementById('reloadBtn').addEventListener('click', () => {
+      const img = document.getElementById('baseImg');
+      const ph = document.getElementById('placeholder');
+      img.style.display = '';
+      ph.style.display = 'none';
+      img.src = 'stills/generated/v3_gptimage_keyvisual/01_main_base.png?_=' + Date.now();
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+      const poster = document.getElementById('poster');
+      const oldS = poster.style.getPropertyValue('--s');
+      poster.style.setProperty('--s', 1);
+      try {
+        const canvas = await html2canvas(poster, {
+          width: 1024, height: 1536,
+          scale: 1, backgroundColor: '#000',
+          useCORS: true, allowTaint: true,
+          windowWidth: 1024, windowHeight: 1536
+        });
+        const a = document.createElement('a');
+        a.download = '기리고_keyvisual_1024x1536.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      } finally {
+        poster.style.setProperty('--s', oldS);
+      }
+    });
+  </script>
+</body>
+</html>

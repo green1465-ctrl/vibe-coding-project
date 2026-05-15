@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>COFFEE LIGHT — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,600;1,500;1,700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  :root{
+    --teal-deep:  #0C4845;
+    --teal-mid:   #3E8D85;
+    --teal-pale:  #DCEAE5;
+    --paper:      #F6F2EA;
+    --card:       #FFFFFF;
+    --ink:        #161F1E;
+    --muted:      #6B807D;
+    --line:       #1F2A29;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    background:#2c2c2c;
+    font-family:'Pretendard','Archivo',sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    width:210mm;height:297mm;
+    background:var(--paper);
+    margin:24px auto;
+    position:relative;
+    overflow:hidden;
+    padding:10mm 11mm 9mm;
+    display:flex;flex-direction:column;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+  }
+
+  /* ======== HEADER (poster style) ======== */
+  .header{
+    display:grid;grid-template-columns:1fr auto;gap:6mm;
+    align-items:flex-start;
+    padding-bottom:4mm;
+    border-bottom:1.5px solid var(--line);
+  }
+  .brand h1{
+    font-family:'Archivo',sans-serif;
+    font-weight:900;
+    font-size:56pt;line-height:.86;letter-spacing:-.025em;
+    color:var(--teal-deep);
+  }
+  .brand h1 .dot{color:var(--teal-mid)}
+  .brand .sub{
+    margin-top:2mm;
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;font-weight:500;
+    font-size:12pt;letter-spacing:.01em;
+    color:var(--muted);
+  }
+  .meta-block{
+    display:flex;flex-direction:column;align-items:flex-end;gap:2mm;
+    text-align:right;
+    padding-top:1mm;
+  }
+  .meta-block .badge-row{display:flex;gap:1.5mm;flex-direction:column}
+  .meta-block .badge-row span{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:10pt;letter-spacing:.22em;
+    color:var(--paper);
+    background:var(--teal-deep);
+    padding:2mm 4.5mm;
+    display:inline-block;
+    text-align:center;
+    min-width:42mm;
+  }
+  .meta-block .badge-row span:nth-child(2){background:var(--teal-mid)}
+  .meta-block .badge-row span:nth-child(3){
+    background:var(--paper);
+    color:var(--teal-deep);
+    border:1.8px solid var(--teal-deep);
+    padding:1.6mm 4.5mm;
+  }
+  .meta-block .info{
+    font-family:'Archivo',sans-serif;font-weight:700;
+    font-size:6.5pt;letter-spacing:.22em;
+    color:var(--ink);
+  }
+  .meta-block .info b{color:var(--teal-deep);font-weight:900}
+
+  /* ======== SECTION ======== */
+  .section{margin-top:2.5mm}
+  .sec-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-bottom:1.2mm;
+    border-bottom:1.2px solid var(--line);
+    margin-bottom:2.2mm;
+  }
+  .sec-head .title{
+    display:flex;align-items:baseline;gap:3mm;
+  }
+  .sec-head .num{
+    font-family:'Archivo',sans-serif;font-weight:800;
+    font-size:9pt;letter-spacing:.2em;
+    color:var(--teal-mid);
+  }
+  .sec-head h2{
+    font-family:'Archivo',sans-serif;
+    font-weight:900;font-size:20pt;letter-spacing:-.01em;
+    color:var(--teal-deep);line-height:1;
+    text-transform:uppercase;
+  }
+  .sec-head .kor{
+    font-family:'Pretendard',sans-serif;font-weight:800;
+    font-size:9pt;letter-spacing:.32em;color:var(--ink);
+  }
+
+  /* ======== CARDS ======== */
+  .grid{display:grid;gap:4mm}
+  .grid.three{grid-template-columns:1fr 1fr 1fr}
+  .grid.two{grid-template-columns:1fr 1fr}
+
+  .card{
+    background:var(--card);
+    padding:2.5mm;
+    display:flex;flex-direction:column;
+    position:relative;
+  }
+  .card .card-meta{
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'Archivo',sans-serif;font-weight:800;
+    font-size:6pt;letter-spacing:.2em;
+    color:var(--muted);
+    margin-bottom:1.5mm;
+    min-height:3mm;
+  }
+  .card .card-meta .cat{color:var(--ink)}
+  .card .card-meta .sig{
+    color:var(--teal-deep);font-weight:900;letter-spacing:.18em;
+  }
+  .card .card-meta .sig::before{content:'★ ';color:var(--teal-mid)}
+
+  .card .thumb{
+    width:100%;height:24mm;
+    overflow:hidden;
+    background:var(--teal-pale);
+  }
+  .grid.two .card .thumb{height:30mm}
+  .card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+  .card .body{
+    display:flex;flex-direction:column;gap:.6mm;
+    padding-top:2mm;
+  }
+  .card .name-en{
+    font-family:'Pretendard',sans-serif;
+    font-weight:800;font-size:10.5pt;line-height:1.15;
+    letter-spacing:-.01em;
+    color:var(--ink);
+  }
+  .card .name-kor{
+    font-family:'Pretendard',sans-serif;font-weight:700;
+    font-size:7.5pt;letter-spacing:.06em;
+    color:var(--teal-mid);
+  }
+  .card .desc{
+    margin-top:.8mm;
+    font-family:'Pretendard',sans-serif;font-weight:500;
+    font-size:6.8pt;line-height:1.5;
+    color:var(--muted);
+    word-break:keep-all;
+  }
+  .card .price{
+    margin-top:1.5mm;
+    display:flex;align-items:baseline;gap:2mm;
+    border-top:1px solid var(--line);
+    padding-top:1.2mm;
+  }
+  .card .price .vol{
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:7pt;
+    letter-spacing:.12em;color:var(--muted);
+  }
+  .card .price .sep{color:var(--muted);font-weight:700}
+  .card .price .won{
+    font-family:'Archivo',sans-serif;font-weight:900;font-size:11pt;
+    letter-spacing:.01em;color:var(--teal-deep);
+    margin-left:auto;
+  }
+  .card .price .won::after{
+    content:'₩';font-family:'Pretendard',sans-serif;
+    font-size:8pt;font-weight:700;color:var(--ink);
+    margin-left:.8mm;
+  }
+  .card.signature{background:var(--teal-deep);color:var(--paper)}
+  .card.signature .card-meta{color:rgba(246,242,234,.7)}
+  .card.signature .card-meta .cat{color:var(--paper)}
+  .card.signature .card-meta .sig{color:var(--paper)}
+  .card.signature .card-meta .sig::before{color:#F7C66F}
+  .card.signature .name-en{color:var(--paper)}
+  .card.signature .name-kor{color:#9BC9C2}
+  .card.signature .desc{color:rgba(246,242,234,.78)}
+  .card.signature .price{border-top-color:rgba(246,242,234,.35)}
+  .card.signature .price .vol{color:rgba(246,242,234,.7)}
+  .card.signature .price .won{color:var(--paper)}
+  .card.signature .price .won::after{color:#F7C66F}
+
+  /* ======== FOOTER ======== */
+  footer{
+    margin-top:auto;
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1.5px solid var(--line);
+    padding-top:3mm;
+    color:var(--ink);
+  }
+  footer .mark{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:9pt;letter-spacing:.32em;
+    color:var(--teal-deep);
+  }
+  footer .right{
+    display:flex;gap:5mm;
+    font-family:'Archivo',sans-serif;font-weight:700;
+    font-size:7pt;letter-spacing:.22em;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <h1>COFFEE<br>LIGHT<span class="dot">.</span></h1>
+      <div class="sub">for those who care, lightly —</div>
+    </div>
+    <div class="meta-block">
+      <div class="badge-row">
+        <span>LOW SUGAR</span>
+        <span>LOW FAT</span>
+        <span>LOW CAL</span>
+      </div>
+      <div class="info"><b>M E N U</b> &nbsp;·&nbsp; No.01 SPRING 2026</div>
+      <div class="info">SEOUL · EST. 2026</div>
+    </div>
+  </header>
+
+  <!-- COFFEE -->
+  <section class="section">
+    <div class="sec-head">
+      <div class="title">
+        <span class="num">/01</span>
+        <h2>Coffee</h2>
+      </div>
+      <span class="kor">커 피</span>
+    </div>
+    <div class="grid three">
+      <div class="card signature">
+        <div class="card-meta"><span class="cat">COFFEE /01</span><span class="sig">SIGNATURE</span></div>
+        <div class="thumb"><img src="empreinte-02O1bXB_fgk-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Oat Cloud Latte</div>
+          <div class="name-kor">오트 클라우드 라떼</div>
+          <div class="desc">귀리우유 + 콜드브루, 설탕 0g. 부드러운 거품 위에 시나몬 한 꼬집.</div>
+          <div class="price">
+            <span class="vol">180ML</span><span class="sep">|</span>
+            <span class="won">6,500</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-meta"><span class="cat">COFFEE /02</span><span></span></div>
+        <div class="thumb"><img src="nathan-dumlao-XOhI_kW_TaM-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Skinny Flat White</div>
+          <div class="name-kor">스키니 플랫화이트</div>
+          <div class="desc">저지방우유로 추출한 진한 더블 샷. 단맛 없이 본연의 풍미만.</div>
+          <div class="price">
+            <span class="vol">160ML</span><span class="sep">|</span>
+            <span class="won">5,500</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-meta"><span class="cat">COFFEE /03</span><span></span></div>
+        <div class="thumb"><img src="jarek-ceborski-IhqDpFz7I8Q-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Honey Espresso Tonic</div>
+          <div class="name-kor">허니 에스프레소 토닉</div>
+          <div class="desc">탄산수 + 에스프레소 + 아카시아 꿀 1티스푼. 청량하게.</div>
+          <div class="price">
+            <span class="vol">220ML</span><span class="sep">|</span>
+            <span class="won">6,000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEA -->
+  <section class="section">
+    <div class="sec-head">
+      <div class="title">
+        <span class="num">/02</span>
+        <h2>Tea</h2>
+      </div>
+      <span class="kor">차</span>
+    </div>
+    <div class="grid three">
+      <div class="card signature">
+        <div class="card-meta"><span class="cat">TEA /01</span><span class="sig">SIGNATURE</span></div>
+        <div class="thumb"><img src="drew-jemmett-qEcWgrTG578-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Spiced Black Brew</div>
+          <div class="name-kor">스파이스드 블랙티</div>
+          <div class="desc">아쌈 + 카르다몸 + 정향. 무설탕 두유로 끓여낸 따뜻한 차이.</div>
+          <div class="price">
+            <span class="vol">240ML</span><span class="sep">|</span>
+            <span class="won">6,000</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-meta"><span class="cat">TEA /02</span><span></span></div>
+        <div class="thumb"><img src="content-pixie-m-gqDRzbJLQ-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Sencha Garden</div>
+          <div class="name-kor">센차 가든</div>
+          <div class="desc">교토산 일번차. 70℃ 저온 추출, 카페인은 가볍게.</div>
+          <div class="price">
+            <span class="vol">240ML</span><span class="sep">|</span>
+            <span class="won">5,500</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-meta"><span class="cat">TEA /03</span><span></span></div>
+        <div class="thumb"><img src="teacora-rooibos-FnTWsBohkdo-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Rooibos Berry</div>
+          <div class="name-kor">루이보스 베리</div>
+          <div class="desc">남아공 루이보스 + 히비스커스. 카페인 프리, 디카페인 베스트.</div>
+          <div class="price">
+            <span class="vol">240ML</span><span class="sep">|</span>
+            <span class="won">5,800</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAKE -->
+  <section class="section">
+    <div class="sec-head">
+      <div class="title">
+        <span class="num">/03</span>
+        <h2>Cake</h2>
+      </div>
+      <span class="kor">케 이 크</span>
+    </div>
+    <div class="grid two">
+      <div class="card signature">
+        <div class="card-meta"><span class="cat">CAKE /01</span><span class="sig">SIGNATURE</span></div>
+        <div class="thumb"><img src="jasmine-bartel-8LtrMQfeDkQ-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Strawberry Bloom Cake</div>
+          <div class="name-kor">스트로베리 블룸 케이크</div>
+          <div class="desc">통밀 시트 + 그릭요거트 크림 + 제철 딸기. 정제당 대신 아가베 시럽 사용.</div>
+          <div class="price">
+            <span class="vol">120G</span><span class="sep">|</span>
+            <span class="won">7,500</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-meta"><span class="cat">CAKE /02</span><span></span></div>
+        <div class="thumb"><img src="natallia-nagorniak-tA3sJ4u09eU-unsplash.jpg" alt=""></div>
+        <div class="body">
+          <div class="name-en">Blueberry Cream Cloud</div>
+          <div class="name-kor">블루베리 크림 클라우드</div>
+          <div class="desc">두부 크림 + 블루베리 콩포트. 1조각 180kcal 미만, 가볍게 마무리.</div>
+          <div class="price">
+            <span class="vol">115G</span><span class="sep">|</span>
+            <span class="won">7,000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="mark">COFFEE LIGHT</span>
+    <div class="right">
+      <span>MON–SUN  08:00–22:00</span>
+      <span>@COFFEELIGHT.KR</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

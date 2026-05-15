@@ -1,0 +1,34 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# 이 파일을 git에 커밋하고 Render Dashboard > New > Blueprint에서 레포 연결하면
+# 자동으로 서비스가 셋업됩니다.
+
+services:
+  - type: web
+    name: menu-cardnews
+    runtime: node
+    plan: free            # 무료 플랜 (15분 미사용 시 sleep). 유료는 plan: starter 로 변경
+    region: singapore     # 한국에서 가장 가까움
+    rootDir: week-6/menu
+    branch: main
+    buildCommand: npm install && npx playwright install --with-deps chromium
+    startCommand: node single.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      # 아래 키들은 Render Dashboard 의 Environment 탭에서 직접 입력 (sync: false → 블루프린트 외부 관리)
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FAL_KEY
+        sync: false
+      - key: IMAGEKIT_PUBLIC_KEY
+        sync: false
+      - key: IMAGEKIT_PRIVATE_KEY
+        sync: false
+      - key: IMAGEKIT_URL_ENDPOINT
+        sync: false
+      - key: SITE_PASSWORD
+        sync: false
+      - key: AUTH_SECRET
+        sync: false

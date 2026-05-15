@@ -1,0 +1,42 @@
+[
+  {
+    "id": "c1",
+    "name": "정담한정식",
+    "category": "한식",
+    "email": "owner1@example.com",
+    "tone": "정중하고 따뜻한",
+    "menu_keywords": ["한정식", "비빔밥", "된장찌개"]
+  },
+  {
+    "id": "c2",
+    "name": "할매보쌈",
+    "category": "한식",
+    "email": "owner2@example.com",
+    "tone": "친근하고 푸근한",
+    "menu_keywords": ["보쌈", "족발", "막국수"]
+  },
+  {
+    "id": "c3",
+    "name": "또또떡볶이",
+    "category": "분식",
+    "email": "owner3@example.com",
+    "tone": "발랄하고 캐주얼한",
+    "menu_keywords": ["떡볶이", "튀김", "순대", "김밥"]
+  },
+  {
+    "id": "c4",
+    "name": "모닝브루카페",
+    "category": "카페",
+    "email": "owner4@example.com",
+    "tone": "감성적이고 차분한",
+    "menu_keywords": ["스페셜티 커피", "디저트", "브런치"]
+  },
+  {
+    "id": "c5",
+    "name": "라떼라운지",
+    "category": "카페",
+    "email": "owner5@example.com",
+    "tone": "트렌디하고 세련된",
+    "menu_keywords": ["라떼", "시즌 음료", "수제 디저트"]
+  }
+]

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <title>식당 비유 — 왜 Vercel이 아니라 Render에 올렸을까?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lime: #a3e635;
+      --lime-soft: rgba(163, 230, 53, 0.12);
+      --emerald: #34d399;
+      --rose: #fb7185;
+      --amber: #fcd34d;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #050608;
+      font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      word-break: keep-all;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #thumbnail {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(900px 600px at 6% 4%, rgba(163, 230, 53, 0.12), transparent 60%),
+        radial-gradient(900px 600px at 96% 6%, rgba(52, 211, 153, 0.10), transparent 60%),
+        radial-gradient(700px 500px at 50% 115%, rgba(163, 230, 53, 0.07), transparent 60%),
+        linear-gradient(180deg, #0a0a0a 0%, #0e0f12 100%);
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, #d9f99d 0%, #a3e635 45%, #34d399 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .glass {
+      background: rgba(20, 22, 26, 0.62);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-soft {
+      background: rgba(20, 22, 26, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .glass-lime {
+      background:
+        radial-gradient(700px 280px at 0% 0%, rgba(163, 230, 53, 0.18), transparent 60%),
+        rgba(20, 22, 26, 0.65);
+      border: 1px solid rgba(163, 230, 53, 0.30);
+      box-shadow: 0 0 0 1px rgba(163, 230, 53, 0.05), 0 20px 60px -20px rgba(163, 230, 53, 0.25);
+    }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .tracking-tighter-2 {
+      letter-spacing: -0.04em;
+    }
+    .tracking-tighter-3 {
+      letter-spacing: -0.055em;
+    }
+    .lime { color: var(--lime); }
+    .emerald { color: var(--emerald); }
+    .rose { color: var(--rose); }
+    .amber { color: var(--amber); }
+    .leading-relaxed-2 { line-height: 1.65; }
+    .quote-mark {
+      font-family: 'Inter', serif;
+      font-weight: 900;
+      color: rgba(163, 230, 53, 0.35);
+      line-height: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { Fragment } = React;
+
+    // ========================================
+    // Design System — small chip / label primitives
+    // ========================================
+    function Chip({ children, tone = "lime", className = "" }) {
+      const palette = {
+        lime: "bg-lime-400/10 text-lime-300 border-lime-400/30",
+        slate: "bg-white/5 text-slate-300 border-white/10",
+        rose: "bg-rose-400/10 text-rose-300 border-rose-400/30",
+        amber: "bg-amber-400/10 text-amber-300 border-amber-400/30",
+      }[tone];
+      return (
+        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[15px] font-semibold tracking-tight ${palette} ${className}`}>
+          {children}
+        </span>
+      );
+    }
+
+    function SectionTitle({ index, color, title, subtitle }) {
+      const dot = {
+        lime: "bg-lime-400 text-black",
+        rose: "bg-rose-400 text-black",
+        emerald: "bg-emerald-400 text-black",
+        amber: "bg-amber-300 text-black",
+      }[color];
+      return (
+        <div className="flex items-start gap-3">
+          <span className={`shrink-0 w-9 h-9 rounded-lg ${dot} grid place-items-center font-black text-[18px] tracking-tighter-2`}>
+            {index}
+          </span>
+          <div>
+            <div className="text-[22px] font-extrabold text-white tracking-tighter-2 leading-tight">{title}</div>
+            {subtitle && <div className="text-[14px] text-slate-400 mt-1 tracking-tight">{subtitle}</div>}
+          </div>
+        </div>
+      );
+    }
+
+    function Quote({ emoji, children, tone = "lime" }) {
+      const ring = {
+        lime: "border-lime-400/25",
+        rose: "border-rose-400/25",
+        emerald: "border-emerald-400/25",
+      }[tone];
+      return (
+        <div className={`relative pl-6 pr-2 py-1 border-l-[3px] ${ring}`}>
+          <div className="absolute -top-3 -left-1 text-[34px] quote-mark">“</div>
+          <div className="text-[18px] text-slate-100 font-medium leading-relaxed-2 tracking-tight">
+            {emoji && <span className="mr-2">{emoji}</span>}
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Section 1 — 우리 시스템이 하는 일
+    // ========================================
+    function SectionRestaurant() {
+      const steps = [
+        { n: "1", title: "시장 조사", desc: "인터넷에서 외식 트렌드 6곳 자동 수집", tag: "foodbank · baemin · ahatrend …" },
+        { n: "2", title: "글쓰기 직원이 카피 작성", desc: "OpenAI가 카테고리·톤·트렌드 보고 한국어 카피 재창조", tag: "GPT" },
+        { n: "3", title: "사진사가 음식 사진 촬영", desc: "fal.ai가 카테고리·시즌 무드 반영해 음식 이미지 생성", tag: "fal.ai" },
+        { n: "4", title: "거대한 인쇄기로 9~11장 PNG 인쇄", desc: "Playwright가 HTML 템플릿을 PNG로 캡처", tag: "Playwright + Chromium" },
+        { n: "5", title: "ZIP으로 묶어 단골에게 전달", desc: "archiver가 한 번에 압축", tag: "archiver" },
+      ];
+      return (
+        <div className="glass rounded-2xl p-7 flex flex-col gap-5">
+          <SectionTitle index="1" color="lime" title="우리 시스템이 하는 일" subtitle="한 문장으로 먼저 정리" />
+          <Quote emoji="🍽️" tone="lime">
+            이 프로그램은 작은 <span className="lime font-bold">식당</span>이에요.
+            매월 단골(가맹점)에게 보낼 <span className="lime font-bold">시즌 안내장(카드뉴스)</span> 9~11장을
+            자동으로 만들어주는 식당이죠.
+          </Quote>
+          <div className="text-[13px] uppercase tracking-[0.18em] text-slate-400 font-bold mt-1">식당이 하는 일</div>
+          <ol className="flex flex-col gap-2.5">
+            {steps.map((s) => (
+              <li key={s.n} className="flex items-start gap-3 glass-soft rounded-xl px-3.5 py-2.5">
+                <span className="shrink-0 mt-0.5 w-6 h-6 rounded-md bg-lime-400/15 text-lime-300 grid place-items-center text-[13px] font-bold">
+                  {s.n}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[15.5px] text-white font-bold tracking-tight leading-tight">
+                    {s.title}
+                    <span className="ml-2 text-[12px] text-slate-500 font-medium">{s.tag}</span>
+                  </div>
+                  <div className="text-[13.5px] text-slate-400 mt-0.5 tracking-tight">{s.desc}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Section 2 — Vercel은 푸드트럭
+    // ========================================
+    function ConItem({ index, title, sub, lines }) {
+      return (
+        <div className="glass-soft rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <span className="shrink-0 w-7 h-7 rounded-md bg-rose-400/15 text-rose-300 grid place-items-center text-[13px] font-extrabold">
+              {index}
+            </span>
+            <div className="min-w-0">
+              <div className="text-[15.5px] text-white font-extrabold tracking-tight leading-tight">
+                {title} <span className="ml-1 text-[12px] text-rose-300/80 font-semibold">{sub}</span>
+              </div>
+              <ul className="mt-1.5 flex flex-col gap-1">
+                {lines.map((l, i) => (
+                  <li key={i} className="text-[13.5px] text-slate-300 tracking-tight leading-snug flex gap-2">
+                    <span className="text-rose-400/80 mt-[2px]">▸</span>
+                    <span>{l}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function SectionFoodTruck() {
+      return (
+        <div className="glass rounded-2xl p-7 flex flex-col gap-5">
+          <SectionTitle index="2" color="rose" title="Vercel은 푸드트럭이에요" subtitle="가볍고 빠르지만, 우리 식당과는 안 맞아요" />
+          <Quote emoji="🚚" tone="rose">
+            Vercel은 <span className="rose font-bold">푸드트럭</span> 같은 서비스예요.
+            가볍고 빠르지만 <span className="rose font-bold">적재 공간이 작고</span>,
+            영업이 끝나면 트럭 안 물건이 <span className="rose font-bold">다 사라져요</span>.
+          </Quote>
+          <div className="grid grid-cols-2 gap-2.5">
+            <ConItem
+              index="❌"
+              title="거대한 인쇄기를 못 실어요"
+              sub="(300MB)"
+              lines={[
+                <>Playwright의 Chromium은 <b className="text-white">300MB</b>짜리 거대 인쇄기</>,
+                <>푸드트럭 적재 한도는 <b className="text-white">50MB</b></>,
+                <>“300kg 기계를 트럭에 실으려는데 차가 안 움직임”</>,
+              ]}
+            />
+            <ConItem
+              index="❌"
+              title="냉장고가 없어요"
+              sub="(휘발성 FS)"
+              lines={[
+                <>영업 끝나면 트럭 안의 모든 게 사라짐</>,
+                <>PNG 9~11장 + 단골 JSON을 <b className="text-white">보관 불가</b></>,
+                <>“어제 만든 안내장을 오늘 다시 못 보여줌”</>,
+              ]}
+            />
+            <ConItem
+              index="❌"
+              title="60초 안에 음식을 내야 해요"
+              sub="(timeout)"
+              lines={[
+                <>안내장 한 세트 = <b className="text-white">1~2분</b> 소요</>,
+                <>푸드트럭은 60초 넘으면 손님이 가버림</>,
+                <>“짧은 메뉴만 가능, 풀코스는 불가”</>,
+              ]}
+            />
+            <ConItem
+              index="❌"
+              title="손님 없으면 시동을 꺼요"
+              sub="(cold start)"
+              lines={[
+                <>다시 시동 거는 데 <b className="text-white">5~10초</b></>,
+                <>매 요청마다 대기 발생</>,
+                <>“매번 기다려야 하는 불편함”</>,
+              ]}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Section 3 — Render는 정착한 식당
+    // ========================================
+    function ProItem({ children }) {
+      return (
+        <div className="flex items-start gap-3 glass-soft rounded-xl px-3.5 py-3">
+          <span className="shrink-0 mt-0.5 text-lime-300 text-[18px] leading-none">✅</span>
+          <div className="text-[15px] text-slate-100 tracking-tight leading-snug">{children}</div>
+        </div>
+      );
+    }
+
+    function SectionRender() {
+      return (
+        <div className="glass rounded-2xl p-7 flex flex-col gap-5">
+          <SectionTitle index="3" color="emerald" title="Render는 정착한 식당이에요" subtitle="부엌도 냉장고도 넉넉해요" />
+          <Quote emoji="🏪" tone="emerald">
+            Render는 한자리에 <span className="emerald font-bold">정착한 식당</span> 같아요.
+            부엌도 넉넉하고, <span className="emerald font-bold">냉장고도 있고</span>,
+            손님이 <span className="emerald font-bold">오래 머물러도</span> 괜찮아요.
+          </Quote>
+
+          <div className="flex flex-col gap-2.5">
+            <ProItem>
+              <b className="text-white">거대 인쇄기</b>(Playwright + Chromium 300MB) 그대로 설치 가능
+            </ProItem>
+            <ProItem>
+              <b className="text-white">냉장고</b>(파일 시스템)에 PNG와 JSON 그대로 보관
+            </ProItem>
+            <ProItem>
+              <b className="text-white">풀코스 1~2분</b> 걸려도 손님이 끝까지 기다려줌 <span className="text-slate-400">(timeout 넉넉)</span>
+            </ProItem>
+          </div>
+
+          <div className="mt-1 flex items-start gap-3 rounded-xl p-3.5 border border-amber-300/30 bg-amber-300/[0.06]">
+            <span className="shrink-0 mt-0.5 text-amber-300 text-[18px] leading-none">⚠️</span>
+            <div className="text-[14.5px] text-amber-100/90 tracking-tight leading-snug">
+              단점은 단 하나 — <b className="text-amber-200">단골이 없으면 15분 후 잠시 졸아요</b> (sleep).
+              <div className="mt-1 text-[13.5px] text-amber-100/70">
+                발표 5분 전에 한 번 문 열고 들어가서 깨워두면 OK. <span className="text-amber-200/90">무료 플랜 한정</span>,
+                유료 $7/mo로 가면 잠 안 잠.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Section 4 — 발표 중 외울 핵심 멘트 3개
+    // ========================================
+    function KeyLine({ badge, children }) {
+      return (
+        <div className="flex items-start gap-4 rounded-2xl bg-black/30 border border-lime-400/20 px-5 py-4">
+          <span className="shrink-0 text-[28px] leading-none mt-0.5">{badge}</span>
+          <div className="text-[19px] text-slate-50 font-semibold tracking-tight leading-snug">
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function SectionKeyLines() {
+      return (
+        <div className="glass-lime rounded-2xl p-7 flex flex-col gap-5">
+          <SectionTitle index="4" color="lime" title="발표 중 외울 핵심 멘트 3개" subtitle="이 세 줄만 외우면 발표 완성" />
+          <div className="flex flex-col gap-3">
+            <KeyLine badge="1️⃣">
+              이 시스템은 <span className="lime font-extrabold">식당</span>이에요.
+              매월 단골에게 보낼 <span className="text-white font-extrabold">시즌 안내장 카드뉴스 9~11장</span>을 자동으로 만들어주죠.
+            </KeyLine>
+            <KeyLine badge="2️⃣">
+              Vercel은 <span className="rose font-extrabold">푸드트럭</span>,
+              Render는 <span className="emerald font-extrabold">정착한 식당</span>.
+              우리 식당엔 <span className="lime font-extrabold">거대한 인쇄기</span>랑 <span className="lime font-extrabold">냉장고</span>가
+              필요해서 <span className="text-white font-extrabold">푸드트럭엔 못 실어요</span>.
+            </KeyLine>
+            <KeyLine badge="3️⃣">
+              그래서 <span className="emerald font-extrabold">Render</span>에 배포했고,
+              <span className="text-white font-extrabold"> 발표 직전에 한 번 깨워두면</span> 됩니다.
+            </KeyLine>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // App — 1920×1080 슬라이드 컴포지션
+    // ========================================
+    function App() {
+      return (
+        <div id="thumbnail" className="grid-bg">
+          {/* 헤더 */}
+          <header className="absolute top-0 left-0 right-0 px-14 pt-10">
+            <div className="flex items-start justify-between gap-8">
+              <div className="flex flex-col gap-3">
+                <Chip tone="lime">
+                  <span className="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+                  발표용 스크립트 · 초등학생도 알 만하게
+                </Chip>
+                <h1 className="hero-gradient text-[58px] font-black tracking-tighter-3 leading-[1.02]">
+                  이 프로그램, 왜 Vercel이 아니라 Render에 올렸을까?
+                </h1>
+                <p className="text-[20px] text-slate-300 font-medium tracking-tight">
+                  5분 안에 다 설명할 수 있는 <span className="lime font-bold">식당 비유</span>
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-2 pt-1">
+                <Chip tone="slate">Week 6 · Menu Cardnews Pipeline</Chip>
+                <div className="text-[13px] text-slate-500 tracking-tight">발표용 단일 슬라이드 · 1920×1080</div>
+              </div>
+            </div>
+          </header>
+
+          {/* 본문: 2 × 2 그리드 */}
+          <main className="absolute left-14 right-14 top-[238px] bottom-[78px]">
+            <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
+              <SectionRestaurant />
+              <SectionFoodTruck />
+              <SectionRender />
+              <SectionKeyLines />
+            </div>
+          </main>
+
+          {/* 풋터 */}
+          <footer className="absolute bottom-0 left-0 right-0 px-14 pb-6 flex items-center justify-between text-[13px] text-slate-500 tracking-tight">
+            <div>
+              <span className="text-slate-400 font-semibold">Week 6 · 2026.05</span>
+              <span className="mx-2 text-slate-700">|</span>
+              외식 가맹점 카드뉴스 자동 생성 (Menu)
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+              <span>식당 비유 · OpenAI + fal.ai + Playwright + archiver</span>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

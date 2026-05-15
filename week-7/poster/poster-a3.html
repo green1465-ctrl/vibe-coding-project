@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기리고 — A3 메인 포스터 (5인 비주얼)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== 눈누 양진체 — 호러/스릴러 영화 포스터용 굵고 거친 명조 ===== */
+    @font-face {
+      font-family: 'Yangjin';
+      src: url('https://cdn.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+      font-weight: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --netflix-red: #E50914;
+      --blood-red: #8B0000;
+      --deep-red: #4a0000;
+      --ghost-cyan: #00d4ff;
+      --bone-white: #f3eee2;
+    }
+
+    /* ===== A3 인쇄 규격 (297mm × 420mm 세로) ===== */
+    @page {
+      size: A3 portrait;
+      margin: 0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #1a1a1a;
+      color: #f3eee2;
+      font-family: 'Noto Sans KR', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 화면 미리보기 — 회색 매트 위에 포스터 한 장 */
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 12px 80px;
+    }
+
+    /* ===== 포스터 본체 — 정확히 A3 사이즈 ===== */
+    .poster-a3 {
+      position: relative;
+      width: 297mm;
+      height: 420mm;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(229,9,20,0.15);
+      color: #f3eee2;
+      /* mm 기반 단위가 깨지지 않도록 transform 없음 */
+    }
+
+    /* 모바일/작은 창에서도 비율을 유지하면서 보이도록 (인쇄에는 영향 없음) */
+    @media screen and (max-width: 1080px) {
+      body { padding: 16px 8px 60px; }
+      .poster-a3 {
+        width: 95vw;
+        height: calc(95vw * (420 / 297));
+      }
+      .poster-a3 .scale-host {
+        transform: scale(calc((95 * 1vw) / 297mm));
+      }
+    }
+
+    /* ===== 베이스 이미지 ===== */
+    .poster-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+      filter: brightness(0.62) contrast(1.18) saturate(1.05) hue-rotate(135deg);
+      z-index: 1;
+    }
+
+    /* 형광등 깜빡임 */
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      18% { opacity: 0.92; }
+      19% { opacity: 1; }
+      48% { opacity: 1; }
+      49% { opacity: 0.78; }
+      49.5% { opacity: 1; }
+      80% { opacity: 1; }
+      81% { opacity: 0.85; }
+      82% { opacity: 1; }
+    }
+    .flicker { animation: flicker 6.2s infinite steps(1); }
+
+    /* ===== 그라디언트 오버레이 ===== */
+    .overlay { position: absolute; inset: 0; pointer-events: none; }
+    .ovl-teal {
+      background: linear-gradient(180deg,
+        rgba(7,30,38,0.55) 0%,
+        rgba(0,15,25,0.25) 35%,
+        rgba(0,0,0,0.95) 100%);
+      mix-blend-mode: multiply;
+      z-index: 2;
+    }
+    .ovl-cyan-glow {
+      background: radial-gradient(ellipse at 50% 28%,
+        rgba(0,200,255,0.20) 0%, transparent 55%);
+      mix-blend-mode: screen;
+      z-index: 3;
+    }
+    .ovl-flicker-top {
+      top: 0; bottom: auto; height: 50mm;
+      background: linear-gradient(180deg,
+        rgba(180,255,255,0.20) 0%, transparent 100%);
+      mix-blend-mode: screen;
+      z-index: 3;
+    }
+    .ovl-bottom-black {
+      top: 50%; height: 50%;
+      background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(0,0,0,0.55) 25%,
+        rgba(0,0,0,0.92) 65%,
+        #000 100%);
+      z-index: 4;
+    }
+    .ovl-red-bleed {
+      top: 50%; height: 55%;
+      background: radial-gradient(ellipse at 50% 100%,
+        rgba(229,9,20,0.55) 0%,
+        rgba(139,0,0,0.30) 30%,
+        transparent 65%);
+      mix-blend-mode: screen;
+      z-index: 5;
+    }
+    .ovl-vignette {
+      box-shadow: inset 0 0 90mm 8mm rgba(0,0,0,0.95);
+      z-index: 6;
+    }
+
+    /* ===== 그레인 / 노이즈 ===== */
+    .grain {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      z-index: 7;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+      background-size: 60mm 60mm;
+      mix-blend-mode: overlay;
+      opacity: 0.42;
+    }
+
+    /* ===== 스캔라인 (1px ≒ 0.085mm — 인쇄에서 실질적으로 살짝 거친 느낌만) ===== */
+    .scanlines {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      z-index: 8;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0) 0,
+        rgba(0,0,0,0) 0.4mm,
+        rgba(0,0,0,0.18) 0.4mm,
+        rgba(0,0,0,0.18) 0.5mm
+      );
+      mix-blend-mode: multiply;
+      opacity: 0.55;
+    }
+
+    /* ===== 상단 헤더 ===== */
+    .top-block {
+      position: absolute;
+      top: 14mm; left: 14mm; right: 14mm;
+      z-index: 30;
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .netflix-chip {
+      display: inline-flex; align-items: center; gap: 2.2mm;
+      padding: 1.6mm 3.4mm 1.4mm;
+      background: rgba(0,0,0,0.65);
+      border: 0.3mm solid rgba(229,9,20,0.55);
+      backdrop-filter: blur(1px);
+    }
+    .netflix-N {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 7mm;
+      color: var(--netflix-red);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      text-shadow: 0 0 3mm rgba(229,9,20,0.6);
+    }
+    .netflix-text {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 3mm;
+      font-weight: 500;
+      letter-spacing: 0.5em;
+      color: #f3eee2;
+    }
+    .top-meta {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.2mm;
+      letter-spacing: 0.32em;
+      color: rgba(180,230,240,0.7);
+      margin-top: 2mm;
+    }
+    .ep-tag {
+      padding: 1.5mm 3.2mm;
+      border: 0.3mm solid rgba(0,200,255,0.55);
+      background: rgba(0,40,60,0.5);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.2mm;
+      letter-spacing: 0.3em;
+      color: rgba(180,230,240,0.95);
+    }
+
+    /* 우측 세로 카피 (욕망의 알고리즘) */
+    .vert-copy {
+      position: absolute;
+      top: 90mm; right: 12mm;
+      z-index: 30;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      font-family: 'Nanum Myeongjo', 'Noto Serif KR', serif;
+      font-weight: 700;
+      font-size: 5mm;
+      letter-spacing: 0.6em;
+      color: rgba(220,240,250,0.7);
+      text-shadow: 0 0 2mm rgba(0,0,0,0.9);
+    }
+
+    /* ===== 하단 타이틀 블록 ===== */
+    .bottom-block {
+      position: absolute;
+      left: 14mm; right: 14mm;
+      bottom: 14mm;
+      z-index: 30;
+    }
+
+    .sub-copy {
+      font-family: 'Nanum Myeongjo', 'Noto Serif KR', serif;
+      font-weight: 700;
+      font-size: 7.2mm;
+      line-height: 1.45;
+      color: rgba(245,238,225,0.94);
+      margin: 0 0 8mm;
+      text-shadow: 0 0.4mm 1.2mm rgba(0,0,0,0.85);
+    }
+    .sub-copy .red { color: #ff5a6a; }
+
+    /* ===== 글리치 타이틀 (양진체) ===== */
+    .title-wrap { position: relative; }
+    .glitch-title {
+      position: relative;
+      font-family: 'Yangjin', 'Noto Serif KR', 'Nanum Myeongjo', serif;
+      font-size: 96mm;
+      line-height: 0.85;
+      letter-spacing: -0.005em;
+      color: var(--netflix-red);
+      margin: 0;
+      text-shadow:
+        0.5mm 0 #ff0040,
+        -0.5mm 0 #00d4ff,
+        0 0 6mm rgba(229,9,20,0.55),
+        0 0 14mm rgba(139,0,0,0.65);
+      animation: glitch-shake 5.5s infinite steps(1);
+    }
+    .glitch-title::before,
+    .glitch-title::after {
+      content: attr(data-text);
+      position: absolute; left: 0; top: 0; width: 100%;
+      pointer-events: none;
+      font-family: inherit;
+    }
+    .glitch-title::before {
+      color: #ff0040;
+      transform: translate(0.5mm, 0);
+      mix-blend-mode: screen;
+      opacity: 0.85;
+      clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+      animation: glitch-anim-1 3.7s infinite linear alternate;
+    }
+    .glitch-title::after {
+      color: #00d4ff;
+      transform: translate(-0.5mm, 0);
+      mix-blend-mode: screen;
+      opacity: 0.7;
+      clip-path: polygon(0 66%, 100% 66%, 100% 100%, 0 100%);
+      animation: glitch-anim-2 4.3s infinite linear alternate;
+    }
+    @keyframes glitch-shake {
+      0%, 92%, 100% { transform: translate(0,0); }
+      93% { transform: translate(-0.3mm, 0.3mm); }
+      94% { transform: translate(0.5mm, -0.3mm); }
+      95% { transform: translate(-0.5mm, 0); }
+      96% { transform: translate(0.3mm, 0.5mm); }
+      97% { transform: translate(0, -0.3mm); }
+    }
+    @keyframes glitch-anim-1 {
+      0%, 100% { transform: translate(0.5mm, 0); }
+      20%      { transform: translate(0.7mm, -0.2mm); }
+      40%      { transform: translate(0.3mm, 0.2mm); }
+      60%      { transform: translate(0.9mm, 0); }
+      80%      { transform: translate(0.5mm, -0.4mm); }
+    }
+    @keyframes glitch-anim-2 {
+      0%, 100% { transform: translate(-0.5mm, 0); }
+      25%      { transform: translate(-0.7mm, 0.2mm); }
+      50%      { transform: translate(-0.3mm, -0.2mm); }
+      75%      { transform: translate(-0.9mm, 0); }
+    }
+
+    .eng-title {
+      margin-top: 4mm;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 6.5mm;
+      letter-spacing: 0.45em;
+      color: rgba(245,238,225,0.85);
+      text-shadow: 0 0 2mm rgba(0,0,0,0.8);
+    }
+
+    /* ===== 크레딧 라인 ===== */
+    .credits {
+      margin-top: 7mm;
+      padding-top: 4mm;
+      border-top: 0.4mm solid rgba(229,9,20,0.55);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 400;
+      font-size: 3.2mm;
+      letter-spacing: 0.04em;
+      line-height: 1.6;
+      color: rgba(245,238,225,0.78);
+    }
+    .credits .label {
+      color: rgba(229,9,20,0.85);
+      font-weight: 700;
+      margin-right: 1.5mm;
+      letter-spacing: 0.18em;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3mm;
+    }
+
+    /* ===== 최하단 스트립 ===== */
+    .footer-strip {
+      margin-top: 6mm;
+      padding-top: 4mm;
+      border-top: 0.3mm solid rgba(229,9,20,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-strip .left {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5mm;
+      letter-spacing: 0.32em;
+      color: rgba(255,255,255,0.92);
+    }
+    .footer-strip .right {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5.6mm;
+      letter-spacing: 0.32em;
+      color: var(--netflix-red);
+      text-shadow: 0 0 2mm rgba(229,9,20,0.55);
+    }
+
+    /* ===== 화면 전용 컨트롤 바 ===== */
+    .controls {
+      position: fixed;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex; gap: 10px;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(229,9,20,0.45);
+      padding: 8px 12px;
+      border-radius: 999px;
+    }
+    .controls a, .controls button {
+      appearance: none;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #f3eee2;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+    .controls button:hover, .controls a:hover {
+      background: rgba(229,9,20,0.85);
+      border-color: rgba(229,9,20,0.85);
+    }
+    .controls .info {
+      color: rgba(255,255,255,0.55);
+      font-size: 11px;
+      padding: 6px 8px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ===== 인쇄 모드 ===== */
+    @media print {
+      html, body {
+        background: #000 !important;
+        margin: 0; padding: 0;
+        width: 297mm; height: 420mm;
+      }
+      body { padding: 0 !important; display: block; }
+      .controls { display: none !important; }
+      .poster-a3 {
+        box-shadow: none !important;
+        width: 297mm !important;
+        height: 420mm !important;
+        page-break-after: avoid;
+      }
+      /* 인쇄에서 깜빡임/흔들림 정지 */
+      .flicker, .glitch-title, .glitch-title::before, .glitch-title::after {
+        animation: none !important;
+      }
+      .glitch-title::before { transform: translate(0.5mm, 0) !important; }
+      .glitch-title::after  { transform: translate(-0.5mm, 0) !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 화면 전용 컨트롤 -->
+  <div class="controls" aria-hidden="true">
+    <span class="info">A3 · 297×420mm</span>
+    <button onclick="window.print()">인쇄 / PDF 저장</button>
+    <a href="./index.html">← 갤러리로</a>
+  </div>
+
+  <!-- ===== A3 포스터 ===== -->
+  <article class="poster-a3" aria-label="기리고 — A3 메인 포스터 (5인 비주얼)">
+
+    <!-- 베이스 이미지: 5인 메인 비주얼 -->
+    <img class="poster-bg flicker"
+         src="./stills/01_main_poster.jpg"
+         alt="기리고 메인 포스터 — 서린고 5인"
+         draggable="false" />
+
+    <!-- 오버레이 -->
+    <div class="overlay ovl-teal"></div>
+    <div class="overlay ovl-cyan-glow"></div>
+    <div class="overlay ovl-flicker-top"></div>
+    <div class="overlay ovl-bottom-black"></div>
+    <div class="overlay ovl-red-bleed"></div>
+    <div class="overlay ovl-vignette"></div>
+
+    <div class="grain"></div>
+    <div class="scanlines"></div>
+
+    <!-- 상단: 넷플릭스 칩 + 에피소드 태그 -->
+    <header class="top-block">
+      <div>
+        <div class="netflix-chip">
+          <span class="netflix-N">N</span>
+          <span class="netflix-text">넷플릭스 시리즈</span>
+        </div>
+        <div class="top-meta">K-OCCULT &nbsp;·&nbsp; 8 EPISODES</div>
+      </div>
+      <div class="ep-tag">ORIGINAL</div>
+    </header>
+
+    <!-- 우측 세로 카피 -->
+    <aside class="vert-copy">欲望의 알고리즘</aside>
+
+    <!-- 하단 타이틀 블록 -->
+    <footer class="bottom-block">
+
+      <p class="sub-copy">
+        욕망의 알고리즘,<br>
+        그 잔인한 주구(呪具) <span class="red">기리고</span>
+      </p>
+
+      <div class="title-wrap">
+        <h1 class="glitch-title" data-text="기리고">기리고</h1>
+      </div>
+
+      <div class="eng-title">IF&nbsp;WISHES&nbsp;COULD&nbsp;KILL</div>
+
+      <div class="credits">
+        <div><span class="label">CAST</span>전소영 · 강미나 · 백선호 · 현우석 · 이효제</div>
+        <div><span class="label">특별출연</span>전소니 · 노재원 · 이상희 · 최주은</div>
+        <div><span class="label">연출</span>박윤서 &nbsp;<span class="label" style="margin-left:2mm;">각본</span>박중섭 &nbsp;<span class="label" style="margin-left:2mm;">음악</span>강네네</div>
+      </div>
+
+      <div class="footer-strip">
+        <div class="left">ONLY ON NETFLIX</div>
+        <div class="right">4월 24일 공개</div>
+      </div>
+    </footer>
+
+  </article>
+
+</body>
+</html>

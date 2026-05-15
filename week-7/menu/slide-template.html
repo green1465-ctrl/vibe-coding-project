@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Slide Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+  rel="stylesheet"
+/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic",
+      "Noto Sans KR", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    color: #1f2937;
+    background: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    word-break: keep-all;
+    line-height: 1.4;
+  }
+
+  .slide {
+    position: relative;
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+  }
+
+  /* === Slide 1: 음식 이미지 + 헤드라인 === */
+  .s1 .bg {
+    position: absolute; inset: 0;
+    width: 1080px; height: 1080px;
+    object-fit: cover;
+    object-position: center;
+  }
+  .s1 .bg-fallback {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #d1d5db 0%, #6b7280 50%, #374151 100%);
+  }
+  .s1 .grad {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 65%;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.92) 0%,
+      rgba(0,0,0,0.75) 35%,
+      rgba(0,0,0,0.35) 70%,
+      rgba(0,0,0,0) 100%
+    );
+  }
+  .s1 .client-tag {
+    position: absolute; top: 56px; left: 64px;
+    display: inline-flex; align-items: center; gap: 16px;
+    padding: 18px 32px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 999px;
+    font-size: 36px; font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  }
+  .s1 .client-tag .dot {
+    width: 18px; height: 18px; border-radius: 999px;
+  }
+  .s1 .headline {
+    position: absolute; left: 64px; right: 64px; bottom: 120px;
+    color: #ffffff;
+    font-size: 104px;
+    font-weight: 900;
+    line-height: 1.14;
+    letter-spacing: -0.035em;
+    text-shadow: 0 6px 28px rgba(0,0,0,0.6);
+  }
+  .s1 .badge-bottom {
+    position: absolute; left: 64px; bottom: 56px;
+    color: rgba(255,255,255,0.92);
+    font-size: 26px; font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .s1 .month-pill {
+    position: absolute; right: 64px; top: 56px;
+    display: inline-flex; align-items: center;
+    padding: 18px 36px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 999px;
+    font-size: 44px; font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  }
+
+  /* === Slide 2: 제철 재료 전용 === */
+  .s2 {
+    background: #f1f5f9;
+    padding: 110px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .s2 .accent-bar {
+    width: 96px; height: 10px; border-radius: 999px;
+    margin-bottom: 32px;
+  }
+  .s2 .label {
+    font-size: 30px; font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 16px;
+  }
+  .s2 .title-big {
+    font-size: 96px; font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    color: #0f172a;
+    margin-bottom: 56px;
+  }
+  .s2 .ingredients {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    flex: 1;
+    justify-content: center;
+  }
+  .s2 .ingredient-row {
+    display: flex; align-items: baseline;
+    gap: 28px;
+  }
+  .s2 .ingredient-bullet {
+    flex: 0 0 auto;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .s2 .ingredient-name {
+    font-size: 84px;
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #0f172a;
+  }
+  .s2 .footer-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 22px; color: #475569; font-weight: 600;
+  }
+  /* legacy chip 스타일은 더 이상 사용되지 않지만 남겨도 무해 */
+  .s2 .seasonal-chip {
+    display: inline-flex; align-items: center;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 26px; font-weight: 700;
+    letter-spacing: -0.02em;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #0f172a;
+  }
+
+  /* === Slide 3, 4: 추천 메뉴 === */
+  .s3, .s4 {
+    background: #ffffff;
+    padding: 96px 80px 80px;
+    display: flex; flex-direction: column;
+  }
+  /* 이미지가 있는 메뉴 슬라이드 — 상단 이미지(약 1080×520) + 하단 카피 */
+  .s3.has-img, .s4.has-img {
+    padding: 0;
+  }
+  .s3 .menu-photo, .s4 .menu-photo {
+    width: 1080px;
+    height: 540px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+  .s3 .menu-photo-wrap, .s4 .menu-photo-wrap {
+    position: relative;
+    width: 1080px;
+    height: 540px;
+    overflow: hidden;
+  }
+  .s3 .menu-photo-wrap::after, .s4 .menu-photo-wrap::after {
+    content: '';
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 80px;
+    background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .s3.has-img .body-area, .s4.has-img .body-area {
+    padding: 32px 80px 56px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .s3 .badge, .s4 .badge {
+    display: inline-flex; align-items: center; gap: 14px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    font-size: 24px; font-weight: 800;
+    align-self: flex-start;
+    margin-bottom: 32px;
+    letter-spacing: 0.01em;
+  }
+  .s3 .title, .s4 .title {
+    font-size: 76px; font-weight: 900;
+    line-height: 1.16;
+    letter-spacing: -0.035em;
+    color: #0f172a;
+    margin-bottom: 16px;
+    position: relative;
+    display: inline-block;
+  }
+  .s3 .title-underline, .s4 .title-underline {
+    height: 18px;
+    border-radius: 2px;
+    margin-bottom: 36px;
+    width: 140px;
+    opacity: 0.5;
+  }
+  .s3 .body, .s4 .body {
+    font-size: 44px; font-weight: 500;
+    line-height: 1.5;
+    color: #334155;
+    letter-spacing: -0.02em;
+  }
+  .s3 .footer, .s4 .footer {
+    margin-top: auto;
+    font-size: 22px; color: #64748b; font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 32px;
+  }
+
+  /* === Slide 5: CTA === */
+  .s5 {
+    padding: 90px 80px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    color: #ffffff;
+    background-size: cover; background-position: center;
+  }
+  .s5 .top-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .s5 .cta-block {
+    display: flex; flex-direction: column;
+  }
+  .s5 .cta {
+    font-size: 62px; font-weight: 900;
+    line-height: 1.22;
+    letter-spacing: -0.03em;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  }
+  .s5 .cta .small {
+    display: block;
+    font-size: 28px; font-weight: 700;
+    margin-bottom: 20px;
+    opacity: 0.85;
+    letter-spacing: -0.02em;
+  }
+  .s5 .bottom-block {
+    display: flex; flex-direction: column;
+    gap: 16px;
+  }
+  .s5 .source {
+    font-size: 18px;
+    opacity: 0.75;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .s5 .mini-calendar {
+    padding: 20px 24px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 14px;
+    color: #ffffff;
+  }
+  .s5 .mini-calendar .mc-title {
+    display: block;
+    font-size: 20px; font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+    opacity: 0.95;
+  }
+  .s5 .mini-calendar ul {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+    gap: 6px;
+  }
+  .s5 .mini-calendar li {
+    display: flex; align-items: baseline;
+    font-size: 22px; font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .s5 .mini-calendar .mc-date {
+    flex: 0 0 auto;
+    min-width: 90px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 800;
+  }
+  .s5 .mini-calendar .mc-title-item {
+    color: #ffffff;
+  }
+
+  /* === Slide 3: 이달의 외식 트렌드 한눈에 === */
+  .s-trend {
+    background: #ffffff;
+    padding: 88px 80px;
+    display: flex; flex-direction: column;
+  }
+  .s-trend .accent-bar {
+    width: 96px; height: 10px; border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  .s-trend .label {
+    font-size: 28px; font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+  }
+  .s-trend .title-big {
+    font-size: 86px; font-weight: 900;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    color: #0f172a;
+    margin-bottom: 40px;
+  }
+  .s-trend .kw-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .s-trend .kw-chip {
+    display: inline-flex; align-items: center;
+    padding: 16px 28px;
+    border-radius: 999px;
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: #ffffff;
+    border: 2.5px solid currentColor;
+  }
+  .s-trend .body {
+    font-size: 44px; font-weight: 500;
+    line-height: 1.5;
+    color: #334155;
+    letter-spacing: -0.02em;
+  }
+  .s-trend .footer-row {
+    margin-top: auto;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 22px; color: #475569; font-weight: 600;
+    padding-top: 32px;
+  }
+
+  /* === Slide 7~9: 5월 일정 페이지 (최대 3장 분할, 페이지당 6개) === */
+  .s8 {
+    background: #ffffff;
+    padding: 64px 64px 48px;
+    display: flex; flex-direction: column;
+  }
+  .s8 .accent-bar {
+    width: 80px; height: 8px; border-radius: 999px;
+    margin-bottom: 18px;
+  }
+  .s8 .label {
+    font-size: 24px; font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .s8 .title-big {
+    font-size: 64px; font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    color: #0f172a;
+    margin-bottom: 24px;
+  }
+  .s8 .cal-list {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+  .s8 .cal-list li {
+    display: flex; align-items: flex-start; gap: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid #e2e8f0;
+  }
+  .s8 .cal-list li:last-child {
+    border-bottom: none;
+  }
+  .s8 .cal-date {
+    flex: 0 0 auto;
+    min-width: 110px;
+    font-size: 36px; font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    padding-top: 2px;
+  }
+  .s8 .cal-body {
+    display: flex; flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .s8 .cal-cat-badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 16px; font-weight: 800;
+    letter-spacing: 0.01em;
+    align-self: flex-start;
+  }
+  .s8 .cal-cat-holiday {
+    background: #fef3c7; color: #78350f;
+  }
+  .s8 .cal-cat-support {
+    background: #dbeafe; color: #1e3a8a;
+  }
+  .s8 .cal-title {
+    font-size: 28px; font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    line-height: 1.32;
+    word-break: keep-all;
+  }
+  .s8 .footer-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 20px; color: #475569; font-weight: 600;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  // === Query string parsing ===
+  function parseParams() {
+    var raw = window.location.search.replace(/^\?/, '') ||
+              window.location.hash.replace(/^#/, '');
+    var out = {};
+    if (!raw) return out;
+    raw.split('&').forEach(function (pair) {
+      if (!pair) return;
+      var eq = pair.indexOf('=');
+      var k = eq === -1 ? pair : pair.slice(0, eq);
+      var v = eq === -1 ? '' : pair.slice(eq + 1);
+      try {
+        out[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, ' '));
+      } catch (_) {
+        out[k] = v;
+      }
+    });
+    return out;
+  }
+
+  function escHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // === Category accent palette ===
+  var PALETTE = {
+    한식:   { bar: '#78716c', tagBg: '#f5f5f4', tagText: '#44403c', dot: '#a8a29e', s5bg: 'linear-gradient(135deg, #44403c 0%, #1c1917 100%)' },
+    분식:   { bar: '#f97316', tagBg: '#ffedd5', tagText: '#9a3412', dot: '#fb923c', s5bg: 'linear-gradient(135deg, #ea580c 0%, #7c2d12 100%)' },
+    카페:   { bar: '#d97706', tagBg: '#fef3c7', tagText: '#78350f', dot: '#f59e0b', s5bg: 'linear-gradient(135deg, #b45309 0%, #422006 100%)' },
+    default:{ bar: '#10b981', tagBg: '#d1fae5', tagText: '#065f46', dot: '#34d399', s5bg: 'linear-gradient(135deg, #047857 0%, #064e3b 100%)' },
+  };
+
+  function paletteFor(cat) {
+    return PALETTE[cat] || PALETTE.default;
+  }
+
+  // === Render ===
+  function render() {
+    var p = parseParams();
+    var slide = parseInt(p.slide || '1', 10);
+    var category = p.category || '';
+    var clientName = p.client_name || '';
+    var headline = p.headline || '';
+    var slide2 = p.slide2 || '';
+    // 추천 메뉴 3개 (slide4~6)
+    var menuLabels = ['추천 메뉴 ①', '추천 메뉴 ②', '추천 메뉴 ③'];
+    var recMenus = [];
+    var recBodies = [];
+    for (var i = 4; i <= 6; i++) {
+      recMenus.push(p['slide' + i + '_menu'] || menuLabels[i - 4]);
+      recBodies.push(p['slide' + i] || '');
+    }
+    // 트렌드 슬라이드(slide 3)
+    var trendKwRaw = p.trend_keywords || '';
+    var trendKeywords = trendKwRaw
+      ? trendKwRaw.split(/[,，·]/).map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 5)
+      : [];
+    var trendBody = p.trend_body || '';
+    var monthLabel = p.month_label || '';
+    var cta = p.cta || '';
+    var source = p.source || '';
+    var imageUrl = p.image_url || '';
+    var seasonalRaw = p.seasonal || '';
+    var seasonalItems = seasonalRaw
+      ? seasonalRaw.split(',').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 5)
+      : [];
+    var seasonalLabel = p.seasonal_label || '이번 달 추천 메뉴';
+    var calendarItems = [];
+    if (p.calendar) {
+      try {
+        var parsed = JSON.parse(p.calendar);
+        if (Array.isArray(parsed)) {
+          calendarItems = parsed
+            .filter(function (it) { return it && (it.date || it.title); })
+            .slice(0, 16);
+        }
+      } catch (_) { /* ignore */ }
+    }
+    var CAL_PER_PAGE = 6;
+    var CAL_PAGES = Math.max(1, parseInt(p.cal_pages || '1', 10) || 1);
+    // 슬라이드 번호 매핑: 1~6 고정, 7~(6+CAL_PAGES) 캘린더, (6+CAL_PAGES+1) CTA
+    var CAL_START = 7;
+    var CAL_END = CAL_START + CAL_PAGES - 1;
+    var CTA_SLIDE = CAL_END + 1;
+    var pal = paletteFor(category);
+    var TOTAL = 6 + CAL_PAGES + 1; // 헤드라인 + 제철 + 트렌드 + 메뉴3 + 캘린더pages + CTA
+    var pad2 = function (n) { return n < 10 ? '0' + n : '' + n; };
+
+    var root = document.getElementById('root');
+    var html = '';
+
+    var indicator = pad2(slide) + ' / ' + pad2(TOTAL);
+
+    if (slide === 1) {
+      var bg = imageUrl
+        ? '<img id="slide1-bg" class="bg" alt="" crossorigin="anonymous" referrerpolicy="no-referrer" src="' + escHtml(imageUrl) + '" />'
+        : '<div class="bg-fallback"></div>';
+      var monthPill = monthLabel
+        ? '<div class="month-pill">' + escHtml(monthLabel) + '</div>'
+        : '';
+      html =
+        '<section class="slide s1">' +
+          bg +
+          '<div class="grad"></div>' +
+          '<div class="client-tag">' +
+            '<span class="dot" style="background:' + pal.dot + '"></span>' +
+            '<span>' + escHtml(clientName) + '</span>' +
+          '</div>' +
+          monthPill +
+          '<div class="headline">' + escHtml(headline) + '</div>' +
+          '<div class="badge-bottom">' + escHtml(category) + ' · ' +
+            (monthLabel ? escHtml(monthLabel) + ' ' : '') + '시즌 카드뉴스</div>' +
+        '</section>';
+    } else if (slide === 2) {
+      var ingredientsHtml = seasonalItems.length > 0
+        ? '<div class="ingredients">' +
+            seasonalItems.map(function (name) {
+              return '<div class="ingredient-row">' +
+                '<span class="ingredient-bullet" style="color:' + pal.bar + '">·</span>' +
+                '<span class="ingredient-name">' + escHtml(name) + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '<div class="ingredients"><div class="ingredient-row"><span class="ingredient-name" style="color:#94a3b8">시즌 추천 정보가 없습니다</span></div></div>';
+
+      var labelWithMonth = monthLabel
+        ? seasonalLabel.replace(/^이번\s*달\s*/, monthLabel + '의 ')
+        : seasonalLabel;
+      html =
+        '<section class="slide s2">' +
+          '<div>' +
+            '<div class="accent-bar" style="background:' + pal.bar + '"></div>' +
+            '<div class="label" style="color:' + pal.bar + '">' +
+              escHtml(category) + ' · 시즌 가이드' +
+            '</div>' +
+            '<div class="title-big">' + escHtml(labelWithMonth) + '</div>' +
+          '</div>' +
+          ingredientsHtml +
+          '<div class="footer-row">' +
+            '<span>' + escHtml(clientName) + '</span>' +
+            '<span>' + indicator + '</span>' +
+          '</div>' +
+        '</section>';
+    } else if (slide === 3) {
+      // Slide 3: 이달의 외식 트렌드 한눈에
+      var kwHtml = trendKeywords.length > 0
+        ? '<div class="kw-grid">' +
+            trendKeywords.map(function (kw) {
+              return '<span class="kw-chip" style="color:' + pal.bar + '">' + escHtml(kw) + '</span>';
+            }).join('') +
+          '</div>'
+        : '<div class="kw-grid"><span class="kw-chip" style="color:#94a3b8">트렌드 정보 없음</span></div>';
+
+      html =
+        '<section class="slide s-trend">' +
+          '<div>' +
+            '<div class="accent-bar" style="background:' + pal.bar + '"></div>' +
+            '<div class="label" style="color:' + pal.bar + '">' +
+              escHtml(category) + ' · ' + (monthLabel ? escHtml(monthLabel) + ' ' : '') + '시즌 트렌드' +
+            '</div>' +
+            '<div class="title-big">이달의 외식 트렌드</div>' +
+          '</div>' +
+          kwHtml +
+          (trendBody ? '<div class="body">' + escHtml(trendBody) + '</div>' : '') +
+          '<div class="footer-row">' +
+            '<span>' + escHtml(clientName) + '</span>' +
+            '<span>' + indicator + '</span>' +
+          '</div>' +
+        '</section>';
+    } else if (slide >= 4 && slide <= 6) {
+      // 추천 메뉴 3개 슬라이드 (slide 4~6)
+      var idx = slide - 4;
+      var nMark = ['①', '②', '③'][idx];
+      var menuImage = (p['slide' + slide + '_image'] || '').trim();
+      var hasImg = !!menuImage;
+      if (hasImg) {
+        // 이미지 있음 — 상단 이미지 + 하단 카피
+        html =
+          '<section class="slide s3 has-img">' +
+            '<div class="menu-photo-wrap">' +
+              '<img id="menu-photo-' + slide + '" class="menu-photo" src="' + escHtml(menuImage) + '" alt="" crossorigin="anonymous" referrerpolicy="no-referrer" />' +
+            '</div>' +
+            '<div class="body-area">' +
+              '<div class="badge" style="background:' + pal.tagBg + ';color:' + pal.tagText + '">' +
+                '추천 메뉴 ' + nMark +
+              '</div>' +
+              '<div class="title">' + escHtml(recMenus[idx]) + '</div>' +
+              '<div class="title-underline" style="background:' + pal.bar + '"></div>' +
+              '<div class="body">' + escHtml(recBodies[idx]) + '</div>' +
+              '<div class="footer">' +
+                '<span>' + escHtml(clientName) + ' · ' + escHtml(category) + '</span>' +
+                '<span>' + indicator + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</section>';
+      } else {
+        // 이미지 없음 — 기존 풀 텍스트 레이아웃
+        html =
+          '<section class="slide s3">' +
+            '<div class="badge" style="background:' + pal.tagBg + ';color:' + pal.tagText + '">' +
+              '추천 메뉴 ' + nMark +
+            '</div>' +
+            '<div class="title">' + escHtml(recMenus[idx]) + '</div>' +
+            '<div class="title-underline" style="background:' + pal.bar + '"></div>' +
+            '<div class="body">' + escHtml(recBodies[idx]) + '</div>' +
+            '<div class="footer">' +
+              '<span>' + escHtml(clientName) + ' · ' + escHtml(category) + '</span>' +
+              '<span>' + indicator + '</span>' +
+            '</div>' +
+          '</section>';
+      }
+    } else if (slide >= CAL_START && slide <= CAL_END) {
+      // Slide CAL_START..CAL_END: 일정 페이지 (동적 페이지 수)
+      var calPage = slide - CAL_START; // 0-base
+      var startIdx = calPage * CAL_PER_PAGE;
+      var endIdx = startIdx + CAL_PER_PAGE;
+      var pageItems = calendarItems.slice(startIdx, endIdx);
+      var currentCalPage = calPage + 1;
+      var pageMark = CAL_PAGES > 1
+        ? ' (' + currentCalPage + '/' + CAL_PAGES + ')'
+        : '';
+
+      var calBody = pageItems.length > 0
+        ? '<ul class="cal-list">' +
+            pageItems.map(function (it) {
+              var cat = it.category === 'support' ? 'support' : 'holiday';
+              var catLabel = cat === 'support' ? '지원사업' : '공휴일';
+              return '<li>' +
+                '<span class="cal-date" style="color:' + pal.bar + '">' + escHtml(it.date || '') + '</span>' +
+                '<div class="cal-body">' +
+                  '<span class="cal-cat-badge cal-cat-' + cat + '">' + catLabel + '</span>' +
+                  '<span class="cal-title">' + escHtml(it.title || '') + '</span>' +
+                '</div>' +
+              '</li>';
+            }).join('') +
+          '</ul>'
+        : '<ul class="cal-list"><li><span class="cal-title" style="color:#94a3b8">추가 일정 없음</span></li></ul>';
+
+      var monthLabelTitle = monthLabel ? monthLabel + '의 일정' + pageMark : '이달의 일정' + pageMark;
+      html =
+        '<section class="slide s8">' +
+          '<div>' +
+            '<div class="accent-bar" style="background:' + pal.bar + '"></div>' +
+            '<div class="label" style="color:' + pal.bar + '">' +
+              escHtml(category) + ' · 시즌 캘린더' +
+            '</div>' +
+            '<div class="title-big">' + escHtml(monthLabelTitle) + '</div>' +
+          '</div>' +
+          calBody +
+          '<div class="footer-row">' +
+            '<span>' + escHtml(clientName) + '</span>' +
+            '<span>' + indicator + '</span>' +
+          '</div>' +
+        '</section>';
+    } else {
+      // Slide 9: CTA + Source (mini-calendar 제거 — 일정은 Slide 8 전용)
+      html =
+        '<section class="slide s5" style="background:' + pal.s5bg + '">' +
+          '<div class="top-row">' +
+            '<span>' + escHtml(clientName) + '</span>' +
+            '<span>' + indicator + '</span>' +
+          '</div>' +
+          '<div class="cta-block">' +
+            '<div class="cta">' +
+              '<span class="small">' + escHtml(category) + ' · ' +
+                (monthLabel ? escHtml(monthLabel) + ' ' : '') + '시즌 캠페인</span>' +
+              escHtml(cta) +
+            '</div>' +
+          '</div>' +
+          '<div class="bottom-block">' +
+            '<div class="source">' +
+              (source ? 'Source · ' + escHtml(source) : '') +
+            '</div>' +
+          '</div>' +
+        '</section>';
+    }
+
+    root.innerHTML = html;
+
+    var pending = [];
+    // 폰트 로드 대기
+    if (document.fonts && document.fonts.ready) {
+      pending.push(document.fonts.ready.catch(function () {}));
+    }
+    // 메뉴 이미지 로드 대기 (slide 4/5/6)
+    var menuImg = document.getElementById('menu-photo-' + slide);
+    if (menuImg) {
+      pending.push(
+        new Promise(function (resolve) {
+          if (menuImg.complete && menuImg.naturalWidth > 0) return resolve();
+          menuImg.addEventListener('load', resolve);
+          menuImg.addEventListener('error', resolve);
+          setTimeout(resolve, 8000);
+        })
+      );
+    }
+    // Slide 1 이미지 로드 대기 (있을 때만)
+    var img = document.getElementById('slide1-bg');
+    if (img) {
+      pending.push(
+        new Promise(function (resolve) {
+          if (img.complete && img.naturalWidth > 0) return resolve();
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
+          // 안전망: 8초 안에 못 받으면 그냥 진행
+          setTimeout(resolve, 8000);
+        })
+      );
+    }
+
+    Promise.all(pending).then(function () {
+      document.body.dataset.ready = '1';
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>

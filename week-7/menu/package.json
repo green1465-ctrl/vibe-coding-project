@@ -1,0 +1,30 @@
+{
+  "name": "menu",
+  "version": "0.1.0",
+  "description": "외식 프랜차이즈 영업대행업체용 시즌 캠페인 자동 생성 웹앱",
+  "main": "single.js",
+  "scripts": {
+    "start": "node single.js",
+    "dev": "node --watch single.js",
+    "postinstall": "playwright install --with-deps chromium || playwright install chromium"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "franchise",
+    "campaign",
+    "openai",
+    "season"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "imagekit": "^6.0.0",
+    "openai": "^6.37.0",
+    "playwright": "^1.59.1"
+  }
+}

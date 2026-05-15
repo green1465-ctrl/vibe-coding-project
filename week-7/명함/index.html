@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>행정사 성찬 · 명함</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #1f3a5f;
+    --navy-deep: #14263f;
+    --accent: #2a5a8c;
+    --ink: #1a1a1a;
+    --ink-soft: #2e3340;
+    --gray: #6b7280;
+    --gray-soft: #9aa1ac;
+    --line: #e2e6ed;
+    --line-strong: #c9d0db;
+    --bg: #eceff3;
+    --card-w: 90mm;
+    --card-h: 50mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+  .page-title {
+    font-size: 14px;
+    color: var(--gray);
+    letter-spacing: 0.08em;
+    margin-bottom: 36px;
+    text-align: center;
+  }
+  .stage {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    align-items: center;
+  }
+  .label {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--gray);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .card {
+    width: var(--card-w);
+    height: var(--card-h);
+    background: #ffffff;
+    box-shadow: 0 18px 40px rgba(20, 32, 60, 0.14), 0 2px 6px rgba(0,0,0,0.04);
+    border-radius: 1.2mm;
+    overflow: hidden;
+    position: relative;
+    color: var(--ink);
+  }
+
+  /* ===================== FRONT ===================== */
+  .front {
+    display: grid;
+    grid-template-columns: 42mm 1fr;
+    height: 100%;
+    position: relative;
+  }
+  .front::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; right: 0;
+    height: 1.2mm;
+    background: var(--navy);
+  }
+  .front::after {
+    content: "";
+    position: absolute;
+    top: 5.5mm; bottom: 4mm;
+    left: 42mm;
+    width: 0.2mm;
+    background: var(--line-strong);
+  }
+  .front .left {
+    padding: 4.5mm 3.8mm 3.5mm 4mm;
+    display: flex;
+    flex-direction: column;
+    gap: 2.6mm;
+  }
+  .logo-hero img {
+    width: 32mm;
+    height: auto;
+    display: block;
+  }
+  .name-block {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: flex-end;
+    gap: 0.6mm;
+  }
+  .role-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.5mm;
+    font-size: 5.6pt;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: 0.22em;
+    margin-bottom: 0.6mm;
+  }
+  .role-bar::before {
+    content: "";
+    width: 3mm;
+    height: 0.4mm;
+    background: var(--navy);
+  }
+  .name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 2mm;
+  }
+  .name-kr {
+    font-size: 12pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .name-en {
+    font-size: 6pt;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--gray);
+  }
+  .title-kr {
+    font-size: 7pt;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin-top: 0.8mm;
+    letter-spacing: -0.005em;
+  }
+  .tagline {
+    font-size: 5.6pt;
+    line-height: 1.5;
+    color: var(--gray);
+    letter-spacing: -0.005em;
+    padding-top: 1.4mm;
+    border-top: 0.2mm solid var(--line);
+  }
+  .tagline strong {
+    display: block;
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 6pt;
+    letter-spacing: 0.01em;
+    margin-bottom: 0.3mm;
+  }
+
+  .front .right {
+    padding: 4.5mm 4mm 3.5mm 4.2mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2mm;
+  }
+  .qual-section .qual-label {
+    font-size: 5.4pt;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    color: var(--navy);
+    margin-bottom: 1.6mm;
+    display: flex;
+    align-items: center;
+    gap: 1.5mm;
+  }
+  .qual-section .qual-label::after {
+    content: "";
+    flex: 1;
+    height: 0.2mm;
+    background: var(--line);
+  }
+  .qual-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9mm 2.5mm;
+  }
+  .qual-list li {
+    list-style: none;
+    font-size: 6.4pt;
+    color: var(--ink-soft);
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    position: relative;
+    padding-left: 2.2mm;
+  }
+  .qual-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 1mm;
+    width: 0.9mm;
+    height: 0.9mm;
+    background: var(--navy);
+    transform: rotate(45deg);
+  }
+
+  .contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6mm;
+    border-top: 0.2mm solid var(--line);
+    padding-top: 1.6mm;
+  }
+  .contact-row {
+    display: grid;
+    grid-template-columns: 2.8mm 1fr;
+    align-items: start;
+    font-size: 6.4pt;
+    line-height: 1.3;
+    color: var(--ink-soft);
+    letter-spacing: -0.01em;
+  }
+  .contact-row .ico {
+    font-weight: 800;
+    color: var(--navy);
+    font-size: 6pt;
+    letter-spacing: 0;
+  }
+  .contact-row .val { color: var(--ink-soft); }
+  .contact-row.addr { line-height: 1.28; }
+  .contact-row .sub {
+    display: block;
+    font-size: 4.8pt;
+    color: var(--gray-soft);
+    margin-top: 0.2mm;
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+
+  /* ===================== BACK ===================== */
+  .back {
+    padding: 1.4mm 4.8mm 6.5mm 4.8mm;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 2.2mm;
+    background: linear-gradient(135deg, #1f3a5f 0%, #14263f 100%);
+    height: 100%;
+    position: relative;
+    color: #ffffff;
+  }
+  .back::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1.2mm;
+    background: var(--accent);
+  }
+  .back::after {
+    content: "";
+    position: absolute;
+    right: -10mm; bottom: -10mm;
+    width: 30mm; height: 30mm;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(127,176,214,0.18) 0%, rgba(127,176,214,0) 70%);
+    pointer-events: none;
+  }
+  .back-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.3mm solid rgba(255,255,255,0.22);
+    padding-bottom: 2mm;
+    gap: 4mm;
+    position: relative;
+    z-index: 1;
+  }
+  .back-head .title {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: baseline;
+    gap: 2.2mm;
+    flex-shrink: 0;
+  }
+  .back-head .title em {
+    font-style: normal;
+    color: var(--accent);
+    font-weight: 500;
+    font-size: 5.6pt;
+    letter-spacing: 0.22em;
+  }
+  .back-head .brand-mini {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .back-head .brand-mini img {
+    height: 7mm;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+  }
+
+  .services {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 2mm 4mm;
+    align-content: start;
+    position: relative;
+    z-index: 1;
+  }
+  .svc {
+    display: flex;
+    flex-direction: column;
+    gap: 1mm;
+  }
+  .svc-title {
+    font-size: 7pt;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.015em;
+    display: flex;
+    align-items: center;
+    gap: 1.4mm;
+    line-height: 1.2;
+  }
+  .svc-title::before {
+    content: "";
+    width: 1.2mm;
+    height: 1.2mm;
+    background: var(--accent);
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .svc-title em {
+    font-style: normal;
+    font-size: 4.8pt;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .svc-body {
+    font-size: 6.2pt;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: -0.02em;
+    padding-left: 2.6mm;
+    word-break: keep-all;
+  }
+
+  @media print {
+    @page { size: 90mm 50mm; margin: 0; }
+    body { background: #fff; }
+    .page { padding: 0; }
+    .page-title, .label { display: none; }
+    .stage { gap: 0; }
+    .card {
+      box-shadow: none;
+      border-radius: 0;
+      page-break-after: always;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-title">행정사 성찬 · 명함 시안 (90 × 50mm)</div>
+
+  <div class="stage">
+    <!-- ===================== FRONT ===================== -->
+    <div>
+      <div class="label">FRONT</div>
+      <div class="card">
+        <div class="front">
+          <div class="left">
+            <div class="logo-hero">
+              <img src="로고/KakaoTalk_20260515_202042528.png" alt="행정사 가맹거래사 성찬" />
+            </div>
+
+            <div class="name-block">
+              <div class="name-row">
+                <div class="name-kr">김성찬</div>
+                <div class="name-en">SEONGCHAN KIM</div>
+              </div>
+              <div class="title-kr">대표 행정사 · 가맹거래사</div>
+            </div>
+
+            <div class="tagline">
+              <strong>법무부 출입국민원 대행기관</strong>
+              한양대학교 법무학과 석사과정
+            </div>
+          </div>
+
+          <div class="right">
+            <div class="qual-section">
+              <div class="qual-label">CERTIFICATIONS</div>
+              <ul class="qual-list">
+                <li>행정사 (일반)</li>
+                <li>행정사 (번역·영어)</li>
+                <li>가맹거래사</li>
+                <li>공인중개사</li>
+                <li>기업재난관리사</li>
+                <li>ISO 22000 식품안전</li>
+              </ul>
+            </div>
+
+            <div class="contact">
+              <div class="contact-row"><span class="ico">T</span><span class="val">010-3021-9359</span></div>
+              <div class="contact-row"><span class="ico">F</span><span class="val">0504-148-9359</span></div>
+              <div class="contact-row"><span class="ico">E</span><span class="val">uptomelaw@naver.com</span></div>
+              <div class="contact-row"><span class="ico">B</span><span class="val">blog.naver.com/uptome119</span></div>
+              <div class="contact-row addr"><span class="ico">A</span><span class="val">경기 안산시 단원구 광덕4로 102, 신원프라자 201호<span class="sub">201, 102, Gwangdeok 4-ro, Danwon-gu, Ansan</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== BACK ===================== -->
+    <div>
+      <div class="label">BACK</div>
+      <div class="card">
+        <div class="back">
+          <div class="back-head">
+            <div class="title">업무분야 <em>BUSINESS SCOPE</em></div>
+            <div class="brand-mini"><img src="로고/KakaoTalk_20260515_202042528.png" alt="행정사 가맹거래사 성찬" /></div>
+          </div>
+
+          <div class="services">
+            <div class="svc">
+              <div class="svc-title">프랜차이즈 가맹본부 등록 · 자문 <em>가맹사업법·행정사법</em></div>
+              <div class="svc-body">
+                정보공개서 등록, 분쟁조정 신청 대행·의견 진술, 가맹·권리금·전수창업계약서, 시정조치서, 저작권 등록
+              </div>
+            </div>
+
+            <div class="svc">
+              <div class="svc-title">공공조달 인허가 대리 · 대행 <em>행정사법</em></div>
+              <div class="svc-body">
+                나라장터 MAS·벤처나라, 적격심사·입찰분석, G-PASS, 혁신제품, 학교·누리장터, 직접생산확인, 공장등록, 여성·장애인·사회적기업
+              </div>
+            </div>
+
+            <div class="svc">
+              <div class="svc-title">ISO · 기업인증 · 출입국 · 브랜딩 <em>행정사법</em></div>
+              <div class="svc-body">
+                가족친화·벤처기업·기업부설연구소, 메인·이노비즈, 사단·공익법인, 외국인 비자, ISO 9001·14001·22000·22716·45001
+              </div>
+            </div>
+
+            <div class="svc">
+              <div class="svc-title">식품 · 주류 인허가 대리 · 대행 <em>행정사법</em></div>
+              <div class="svc-body">
+                HACCP, 식품제조가공업, 식육가공·즉석판매, 주류제조면허, 음식점 위생등급제
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (function(){
+    var p = new URLSearchParams(location.search);
+    var side = p.get('capture');
+    if (!side) return;
+    var style = document.createElement('style');
+    style.textContent = 'html,body{background:#fff;margin:0;padding:0;width:90mm;height:50mm;overflow:hidden;}.page{all:unset;display:contents;}.stage{all:unset;display:contents;}.page-title{display:none !important;}.label{display:none !important;}.card{box-shadow:none;border-radius:0;margin:0;display:block;}.stage > div:not([data-side="'+side+'"]) {display:none !important;}';
+    document.head.appendChild(style);
+    var labels = document.querySelectorAll('.stage > div');
+    labels[0].setAttribute('data-side','front');
+    labels[1].setAttribute('data-side','back');
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <title>식당 비유 — Page 2/2 (Render는 정착한 식당 + 핵심 멘트 3개)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lime: #a3e635;
+      --lime-soft: rgba(163, 230, 53, 0.12);
+      --emerald: #34d399;
+      --rose: #fb7185;
+      --amber: #fcd34d;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #050608;
+      font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      word-break: keep-all;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #thumbnail {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(900px 600px at 6% 4%, rgba(163, 230, 53, 0.12), transparent 60%),
+        radial-gradient(900px 600px at 96% 6%, rgba(52, 211, 153, 0.10), transparent 60%),
+        radial-gradient(700px 500px at 50% 115%, rgba(163, 230, 53, 0.07), transparent 60%),
+        linear-gradient(180deg, #0a0a0a 0%, #0e0f12 100%);
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, #d9f99d 0%, #a3e635 45%, #34d399 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .glass {
+      background: rgba(20, 22, 26, 0.62);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-soft {
+      background: rgba(20, 22, 26, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .glass-lime {
+      background:
+        radial-gradient(700px 280px at 0% 0%, rgba(163, 230, 53, 0.18), transparent 60%),
+        rgba(20, 22, 26, 0.65);
+      border: 1px solid rgba(163, 230, 53, 0.30);
+      box-shadow: 0 0 0 1px rgba(163, 230, 53, 0.05), 0 20px 60px -20px rgba(163, 230, 53, 0.25);
+    }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .tracking-tighter-2 { letter-spacing: -0.04em; }
+    .tracking-tighter-3 { letter-spacing: -0.055em; }
+    .lime { color: var(--lime); }
+    .emerald { color: var(--emerald); }
+    .rose { color: var(--rose); }
+    .amber { color: var(--amber); }
+    .leading-relaxed-2 { line-height: 1.65; }
+    .quote-mark {
+      font-family: 'Inter', serif;
+      font-weight: 900;
+      color: rgba(163, 230, 53, 0.35);
+      line-height: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { Fragment } = React;
+
+    // ========================================
+    // Design System
+    // ========================================
+    function Chip({ children, tone = "lime", className = "" }) {
+      const palette = {
+        lime: "bg-lime-400/10 text-lime-300 border-lime-400/30",
+        slate: "bg-white/5 text-slate-300 border-white/10",
+        rose: "bg-rose-400/10 text-rose-300 border-rose-400/30",
+        amber: "bg-amber-400/10 text-amber-300 border-amber-400/30",
+      }[tone];
+      return (
+        <span className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[16px] font-semibold tracking-tight ${palette} ${className}`}>
+          {children}
+        </span>
+      );
+    }
+
+    function SectionTitle({ index, color, title, subtitle }) {
+      const dot = {
+        lime: "bg-lime-400 text-black",
+        rose: "bg-rose-400 text-black",
+        emerald: "bg-emerald-400 text-black",
+        amber: "bg-amber-300 text-black",
+      }[color];
+      return (
+        <div className="flex items-start gap-4">
+          <span className={`shrink-0 w-12 h-12 rounded-xl ${dot} grid place-items-center font-black text-[24px] tracking-tighter-2`}>
+            {index}
+          </span>
+          <div>
+            <div className="text-[30px] font-extrabold text-white tracking-tighter-2 leading-tight">{title}</div>
+            {subtitle && <div className="text-[18px] text-slate-400 mt-1.5 tracking-tight">{subtitle}</div>}
+          </div>
+        </div>
+      );
+    }
+
+    function Quote({ emoji, children, tone = "lime" }) {
+      const ring = {
+        lime: "border-lime-400/25",
+        rose: "border-rose-400/25",
+        emerald: "border-emerald-400/25",
+      }[tone];
+      return (
+        <div className={`relative pl-8 pr-2 py-2 border-l-[4px] ${ring}`}>
+          <div className="absolute -top-4 -left-1.5 text-[48px] quote-mark">"</div>
+          <div className="text-[24px] text-slate-100 font-medium leading-relaxed-2 tracking-tight">
+            {emoji && <span className="mr-2">{emoji}</span>}
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Section 3 — Render는 정착한 식당
+    // ========================================
+    function ProItem({ children }) {
+      return (
+        <div className="flex items-start gap-4 glass-soft rounded-2xl px-5 py-4">
+          <span className="shrink-0 mt-0.5 text-lime-300 text-[26px] leading-none">✅</span>
+          <div className="text-[20px] text-slate-100 tracking-tight leading-snug">{children}</div>
+        </div>
+      );
+    }
+
+    function SectionRender() {
+      return (
+        <div className="glass rounded-3xl p-10 flex flex-col gap-6 h-full">
+          <SectionTitle index="3" color="emerald" title="Render는 정착한 식당이에요" subtitle="부엌도 냉장고도 넉넉해요" />
+          <Quote emoji="🏪" tone="emerald">
+            Render는 한자리에 <span className="emerald font-bold">정착한 식당</span> 같아요.
+            부엌도 넉넉하고, <span className="emerald font-bold">냉장고도 있고</span>,
+            손님이 <span className="emerald font-bold">오래 머물러도</span> 괜찮아요.
+          </Quote>
+
+          <div className="flex flex-col gap-3.5">
+            <ProItem>
+              <b className="text-white">거대 인쇄기</b>(Playwright + Chromium 300MB) 그대로 설치 가능
+            </ProItem>
+            <ProItem>
+              <b className="text-white">냉장고</b>(파일 시스템)에 PNG와 JSON 그대로 보관
+            </ProItem>
+            <ProItem>
+              <b className="text-white">풀코스 1~2분</b> 걸려도 손님이 끝까지 기다려줌 <span className="text-slate-400">(timeout 넉넉)</span>
+            </ProItem>
+          </div>
+
+          <div className="mt-auto flex items-start gap-4 rounded-2xl p-5 border border-amber-300/30 bg-amber-300/[0.06]">
+            <span className="shrink-0 mt-1 text-amber-300 text-[26px] leading-none">⚠️</span>
+            <div className="text-[18.5px] text-amber-100/90 tracking-tight leading-snug">
+              단점은 단 하나 — <b className="text-amber-200">단골이 없으면 15분 후 잠시 졸아요</b> (sleep).
+              <div className="mt-2 text-[16.5px] text-amber-100/70 leading-snug">
+                발표 5분 전에 한 번 문 열고 들어가서 깨워두면 OK. <span className="text-amber-200/90">무료 플랜 한정</span>,
+                유료 $7/mo로 가면 잠 안 잠.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Section 4 — 발표 중 외울 핵심 멘트 3개
+    // ========================================
+    function KeyLine({ badge, children }) {
+      return (
+        <div className="flex items-start gap-5 rounded-2xl bg-black/30 border border-lime-400/20 px-7 py-6">
+          <span className="shrink-0 text-[44px] leading-none mt-0.5">{badge}</span>
+          <div className="text-[24px] text-slate-50 font-semibold tracking-tight leading-snug">
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function SectionKeyLines() {
+      return (
+        <div className="glass-lime rounded-3xl p-10 flex flex-col gap-6 h-full">
+          <SectionTitle index="4" color="lime" title="발표 중 외울 핵심 멘트 3개" subtitle="이 세 줄만 외우면 발표 완성" />
+          <div className="flex flex-col gap-4 flex-1 justify-center">
+            <KeyLine badge="1️⃣">
+              이 시스템은 <span className="lime font-extrabold">식당</span>이에요.
+              매월 단골에게 보낼 <span className="text-white font-extrabold">시즌 안내장 카드뉴스 9~11장</span>을 자동으로 만들어주죠.
+            </KeyLine>
+            <KeyLine badge="2️⃣">
+              Vercel은 <span className="rose font-extrabold">푸드트럭</span>,
+              Render는 <span className="emerald font-extrabold">정착한 식당</span>.
+              우리 식당엔 <span className="lime font-extrabold">거대한 인쇄기</span>랑 <span className="lime font-extrabold">냉장고</span>가
+              필요해서 <span className="text-white font-extrabold">푸드트럭엔 못 실어요</span>.
+            </KeyLine>
+            <KeyLine badge="3️⃣">
+              그래서 <span className="emerald font-extrabold">Render</span>에 배포했고,
+              <span className="text-white font-extrabold"> 발표 직전에 한 번 깨워두면</span> 됩니다.
+            </KeyLine>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // App — Page 2/2
+    // ========================================
+    function App() {
+      return (
+        <div id="thumbnail" className="grid-bg">
+          {/* 헤더 */}
+          <header className="absolute top-0 left-0 right-0 px-14 pt-9">
+            <div className="flex items-start justify-between gap-8">
+              <div className="flex flex-col gap-2.5">
+                <Chip tone="lime">
+                  <span className="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+                  발표용 스크립트 · 초등학생도 알 만하게
+                </Chip>
+                <h1 className="hero-gradient text-[52px] font-black tracking-tighter-3 leading-[1.02]">
+                  이 프로그램, 왜 Vercel이 아니라 Render에 올렸을까?
+                </h1>
+                <p className="text-[19px] text-slate-300 font-medium tracking-tight">
+                  5분 안에 다 설명할 수 있는 <span className="lime font-bold">식당 비유</span> · <span className="text-slate-400">Render의 강점 & 발표용 핵심 멘트</span>
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-2 pt-1">
+                <Chip tone="lime" className="!text-[18px] !px-4 !py-2 font-extrabold">Page 2 / 2</Chip>
+                <Chip tone="slate">Week 6 · Menu Cardnews Pipeline</Chip>
+                <div className="text-[13px] text-slate-500 tracking-tight">발표용 단일 슬라이드 · 1920×1080</div>
+              </div>
+            </div>
+          </header>
+
+          {/* 본문: 2단 그리드 (섹션 3 + 섹션 4) */}
+          <main className="absolute left-14 right-14 top-[230px] bottom-[70px]">
+            <div className="grid grid-cols-2 gap-7 h-full">
+              <SectionRender />
+              <SectionKeyLines />
+            </div>
+          </main>
+
+          {/* 풋터 */}
+          <footer className="absolute bottom-0 left-0 right-0 px-14 pb-6 flex items-center justify-between text-[13.5px] text-slate-500 tracking-tight">
+            <div>
+              <span className="text-slate-400 font-semibold">Week 6 · 2026.05</span>
+              <span className="mx-2 text-slate-700">|</span>
+              외식 가맹점 카드뉴스 자동 생성 (Menu)
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+              <span>식당 비유 · OpenAI + fal.ai + Playwright + archiver</span>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

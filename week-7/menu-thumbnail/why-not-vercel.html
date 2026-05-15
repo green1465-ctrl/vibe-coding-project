@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <title>왜 Vercel이 아닌가 — 시스템 구조와 한계</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lime: #a3e635;
+      --lime-soft: rgba(163, 230, 53, 0.12);
+      --emerald: #34d399;
+      --rose: #fb7185;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #050608;
+      font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #thumbnail {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(900px 600px at 8% 6%, rgba(163, 230, 53, 0.10), transparent 60%),
+        radial-gradient(900px 600px at 95% 8%, rgba(52, 211, 153, 0.08), transparent 60%),
+        radial-gradient(700px 500px at 50% 110%, rgba(163, 230, 53, 0.06), transparent 60%),
+        linear-gradient(180deg, #0a0a0a 0%, #0e0f12 100%);
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, #d9f99d 0%, #a3e635 45%, #34d399 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .glass {
+      background: rgba(20, 22, 26, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-soft {
+      background: rgba(20, 22, 26, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .tracking-tighter-2 {
+      letter-spacing: -0.04em;
+    }
+    .arrow-down::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -14px;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 9px solid rgba(163, 230, 53, 0.55);
+    }
+    .v-line {
+      width: 2px;
+      background: linear-gradient(180deg, rgba(163, 230, 53, 0.55), rgba(163, 230, 53, 0.15));
+    }
+    .h-line {
+      height: 2px;
+      background: linear-gradient(90deg, rgba(163, 230, 53, 0.55), rgba(163, 230, 53, 0.15));
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--lime);
+      box-shadow: 0 0 12px rgba(163, 230, 53, 0.6);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useMemo } = React;
+
+    // ========================================
+    // Design System Components
+    // ========================================
+
+    function Chip({ children, className = "" }) {
+      return (
+        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-semibold tracking-wide ${className}`}>
+          {children}
+        </span>
+      );
+    }
+
+    function GlassCard({ children, className = "" }) {
+      return (
+        <div className={`glass rounded-2xl ${className}`}>
+          {children}
+        </div>
+      );
+    }
+
+    function Node({ icon, title, sub, accent = false, className = "" }) {
+      return (
+        <div className={`glass rounded-2xl px-5 py-3 flex items-center gap-3 ${accent ? "ring-1 ring-lime-400/40" : ""} ${className}`}>
+          <div className="text-2xl leading-none">{icon}</div>
+          <div className="min-w-0">
+            <div className={`text-[15px] font-bold leading-tight ${accent ? "text-lime-300" : "text-slate-100"}`}>
+              {title}
+            </div>
+            {sub && <div className="text-[12px] text-slate-400 leading-tight mt-0.5">{sub}</div>}
+          </div>
+        </div>
+      );
+    }
+
+    function ChildRow({ icon, title, sub }) {
+      return (
+        <div className="glass-soft rounded-xl px-4 py-2.5 flex items-center gap-3">
+          <div className="text-lg leading-none">{icon}</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[14px] font-semibold text-slate-100 leading-tight">{title}</div>
+            {sub && <div className="text-[11.5px] text-slate-400 leading-tight mt-0.5">{sub}</div>}
+          </div>
+        </div>
+      );
+    }
+
+    function ArrowDown({ label }) {
+      return (
+        <div className="relative flex flex-col items-center my-1">
+          <div className="v-line h-6"></div>
+          <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-lime-400/60 -mt-px"></div>
+          {label && (
+            <div className="absolute left-1/2 top-1.5 -translate-x-1/2 translate-x-3 text-[10.5px] font-semibold text-lime-300/80 tracking-wider whitespace-nowrap">
+              {label}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function LimitCard({ index, icon, badIcon, title, badge, desc }) {
+      return (
+        <div className="glass rounded-2xl p-5 relative overflow-hidden">
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-rose-400/5 blur-2xl"></div>
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl">
+              {icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[11px] font-bold text-rose-400/80 tracking-widest">0{index}</span>
+                <span className="text-rose-400 text-base leading-none">{badIcon}</span>
+              </div>
+              <div className="text-[19px] font-extrabold text-slate-100 leading-tight tracking-tight">
+                {title}
+              </div>
+              <div className="mt-2 inline-block px-2.5 py-1 rounded-md bg-rose-400/10 border border-rose-400/20 text-[12px] font-mono text-rose-300">
+                {badge}
+              </div>
+              <div className="mt-2.5 text-[13px] text-slate-400 leading-snug">
+                {desc}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Architecture Diagram (Left)
+    // ========================================
+
+    function Architecture() {
+      return (
+        <div className="h-full flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="dot"></span>
+            <div className="text-[13px] font-bold tracking-[0.2em] text-lime-300">SYSTEM ARCHITECTURE</div>
+            <div className="flex-1 h-px bg-gradient-to-r from-lime-400/30 to-transparent"></div>
+          </div>
+
+          <div className="flex-1 flex flex-col items-stretch">
+            {/* Browser */}
+            <div className="flex justify-center">
+              <Node
+                icon="🌐"
+                title="브라우저 UI"
+                sub="사용자 인터랙션 · 미리보기"
+                className="w-[320px] justify-center"
+              />
+            </div>
+
+            <ArrowDown label="HTTP" />
+
+            {/* Express */}
+            <div className="flex justify-center">
+              <Node
+                icon="🤖"
+                title="Express 서버 (single.js)"
+                sub="라우팅 · 오케스트레이션 · 캐시"
+                accent
+                className="w-[420px] justify-center"
+              />
+            </div>
+
+            {/* Branch lines */}
+            <div className="relative mt-2 mb-3">
+              <div className="h-line w-full"></div>
+              <div className="flex justify-between">
+                <div className="v-line h-4"></div>
+                <div className="v-line h-4"></div>
+                <div className="v-line h-4"></div>
+                <div className="v-line h-4"></div>
+                <div className="v-line h-4"></div>
+              </div>
+            </div>
+
+            {/* 5 modules row */}
+            <div className="grid grid-cols-5 gap-3">
+              <div className="glass rounded-2xl p-3 flex flex-col items-center text-center">
+                <div className="text-2xl mb-1">🤖</div>
+                <div className="text-[13px] font-bold text-slate-100 leading-tight">OpenAI API</div>
+                <div className="text-[11px] text-slate-400 mt-1 leading-tight">카피 재창조</div>
+              </div>
+              <div className="glass rounded-2xl p-3 flex flex-col items-center text-center">
+                <div className="text-2xl mb-1">🎨</div>
+                <div className="text-[13px] font-bold text-slate-100 leading-tight">fal.ai</div>
+                <div className="text-[11px] text-slate-400 mt-1 leading-tight">음식 이미지 생성</div>
+              </div>
+              <div className="glass rounded-2xl p-3 flex flex-col items-center text-center ring-1 ring-rose-400/30">
+                <div className="text-2xl mb-1">📦</div>
+                <div className="text-[13px] font-bold text-rose-200 leading-tight">Playwright</div>
+                <div className="text-[11px] text-slate-400 mt-1 leading-tight">chromium 헤드리스</div>
+              </div>
+              <div className="glass rounded-2xl p-3 flex flex-col items-center text-center">
+                <div className="text-2xl mb-1">🖼️</div>
+                <div className="text-[13px] font-bold text-slate-100 leading-tight">ImageKit</div>
+                <div className="text-[11px] text-slate-400 mt-1 leading-tight">메뉴 이미지 업로드</div>
+              </div>
+              <div className="glass rounded-2xl p-3 flex flex-col items-center text-center ring-1 ring-rose-400/30">
+                <div className="text-2xl mb-1">💾</div>
+                <div className="text-[13px] font-bold text-rose-200 leading-tight">로컬 파일 저장</div>
+                <div className="text-[11px] text-slate-400 mt-1 leading-tight">slides · data</div>
+              </div>
+            </div>
+
+            {/* Playwright sub */}
+            <div className="mt-4 glass-soft rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2.5">
+                <span className="text-[11px] font-bold tracking-[0.18em] text-rose-300/80">PLAYWRIGHT SUB-FLOW</span>
+                <div className="flex-1 h-px bg-rose-400/15"></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <ChildRow
+                  icon="🌐"
+                  title="6개 사이트 스크래핑"
+                  sub="foodbank · baemin · ahatrend · atfis · gohyang"
+                />
+                <ChildRow
+                  icon="🖼️"
+                  title="HTML → PNG 슬라이드"
+                  sub="9~11장 합성 후 디스크 저장"
+                />
+              </div>
+            </div>
+
+            {/* File storage sub */}
+            <div className="mt-3 glass-soft rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2.5">
+                <span className="text-[11px] font-bold tracking-[0.18em] text-rose-300/80">LOCAL FILE STORAGE</span>
+                <div className="flex-1 h-px bg-rose-400/15"></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <ChildRow
+                  icon="📦"
+                  title="slides/*.png"
+                  sub="PNG 결과물 · 다운로드 제공"
+                />
+                <ChildRow
+                  icon="💾"
+                  title="data/*.json"
+                  sub="클라이언트 · 캠페인 캐싱"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Limits Panel (Right)
+    // ========================================
+
+    function Limits() {
+      const limits = [
+        {
+          icon: "📦",
+          badIcon: "🚫",
+          title: "Chromium 300MB",
+          badge: "Serverless 함수 한도 50MB",
+          desc: "Playwright의 chromium 바이너리가 함수 패키지에 안 들어감",
+        },
+        {
+          icon: "💾",
+          badIcon: "💨",
+          title: "파일 시스템이 휘발성",
+          badge: "매 호출마다 컨테이너 새로 뜸",
+          desc: "slides/ 와 data/*.json 모두 사라짐",
+        },
+        {
+          icon: "⏱",
+          badIcon: "⚠️",
+          title: "타임아웃 10s / 60s",
+          badge: "우리 작업은 60~120초",
+          desc: "collect-trends 와 render-slides 가 cut",
+        },
+        {
+          icon: "🥶",
+          badIcon: "⚠️",
+          title: "콜드 스타트",
+          badge: "매 함수 호출마다 5~10초 지연",
+          desc: "사용자 경험 저하 · 데모 흐름 끊김",
+        },
+      ];
+
+      return (
+        <div className="h-full flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="dot" style={{ background: "#fb7185", boxShadow: "0 0 12px rgba(251,113,133,0.6)" }}></span>
+            <div className="text-[13px] font-bold tracking-[0.2em] text-rose-300">VERCEL LIMITS · 4</div>
+            <div className="flex-1 h-px bg-gradient-to-r from-rose-400/30 to-transparent"></div>
+          </div>
+
+          <div className="flex-1 grid grid-rows-4 gap-3.5">
+            {limits.map((l, i) => (
+              <LimitCard key={i} index={i + 1} {...l} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Header
+    // ========================================
+
+    function Header() {
+      return (
+        <div className="flex items-start justify-between">
+          <div>
+            <Chip className="bg-lime-400/15 text-lime-300 border border-lime-400/30">
+              <span className="dot"></span>
+              WEEK 6 · DEPLOYMENT NOTE
+            </Chip>
+            <h1 className="mt-3 text-[72px] font-black leading-[0.95] tracking-tighter-2 hero-gradient">
+              왜 Vercel이 아닌가
+            </h1>
+            <p className="mt-2 text-[20px] text-slate-400 font-medium tracking-tight">
+              이 시스템의 구조 한 번에 보기
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-[11px] font-bold tracking-[0.25em] text-slate-500">SLIDE · 01</div>
+            <div className="mt-2 inline-flex items-center gap-2 glass rounded-full px-4 py-2">
+              <span className="dot"></span>
+              <span className="text-[12px] font-semibold text-slate-300 tracking-wide">menu-thumbnail · 시즌 캠페인</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // Conclusion
+    // ========================================
+
+    function Conclusion() {
+      return (
+        <div
+          className="rounded-3xl px-8 py-6 flex items-center justify-between gap-8"
+          style={{
+            background: "linear-gradient(135deg, rgba(163,230,53,0.10), rgba(52,211,153,0.06))",
+            border: "1px solid rgba(163,230,53,0.25)",
+          }}
+        >
+          <div className="flex items-center gap-5">
+            <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-lime-400/15 border border-lime-400/30 flex items-center justify-center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a3e635" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+              </svg>
+            </div>
+            <div>
+              <div className="text-[13px] font-bold tracking-[0.2em] text-lime-300/90 mb-1">CONCLUSION</div>
+              <div className="text-[36px] font-black tracking-tight text-slate-50 leading-tight">
+                장기 실행 서버 환경 <span className="hero-gradient">(Render)</span> 에서 배포
+              </div>
+            </div>
+          </div>
+          <div className="text-right space-y-1.5">
+            <div className="flex items-center justify-end gap-2 text-[15px] text-slate-300 font-medium">
+              <span className="dot"></span>
+              Node + Playwright + 파일 시스템 모두 지원
+            </div>
+            <div className="flex items-center justify-end gap-2 text-[15px] text-slate-300 font-medium">
+              <span className="dot"></span>
+              render.yaml 자동 셋업 · 무료 플랜 가능 · sleep만 주의
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================
+    // App
+    // ========================================
+
+    function App() {
+      return (
+        <div id="thumbnail">
+          <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none"></div>
+          <div className="relative w-full h-full flex flex-col px-16 py-14">
+            <Header />
+
+            <div className="mt-8 flex-1 grid grid-cols-12 gap-8 min-h-0">
+              <div className="col-span-7">
+                <Architecture />
+              </div>
+              <div className="col-span-5">
+                <Limits />
+              </div>
+            </div>
+
+            <div className="mt-7">
+              <Conclusion />
+            </div>
+          </div>
+
+          {/* Decorative corner glows */}
+          <div className="pointer-events-none absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full" style={{background: "radial-gradient(circle, rgba(163,230,53,0.12), transparent 70%)"}}></div>
+          <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full" style={{background: "radial-gradient(circle, rgba(52,211,153,0.08), transparent 70%)"}}></div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
