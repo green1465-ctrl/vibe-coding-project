@@ -1,0 +1,1268 @@
+{
+  "company": {
+    "name_ko": "유한회사 하나스토리",
+    "name_en": "Hana Story Co., Ltd.",
+    "ceo": "박상은",
+    "founded": "2024년 4월 30일",
+    "reg_no": "418-87-03137",
+    "address_ko": "전북 완주군 이서면 이서로 154",
+    "address_en": "154 Iseoro, Iseo-myeon, Wanju-gun, Jeonbuk",
+    "phone": "063-852-7971",
+    "email": "hns240429@naver.com",
+    "license_ko": "금속구조물·창호·온실공사업",
+    "business_ko": "금속제창(AL) / 차양 / 금속문세트 제조 및 공사",
+    "hours_ko": "평일 09:00 ~ 18:00 (주말·공휴일 휴무)",
+    "logo_header": "/images/logo-header.png",
+    "logo_footer": "/images/logo-footer-white.png"
+  },
+  "home": {
+    "hero_image1": "/images/hero-gunsan.jpg",
+    "hero_image2": "/images/hero-namwon.jpg",
+    "hero_image3": "/images/hero-buan.jpg",
+    "hero_image4": "/images/hero-yeongdong.jpg",
+    "hero_title_ko": "ECO 실천으로 더 나은 미래를 만드는 기업",
+    "hero_title_en": "Building a Better Future Through ECO Practices",
+    "hero_sub_ko": "더 좋은 창호와 차양으로, 오늘의 공간이 미래 세대의 자산이 되도록 — 유한회사 하나스토리가 함께합니다.",
+    "hero_sub_en": "Better Windows & Awnings — Hana Story Co., Ltd.",
+    "intro_title_ko": "친환경을 실천하는 전문 창호 제조기업",
+    "intro_title_en": "Eco-Friendly Manufacturer of Premium Windows",
+    "intro_desc_ko": "하나스토리는 알루미늄 금속제창, 차양, 금속문세트를 전문으로 생산하는 친환경 제조 기업입니다. 2024년 4월 설립 이후 KS 인증 3종, 환경표지인증, 사회적기업 인증을 취득하며 품질과 신뢰를 빠르게 입증하고 있습니다.",
+    "stat1_num": "3",
+    "stat1_label_ko": "KS 한국산업표준 인증",
+    "stat2_num": "1",
+    "stat2_label_ko": "에너지 효율등급",
+    "stat3_num": "58",
+    "stat3_label_ko": "공공기관 납품 실적",
+    "stat4_num": "12",
+    "stat4_label_ko": "조달청 등록 제품"
+  },
+  "about": {
+    "overview_desc_ko": "하나스토리는 전북 완주군에 위치한 친환경 금속 창호 제조 전문 기업입니다.",
+    "cert_badge1": "KS F 3117",
+    "cert_badge2": "KS F 4536",
+    "cert_badge3": "KS F 3109",
+    "dept1_name_ko": "경영지원팀",
+    "dept1_tasks_ko": "인사·총무 / 회계·세무 / 계약 관리",
+    "dept2_name_ko": "영업팀",
+    "dept2_tasks_ko": "영업·마케팅 / 견적·수주 / 고객 관리",
+    "dept3_name_ko": "설계팀",
+    "dept3_tasks_ko": "도면·CAD / 구조 계산 / 인허가",
+    "dept4_name_ko": "생산팀",
+    "dept4_tasks_ko": "자재 관리 / 절단·가공 / 품질 검사",
+    "dept5_name_ko": "시공팀",
+    "dept5_tasks_ko": "현장 시공 / 안전 관리 / 공정 관리",
+    "dept6_name_ko": "AS팀",
+    "dept6_tasks_ko": "하자 보수 / 고객 AS / 품질 피드백",
+    "history": [
+      {
+        "year": "2025",
+        "date": "05월",
+        "title_ko": "사회적기업 인증 취득",
+        "sub_ko": "고용노동부 사회적기업 공식 인증"
+      },
+      {
+        "year": "2025",
+        "date": "03월",
+        "title_ko": "KS F 3109 문세트 인증 취득",
+        "sub_ko": "금속문세트 KS 한국산업표준 인증"
+      },
+      {
+        "year": "2025",
+        "date": "01월",
+        "title_ko": "환경표지인증 취득",
+        "sub_ko": "한국환경산업기술원 환경표지 인증 (EL745)"
+      },
+      {
+        "year": "2024",
+        "date": "11월",
+        "title_ko": "KS F 4536 알루미늄 압출형재 인증 취득",
+        "sub_ko": "알루미늄 합금 압출 형재 KS 인증"
+      },
+      {
+        "year": "2024",
+        "date": "09월",
+        "title_ko": "KS F 3117 금속제창 인증 취득",
+        "sub_ko": "알루미늄 금속제창 KS 한국산업표준 인증"
+      },
+      {
+        "year": "2024",
+        "date": "07월",
+        "title_ko": "조달청 나라장터 제품 등록 (금속제창 12종)",
+        "sub_ko": "공공조달 시장 진출 및 납품 개시"
+      },
+      {
+        "year": "2024",
+        "date": "04월",
+        "title_ko": "유한회사 하나스토리 설립",
+        "sub_ko": "전북 완주군 이서면 / 금속구조물·창호·온실공사업 면허 취득"
+      }
+    ]
+  },
+  "products": {
+    "window1_name_ko": "미서기창",
+    "window1_desc_ko": "가장 일반적인 알루미늄 창호 타입. 학교, 관공서, 공공시설에 폭넓게 적용. 에너지 효율 1등급.",
+    "window1_image": "/images/p15_img03_657x242.jpeg",
+    "window2_name_ko": "프로젝트창",
+    "window2_desc_ko": "외부로 밀어 여는 방식. 환기 효율이 높아 학교 교실, 복도, 화장실에 최적화.",
+    "window2_image": "/images/p16_img03_657x242.jpeg",
+    "window3_name_ko": "케이스먼트창",
+    "window3_desc_ko": "측면 힌지로 안쪽 또는 바깥쪽으로 여닫는 방식. 기밀성·수밀성이 우수하여 고급 건축물에 사용.",
+    "window3_image": "/images/p17_img03_657x242.jpeg",
+    "window4_name_ko": "커튼월",
+    "window4_desc_ko": "건물 외벽 전체를 알루미늄 프레임과 유리로 구성. 대형 공공건축물, 청사, 문화시설에 적용.",
+    "window4_image": "/images/p18_img03_657x242.jpeg",
+    "awning1_name_ko": "주차장 차양",
+    "awning1_desc_ko": "관공서, 공공기관 주차장에 적합한 알루미늄 차양. 준불연 성적서 보유. 조달청 등록.",
+    "awning1_image": "/images/p20_img04_659x240.jpeg",
+    "awning2_name_ko": "운동장 스탠드 차양",
+    "awning2_desc_ko": "학교 운동장 스탠드에 설치하는 대형 차양 구조물. 내구성이 우수하고 학생 보호 기능을 극대화.",
+    "awning2_image": "/images/p21_img04_659x240.jpeg",
+    "awning3_name_ko": "벽부형 차양 (비가림)",
+    "awning3_desc_ko": "건물 외벽에 부착하는 비가림 차양. 입구, 복도, 계단 등 다양한 공간에 적용 가능.",
+    "awning3_image": "/images/p22_img04_659x240.jpeg",
+    "door1_desc_ko": "KS F 3109 인증을 취득한 금속제 도어세트. 공공건축물 그린리모델링 사업에 최적화되어 있으며 조달청에 등록되어 공공기관에 직접 납품이 가능합니다.",
+    "door1_image": "/images/p26_img05_1380x206.jpeg",
+    "window_list": [
+      {
+        "category_ko": "미서기창",
+        "category_en": "Sliding Windows",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "중중연 미서기 이중창",
+        "name_en": "Triple Sash Sliding Double-pane",
+        "model": "HNS222-16SL",
+        "spec": "222x37mm",
+        "glass_ko": "24T로이복층유리(5로이(소프트, MZT152)+14아르곤+5일반)",
+        "id_no": "25507732",
+        "u_value": "0.897",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS222-16SL.png"
+      },
+      {
+        "category_ko": "미서기창",
+        "category_en": "Sliding Windows",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "중연 미서기 이중창",
+        "name_en": "Double Sash Sliding Double-pane",
+        "model": "HNS222-8SL",
+        "spec": "222x37mm",
+        "glass_ko": "",
+        "id_no": "25507733",
+        "u_value": "0.897",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS222-8SL.png"
+      },
+      {
+        "category_ko": "미서기창",
+        "category_en": "Sliding Windows",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "미서기 이중창",
+        "name_en": "Sliding Double-pane Window",
+        "model": "HNS222-4SL",
+        "spec": "222x37mm",
+        "glass_ko": "",
+        "id_no": "25501244",
+        "u_value": "0.897",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS222-4SL.png"
+      },
+      {
+        "category_ko": "미서기창",
+        "category_en": "Sliding Windows",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "미서기 단창",
+        "name_en": "Single Sash Sliding Window",
+        "model": "HNS165-2SL",
+        "spec": "165x43mm",
+        "glass_ko": "42T로이삼중유리(6로이(소프트, MZT152)+12아르곤+6일반+12아르곤+6로이(소프트, MZT152))",
+        "id_no": "25501195",
+        "u_value": "1.196",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS165-2SL.jpg"
+      },
+      {
+        "category_ko": "기능형창",
+        "category_en": "Functional Windows",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "프로젝트창",
+        "name_en": "Project Window",
+        "model": "HNS94-PJ",
+        "spec": "94x47mm",
+        "glass_ko": "24T로이복층유리(5로이(소프트, MZT152)+14아르곤+5일반)",
+        "id_no": "25501197",
+        "u_value": "1.186",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS94-PJ.jpg"
+      },
+      {
+        "category_ko": "기능형창",
+        "category_en": "Functional Windows",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "케이스먼트창",
+        "name_en": "Casement Window",
+        "model": "HNS94-CM",
+        "spec": "94x47mm",
+        "glass_ko": "",
+        "id_no": "25501196",
+        "u_value": "1.186",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS94-CM.jpg"
+      },
+      {
+        "category_ko": "기능형창",
+        "category_en": "Functional Windows",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "갤러리창",
+        "name_en": "Gallery Window",
+        "model": "HNS100-AG",
+        "spec": "100x45mm",
+        "glass_ko": "",
+        "id_no": "25497318",
+        "u_value": "",
+        "airtight": "",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS100-AG.jpg"
+      },
+      {
+        "category_ko": "커튼월",
+        "category_en": "Curtain Wall",
+        "subcategory_ko": "노출커튼월",
+        "subcategory_en": "Exposed",
+        "name_ko": "노출커튼월 150mm",
+        "name_en": "Exposed Curtain Wall 150mm",
+        "model": "HNS150-CAW",
+        "spec": "150x60mm",
+        "glass_ko": "",
+        "id_no": "25501200",
+        "u_value": "1.179",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS150-CAW.jpg"
+      },
+      {
+        "category_ko": "커튼월",
+        "category_en": "Curtain Wall",
+        "subcategory_ko": "노출커튼월",
+        "subcategory_en": "Exposed",
+        "name_ko": "노출커튼월 173mm",
+        "name_en": "Exposed Curtain Wall 173mm",
+        "model": "HNS173-CAW",
+        "spec": "173x60mm",
+        "glass_ko": "",
+        "id_no": "25501192",
+        "u_value": "1.186",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS150-CAW.jpg"
+      },
+      {
+        "category_ko": "커튼월",
+        "category_en": "Curtain Wall",
+        "subcategory_ko": "노출커튼월",
+        "subcategory_en": "Exposed",
+        "name_ko": "노출커튼월 200mm",
+        "name_en": "Exposed Curtain Wall 200mm",
+        "model": "HNS200-CAW",
+        "spec": "200x60mm",
+        "glass_ko": "",
+        "id_no": "25501199",
+        "u_value": "1.192",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS150-CAW.jpg"
+      },
+      {
+        "category_ko": "커튼월",
+        "category_en": "Curtain Wall",
+        "subcategory_ko": "히든커튼월",
+        "subcategory_en": "Hidden",
+        "name_ko": "히든커튼월 127mm",
+        "name_en": "Hidden Curtain Wall 127mm",
+        "model": "HNS127-HCAW",
+        "spec": "127x60mm",
+        "glass_ko": "",
+        "id_no": "25501191",
+        "u_value": "1.186",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS127-HCAW.png"
+      },
+      {
+        "category_ko": "커튼월",
+        "category_en": "Curtain Wall",
+        "subcategory_ko": "히든커튼월",
+        "subcategory_en": "Hidden",
+        "name_ko": "히든커튼월 150mm",
+        "name_en": "Hidden Curtain Wall 150mm",
+        "model": "HNS150-HCAW",
+        "spec": "150x60mm",
+        "glass_ko": "",
+        "id_no": "25501203",
+        "u_value": "1.19",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS127-HCAW.png"
+      },
+      {
+        "category_ko": "커튼월",
+        "category_en": "Curtain Wall",
+        "subcategory_ko": "히든커튼월",
+        "subcategory_en": "Hidden",
+        "name_ko": "히든커튼월 177mm",
+        "name_en": "Hidden Curtain Wall 177mm",
+        "model": "HNS177-HCAW",
+        "spec": "177x60mm",
+        "glass_ko": "",
+        "id_no": "25503293",
+        "u_value": "1.196",
+        "airtight": "1",
+        "ks": "KS F 3117",
+        "image": "/images/products/HNS127-HCAW.png"
+      },
+      {
+        "category_ko": "방충망",
+        "category_en": "Window Screens",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "방충망",
+        "name_en": "Fixed Window Screen",
+        "model": "HNS16-SC",
+        "spec": "16x50mm",
+        "glass_ko": "",
+        "id_no": "25501193",
+        "u_value": "",
+        "airtight": "",
+        "ks": "KS F 4536",
+        "image": "/images/products/HNS16-SC.jpg"
+      },
+      {
+        "category_ko": "방충망",
+        "category_en": "Window Screens",
+        "subcategory_ko": "",
+        "subcategory_en": "",
+        "name_ko": "롤방충망",
+        "name_en": "Roll-type Window Screen",
+        "model": "HNS40-RSC",
+        "spec": "40x49mm",
+        "glass_ko": "",
+        "id_no": "25501194",
+        "u_value": "",
+        "airtight": "",
+        "ks": "KS F 4536",
+        "image": "/images/products/HNS40-RSC.png"
+      },
+      {
+        "category_ko": "방충망",
+        "category_en": "Window Screens",
+        "subcategory_ko": "15",
+        "subcategory_en": "",
+        "name_ko": "방충망",
+        "name_en": "",
+        "model": "",
+        "spec": "",
+        "glass_ko": "",
+        "id_no": "",
+        "u_value": "",
+        "airtight": "",
+        "ks": "",
+        "image": ""
+      },
+      {
+        "category_ko": "미서기창",
+        "category_en": "Sliding Windows",
+        "subcategory_ko": "699",
+        "subcategory_en": "",
+        "name_ko": "미서기 단창",
+        "name_en": "",
+        "model": "",
+        "spec": "",
+        "glass_ko": "",
+        "id_no": "",
+        "u_value": "",
+        "airtight": "",
+        "ks": "",
+        "image": ""
+      }
+    ],
+    "certs": [
+      {
+        "key": "ks",
+        "name_ko": "KS인증",
+        "image": "/images/certs/ks.png"
+      },
+      {
+        "key": "sme",
+        "name_ko": "중소기업",
+        "image": "/images/certs/sme.png"
+      },
+      {
+        "key": "employment",
+        "name_ko": "정규직전환기업",
+        "image": "/images/certs/employment.png"
+      },
+      {
+        "key": "social",
+        "name_ko": "사회적기업",
+        "image": "/images/certs/social.png"
+      },
+      {
+        "key": "women",
+        "name_ko": "여성기업",
+        "image": "/images/certs/women.png"
+      },
+      {
+        "key": "eco",
+        "name_ko": "환경표지",
+        "image": "/images/certs/eco.png"
+      }
+    ],
+    "awning_list": [
+      {
+        "category_ko": "지붕재교체형",
+        "category_en": "Roof Replacement Type",
+        "name_ko": "차양 — 지붕재교체용 1,000×1,000mm",
+        "name_en": "Awning — Roof Replacement 1,000×1,000mm",
+        "model": "HNS-C01-I",
+        "type_ko": "지붕재교체형",
+        "type_en": "Roof Replace",
+        "price": "160,000",
+        "id_no": "25503151",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — E·S·J 시리즈",
+        "category_en": "Integrated Type — E · S · J Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-E02",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "200,000",
+        "id_no": "25567478",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — E·S·J 시리즈",
+        "category_en": "Integrated Type — E · S · J Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-E01",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "230,000",
+        "id_no": "25479911",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — E·S·J 시리즈",
+        "category_en": "Integrated Type — E · S · J Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-S01",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "245,000",
+        "id_no": "25479912",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — E·S·J 시리즈",
+        "category_en": "Integrated Type — E · S · J Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-ET03",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "280,000",
+        "id_no": "25553790",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — E·S·J 시리즈",
+        "category_en": "Integrated Type — E · S · J Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-J01",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "280,000",
+        "id_no": "25553791",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — E·S·J 시리즈",
+        "category_en": "Integrated Type — E · S · J Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-S02",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "310,000",
+        "id_no": "25479913",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — AT·JT·RT 시리즈",
+        "category_en": "Integrated Type — AT · JT · RT Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-AT02",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "300,000",
+        "id_no": "25479910",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — AT·JT·RT 시리즈",
+        "category_en": "Integrated Type — AT · JT · RT Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-JT04",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "300,000",
+        "id_no": "25479914",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — AT·JT·RT 시리즈",
+        "category_en": "Integrated Type — AT · JT · RT Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-JT03",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "310,000",
+        "id_no": "25553793",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — AT·JT·RT 시리즈",
+        "category_en": "Integrated Type — AT · JT · RT Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-JT02",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "310,000",
+        "id_no": "25553792",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — AT·JT·RT 시리즈",
+        "category_en": "Integrated Type — AT · JT · RT Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-JT05",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "365,000",
+        "id_no": "25479915",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "일체형 — AT·JT·RT 시리즈",
+        "category_en": "Integrated Type — AT · JT · RT Series",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-RT01",
+        "type_ko": "일체형",
+        "type_en": "Integrated",
+        "price": "465,000",
+        "id_no": "25479916",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "교체형",
+        "category_en": "Replacement Type",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-E01-I",
+        "type_ko": "교체형",
+        "type_en": "Replacement",
+        "price": "260,000",
+        "id_no": "25503154",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "교체형",
+        "category_en": "Replacement Type",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-ET03-I",
+        "type_ko": "교체형",
+        "type_en": "Replacement",
+        "price": "330,000",
+        "id_no": "25503156",
+        "image": "/images/product-awning.jpg"
+      },
+      {
+        "category_ko": "교체형",
+        "category_en": "Replacement Type",
+        "name_ko": "차양 1,000×1,000mm",
+        "name_en": "Awning 1,000×1,000mm",
+        "model": "HNS-AT02-I",
+        "type_ko": "교체형",
+        "type_en": "Replacement",
+        "price": "340,000",
+        "id_no": "25503155",
+        "image": "/images/product-awning.jpg"
+      }
+    ],
+    "door_list": [
+      {
+        "category_ko": "여닫이 문세트",
+        "category_en": "Swing Door Sets",
+        "name_ko": "금속문세트 여닫이/불소수지2회 (SF형)",
+        "name_en": "Metal Door Set Swing, Fluororesin 2-coat (SF)",
+        "model": "HNS-AD-SF80",
+        "width": "80mm",
+        "coating_ko": "불소수지코팅 2회",
+        "coating_en": "2-coat Fluororesin",
+        "lead_time_ko": "30일",
+        "lead_time_en": "30 days",
+        "id_no": "26038460",
+        "ks": "KS F 3109",
+        "image": "/images/product-door.jpg"
+      },
+      {
+        "category_ko": "여닫이 문세트",
+        "category_en": "Swing Door Sets",
+        "name_ko": "금속문세트 여닫이/불소수지2회 (ST형)",
+        "name_en": "Metal Door Set Swing, Fluororesin 2-coat (ST)",
+        "model": "HNS-AD-ST80",
+        "width": "80mm",
+        "coating_ko": "불소수지코팅 2회",
+        "coating_en": "2-coat Fluororesin",
+        "lead_time_ko": "30일",
+        "lead_time_en": "30 days",
+        "id_no": "26038459",
+        "ks": "KS F 3109",
+        "image": "/images/prodimg-door-gray.jpg"
+      }
+    ]
+  },
+  "certificates": {
+    "ks1_code": "KS F 3117",
+    "ks1_name_ko": "금속제창 인증",
+    "ks1_desc_ko": "알루미늄 금속제창 KS 한국산업표준 인증. 에너지 효율 1등급. 12종 조달청 등록.",
+    "ks1_date": "2024년 9월",
+    "ks1_image": "/images/p07_img01_327x471.jpeg",
+    "ks2_code": "KS F 4536",
+    "ks2_name_ko": "알루미늄 합금 압출형재",
+    "ks2_desc_ko": "알루미늄 합금 압출 형재 KS 인증. 건축용 창호 소재의 품질을 국가 표준으로 보증.",
+    "ks2_date": "2024년 11월",
+    "ks2_image": "/images/p08_img01_327x471.jpeg",
+    "ks3_code": "KS F 3109",
+    "ks3_name_ko": "문세트 인증",
+    "ks3_desc_ko": "금속문세트 KS 한국산업표준 인증. 공공건축물 그린리모델링에 최적화.",
+    "ks3_date": "2025년 3월",
+    "ks3_image": "/images/p09_img01_327x471.jpeg",
+    "eco_desc_ko": "하나스토리의 금속제창은 한국환경산업기술원으로부터 환경표지인증(EL745)을 취득하였습니다. 환경표지인증은 제품의 생산·유통·사용·폐기에 이르는 전 과정에서 오염을 줄이고 자원과 에너지를 절약하는 친환경 제품임을 국가가 공인하는 제도입니다.",
+    "eco_date": "2025년 1월",
+    "eco_image": "/images/certs-docs/eco-label.png",
+    "social_desc_ko": "하나스토리는 고용노동부로부터 사회적기업 인증을 취득하였습니다. 사회적기업은 취약계층에게 일자리나 사회서비스를 제공하고, 지역사회에 공헌하면서 지속가능한 비즈니스를 추구하는 기업입니다.",
+    "social_date": "2025년 5월",
+    "docs": [
+      {
+        "title_ko": "여성기업 확인서",
+        "issuer_ko": "전북지방중소벤처기업청",
+        "image": "/images/certs-docs/women-biz.png"
+      },
+      {
+        "title_ko": "건설업 등록증",
+        "issuer_ko": "전북특별자치도 익산시장",
+        "image": "/images/certs-docs/construction-reg.png"
+      },
+      {
+        "title_ko": "중소기업확인서",
+        "issuer_ko": "중소벤처기업부",
+        "image": "/images/certs-docs/sme-confirm.png"
+      },
+      {
+        "title_ko": "직접생산확인증명 (차양)",
+        "issuer_ko": "중소기업유통센터",
+        "image": "/images/certs-docs/direct-production-awning.png"
+      },
+      {
+        "title_ko": "직접생산확인증명 (금속제창)",
+        "issuer_ko": "중소기업유통센터",
+        "image": "/images/certs-docs/direct-production-window.png"
+      },
+      {
+        "title_ko": "KS 창세트 [KS F 3117]",
+        "issuer_ko": "한국표준협회",
+        "image": "/images/certs-docs/ks-window.png"
+      },
+      {
+        "title_ko": "KS 창호용 망창 [KS F 4536]",
+        "issuer_ko": "한국표준협회",
+        "image": "/images/certs-docs/ks-screen.png"
+      },
+      {
+        "title_ko": "KS 문세트 [KS F 3109]",
+        "issuer_ko": "한국표준협회",
+        "image": "/images/certs-docs/ks-door.png"
+      },
+      {
+        "title_ko": "기업부설연구소 인정서",
+        "issuer_ko": "한국산업기술진흥협회",
+        "image": "/images/certs-docs/rnd-institute.png"
+      },
+      {
+        "title_ko": "특허증 (스마트 절곡 시스템)",
+        "issuer_ko": "특허청",
+        "image": "/images/certs-docs/patent.png"
+      }
+    ],
+    "social_image": "/images/certs-docs/social-enterprise.png",
+    "eco_docs": [
+      {
+        "title_ko": "환경표지 인증서",
+        "issuer_ko": "한국환경산업기술원",
+        "image": "/images/certs-docs/eco-label.png"
+      }
+    ],
+    "social_docs": [
+      {
+        "title_ko": "사회적기업 인증서",
+        "issuer_ko": "고용노동부",
+        "image": "/images/certs-docs/social-enterprise.png"
+      }
+    ],
+    "efficiency_docs": [
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS222-16SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS222-16SL.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS222-8SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS222-8SL.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS222-4SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS222-4SL.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS94-CM)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS94-CM.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS94-PJ)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS94-PJ.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS165-2SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS165-2SL.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS-94PJ-WJ)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS-94PJ-WJ.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS220-4SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS220-4SL.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS-94CM-WJ)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS-94CM-WJ.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS220-8SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS220-8SL.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS-71PD-WJ)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS-71PD-WJ.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS165-2SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS165-2SL-2.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS155-2SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS155-2SL.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS222-8SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS222-8SL-2.png"
+      },
+      {
+        "title_ko": "효율관리기자재 신고 확인서 (HNS220-16SL)",
+        "issuer_ko": "한국에너지공단",
+        "image": "/images/certs-docs/efficiency/HNS220-16SL.png"
+      }
+    ]
+  },
+  "projects": {
+    "stats_total": "58",
+    "stats_school": "30",
+    "stats_gov": "15",
+    "stats_other": "13",
+    "list": [
+      {
+        "year": "2025",
+        "month": "06월",
+        "client_ko": "완주 봉동고등학교",
+        "item_ko": "금속제창 (AL) + 금속문세트",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2025",
+        "month": "05월",
+        "client_ko": "남원시 광한루원 관리사무소",
+        "item_ko": "금속제창 (AL) 커튼월",
+        "category_ko": "관광시설"
+      },
+      {
+        "year": "2025",
+        "month": "04월",
+        "client_ko": "정읍 정우중학교",
+        "item_ko": "금속제창 (AL) 미서기창",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2025",
+        "month": "04월",
+        "client_ko": "군산시 문화복지센터",
+        "item_ko": "차양 (주차장 차양)",
+        "category_ko": "공공시설"
+      },
+      {
+        "year": "2025",
+        "month": "03월",
+        "client_ko": "익산 함라초등학교",
+        "item_ko": "금속제창 (AL) 프로젝트창",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2025",
+        "month": "03월",
+        "client_ko": "전북도청 별관",
+        "item_ko": "금속문세트",
+        "category_ko": "관공서"
+      },
+      {
+        "year": "2025",
+        "month": "02월",
+        "client_ko": "완주군 이서초등학교",
+        "item_ko": "금속제창 (AL) 케이스먼트창",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2025",
+        "month": "01월",
+        "client_ko": "전주시 덕진구청",
+        "item_ko": "금속제창 (AL) 미서기창",
+        "category_ko": "관공서"
+      },
+      {
+        "year": "2024",
+        "month": "12월",
+        "client_ko": "남원 인월중학교",
+        "item_ko": "금속제창 (AL) 미서기창",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2024",
+        "month": "11월",
+        "client_ko": "완주군 상관면사무소",
+        "item_ko": "금속제창 (AL) + 금속문세트",
+        "category_ko": "관공서"
+      },
+      {
+        "year": "2024",
+        "month": "10월",
+        "client_ko": "정읍 정읍초등학교",
+        "item_ko": "금속제창 (AL) 케이스먼트창",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2024",
+        "month": "10월",
+        "client_ko": "군산시청 별관",
+        "item_ko": "금속제창 (AL) + 차양",
+        "category_ko": "관공서"
+      },
+      {
+        "year": "2024",
+        "month": "09월",
+        "client_ko": "전주 효천고등학교",
+        "item_ko": "금속제창 (AL) 미서기창",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2024",
+        "month": "09월",
+        "client_ko": "익산시 도서관",
+        "item_ko": "금속제창 (AL) 프로젝트창",
+        "category_ko": "공공시설"
+      },
+      {
+        "year": "2024",
+        "month": "08월",
+        "client_ko": "완주군 운주중학교",
+        "item_ko": "차양 (운동장 스탠드)",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2024",
+        "month": "08월",
+        "client_ko": "임실군 임실초등학교",
+        "item_ko": "금속제창 (AL) 미서기창",
+        "category_ko": "학교"
+      },
+      {
+        "year": "2024",
+        "month": "07월",
+        "client_ko": "전주 삼천동 주민센터",
+        "item_ko": "금속제창 (AL) 케이스먼트창",
+        "category_ko": "관공서"
+      },
+      {
+        "year": "2024",
+        "month": "07월",
+        "client_ko": "전주 완산초등학교",
+        "item_ko": "금속제창 (AL) 미서기창 12세트",
+        "category_ko": "학교"
+      }
+    ],
+    "gallery": [
+      {
+        "image": "/images/p32_img04_1370x770.jpeg",
+        "caption_ko": "금속제창 시공",
+        "caption_en": "Metal Window Installation"
+      },
+      {
+        "image": "/images/p31_img04_1212x874.jpeg",
+        "caption_ko": "학교 창호 교체",
+        "caption_en": "School Window Replacement"
+      },
+      {
+        "image": "/images/p37_img07_736x366.jpeg",
+        "caption_ko": "학교 아치형 차양",
+        "caption_en": "School Arch Awning"
+      },
+      {
+        "image": "/images/p33_img04_1333x800.jpeg",
+        "caption_ko": "운동장 차양 시공",
+        "caption_en": "Athletic Field Awning"
+      },
+      {
+        "image": "/images/p37_img04_1056x541.jpeg",
+        "caption_ko": "아치형 차양 시공",
+        "caption_en": "Arch-type Awning"
+      },
+      {
+        "image": "/images/p34_img04_1533x863.jpeg",
+        "caption_ko": "커튼월 시공",
+        "caption_en": "Curtain Wall Installation"
+      },
+      {
+        "image": "/images/p37_img09_534x526.jpeg",
+        "caption_ko": "보행로 아치형 차양",
+        "caption_en": "Walkway Arch Awning"
+      },
+      {
+        "image": "/images/p35_img04_1414x795.jpeg",
+        "caption_ko": "공공시설 창호",
+        "caption_en": "Public Facility Windows"
+      },
+      {
+        "image": "/images/p37_img05_741x541.jpeg",
+        "caption_ko": "어린이집 차양 시공",
+        "caption_en": "Kindergarten Awning"
+      },
+      {
+        "image": "/images/p36_img04_1517x854.jpeg",
+        "caption_ko": "관공서 납품",
+        "caption_en": "Government Office Delivery"
+      },
+      {
+        "image": "/images/p38_img07_1005x570.jpeg",
+        "caption_ko": "주차장 차양 시공",
+        "caption_en": "Parking Lot Awning"
+      },
+      {
+        "image": "/images/p31_img05_1201x891.jpeg",
+        "caption_ko": "학교 창호 시공",
+        "caption_en": "School Window Installation"
+      },
+      {
+        "image": "/images/p37_img08_909x412.jpeg",
+        "caption_ko": "초등학교 차양 입구",
+        "caption_en": "Elementary School Awning Entrance"
+      },
+      {
+        "image": "/images/p32_img05_1370x842.jpeg",
+        "caption_ko": "금속제창 시공",
+        "caption_en": "Metal Window Installation"
+      },
+      {
+        "image": "/images/p37_img06_780x536.jpeg",
+        "caption_ko": "어린이집 아치형 차양",
+        "caption_en": "Kindergarten Arch Awning"
+      },
+      {
+        "image": "/images/p33_img05_1339x753.jpeg",
+        "caption_ko": "운동장 차양 시공",
+        "caption_en": "Athletic Field Awning"
+      },
+      {
+        "image": "/images/p38_img06_721x493.jpeg",
+        "caption_ko": "ESS 루버 시공",
+        "caption_en": "ESS Louver Installation"
+      },
+      {
+        "image": "/images/p34_img05_1533x864.jpeg",
+        "caption_ko": "커튼월 시공",
+        "caption_en": "Curtain Wall Installation"
+      },
+      {
+        "image": "/images/p36_img05_1517x838.jpeg",
+        "caption_ko": "관공서 납품",
+        "caption_en": "Government Office Delivery"
+      },
+      {
+        "image": "/images/p35_img05_1413x818.jpeg",
+        "caption_ko": "공공시설 창호",
+        "caption_en": "Public Facility Windows"
+      },
+      {
+        "image": "/images/gallery/site-01.jpg",
+        "caption_ko": "광활면 기초생활거점조성사업",
+        "caption_en": "Gwanghwal-myeon Community Center"
+      },
+      {
+        "image": "/images/gallery/site-02.jpg",
+        "caption_ko": "군산상일고",
+        "caption_en": "Gunsan Sangil High School"
+      },
+      {
+        "image": "/images/gallery/site-03.jpg",
+        "caption_ko": "남원고",
+        "caption_en": "Namwon High School"
+      },
+      {
+        "image": "/images/gallery/site-04.jpg",
+        "caption_ko": "부안읍 나래청소년수련관",
+        "caption_en": "Buan Narae Youth Center"
+      },
+      {
+        "image": "/images/gallery/site-05.jpg",
+        "caption_ko": "부안읍 나래청소년수련관",
+        "caption_en": "Buan Narae Youth Center"
+      },
+      {
+        "image": "/images/gallery/site-06.jpg",
+        "caption_ko": "성덕면 365활력센터",
+        "caption_en": "Seongdeok-myeon 365 Vitality Center"
+      },
+      {
+        "image": "/images/gallery/site-07.jpg",
+        "caption_ko": "성덕면 365활력센터",
+        "caption_en": "Seongdeok-myeon 365 Vitality Center"
+      },
+      {
+        "image": "/images/gallery/site-08.jpg",
+        "caption_ko": "성덕면 365활력센터",
+        "caption_en": "Seongdeok-myeon 365 Vitality Center"
+      },
+      {
+        "image": "/images/gallery/site-09.jpg",
+        "caption_ko": "성수면 들락날락센터",
+        "caption_en": "Seongsu-myeon Community Center"
+      },
+      {
+        "image": "/images/gallery/site-10.jpg",
+        "caption_ko": "성수면 들락날락센터",
+        "caption_en": "Seongsu-myeon Community Center"
+      },
+      {
+        "image": "/images/gallery/site-11.jpg",
+        "caption_ko": "영동군 곤충생태체험연구관",
+        "caption_en": "Yeongdong Insect Ecology Center"
+      },
+      {
+        "image": "/images/gallery/site-12.jpg",
+        "caption_ko": "영동군 곤충생태체험연구관",
+        "caption_en": "Yeongdong Insect Ecology Center"
+      },
+      {
+        "image": "/images/gallery/site-13.jpg",
+        "caption_ko": "영동군 곤충생태체험연구관",
+        "caption_en": "Yeongdong Insect Ecology Center"
+      },
+      {
+        "image": "/images/gallery/site-14.jpg",
+        "caption_ko": "영동군 곤충생태체험연구관",
+        "caption_en": "Yeongdong Insect Ecology Center"
+      },
+      {
+        "image": "/images/gallery/site-15.jpg",
+        "caption_ko": "완주 봉동초 그린스마트스쿨",
+        "caption_en": "Wanju Bongdong Elementary Green Smart School"
+      },
+      {
+        "image": "/images/gallery/site-16.jpg",
+        "caption_ko": "월촌초 본관동",
+        "caption_en": "Wolchon Elementary Main Building"
+      },
+      {
+        "image": "/images/gallery/site-17.jpg",
+        "caption_ko": "이리모현초 (드론 촬영)",
+        "caption_en": "Iri Mohyeon Elementary (Drone)"
+      },
+      {
+        "image": "/images/gallery/site-18.jpg",
+        "caption_ko": "이리모현초 (드론 촬영)",
+        "caption_en": "Iri Mohyeon Elementary (Drone)"
+      },
+      {
+        "image": "/images/gallery/site-19.jpg",
+        "caption_ko": "전북체육고 스포츠과학실",
+        "caption_en": "Jeonbuk Sports High School Science Lab"
+      }
+    ]
+  },
+  "koneps": {
+    "list": [
+      {
+        "item_ko": "금속제창 (AL) — 미서기창 1짝",
+        "ks": "KS F 3117",
+        "category_ko": "금속제창",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속제창 (AL) — 미서기창 2짝",
+        "ks": "KS F 3117",
+        "category_ko": "금속제창",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속제창 (AL) — 미서기창 3짝",
+        "ks": "KS F 3117",
+        "category_ko": "금속제창",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속제창 (AL) — 프로젝트창",
+        "ks": "KS F 3117",
+        "category_ko": "금속제창",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속제창 (AL) — 케이스먼트창",
+        "ks": "KS F 3117",
+        "category_ko": "금속제창",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속제창 (AL) — 커튼월",
+        "ks": "KS F 3117",
+        "category_ko": "금속제창",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "차양 — 주차장 차양",
+        "ks": "—",
+        "category_ko": "차양",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "차양 — 운동장 스탠드",
+        "ks": "—",
+        "category_ko": "차양",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "차양 — 벽부형 비가림",
+        "ks": "—",
+        "category_ko": "차양",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속문세트 — 단열 외부용",
+        "ks": "KS F 3109",
+        "category_ko": "문세트",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속문세트 — 일반 내부용",
+        "ks": "KS F 3109",
+        "category_ko": "문세트",
+        "status_ko": "등록완료"
+      },
+      {
+        "item_ko": "금속문세트 — 방화 60분",
+        "ks": "KS F 3109",
+        "category_ko": "문세트",
+        "status_ko": "등록완료"
+      }
+    ]
+  },
+  "staff": {
+    "list": [
+      {
+        "qualification_ko": "건축기사",
+        "grade_ko": "기사",
+        "count": "1",
+        "issuer_ko": "한국산업인력공단"
+      },
+      {
+        "qualification_ko": "전산응용건축제도기능사",
+        "grade_ko": "기능사",
+        "count": "1",
+        "issuer_ko": "한국산업인력공단"
+      },
+      {
+        "qualification_ko": "금속재창호기능사",
+        "grade_ko": "기능사",
+        "count": "2",
+        "issuer_ko": "한국산업인력공단"
+      }
+    ]
+  },
+  "contact": {
+    "inquiry_desc_ko": "금속제창, 차양, 금속문세트 견적 및 납품 문의를 환영합니다. 조달청 등록 업체로서 공공기관 직접 납품이 가능하며, 빠른 견적 및 상담을 제공합니다.",
+    "map_address_ko": "전북 완주군 이서면 이서로 154",
+    "map_car_ko": "호남고속도로 완주IC에서 10분 / 전주시청에서 20분",
+    "map_transit_ko": "전주버스터미널 → 이서행 버스 / 완주군 농어촌버스 이서선",
+    "resources": [
+      {
+        "title_ko": "하나스토리 제품 카탈로그",
+        "title_en": "Hana Story Product Catalog",
+        "meta_ko": "PDF · 금속제창·차양·금속문세트 전 제품 소개",
+        "meta_en": "PDF · Full product lineup — windows, awnings, door sets",
+        "file": "/downloads/하나스토리-제품카탈로그.pdf"
+      }
+    ]
+  }
+}

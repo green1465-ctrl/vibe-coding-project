@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>환경표지 | 인증현황 | 하나스토리</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .doc-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:32px 24px; }
+    @media (max-width:768px){ .doc-grid { grid-template-columns:repeat(2, 1fr); gap:16px 12px; } }
+    .doc-card { text-align:center; }
+    .doc-thumb { height:280px; border:1px solid #e2e2e2; background:#fafafa; padding:10px; box-shadow:0 2px 8px rgba(0,0,0,.06); overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .doc-thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+    .doc-thumb { transition:transform 0.3s ease, box-shadow 0.3s ease; position:relative; }
+    .doc-thumb:hover { transform:scale(1.08); box-shadow:0 12px 30px rgba(0,0,0,.16); z-index:2; }
+    .doc-title { margin-top:14px; font-size:15px; font-weight:700; color:#222; }
+    .doc-issuer { margin-top:4px; font-size:13px; color:var(--green,#1a7d4a); }
+  </style>
+</head>
+<body>
+
+<header id="site-header">
+  <div class="header-inner">
+    <a href="./index.html" class="header-logo">
+      <img data-img="company.logo_header" src="./images/logo-header.png" alt="하나스토리 HANASTORY">
+    </a>
+    <nav class="gnb">
+      <div class="gnb-item"><a href="./about.html"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></a><div class="gnb-drop"><a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a><a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a><a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a></div></div>
+      <div class="gnb-item"><a href="./products.html"><span class="ko-only">제품소개</span><span class="en-only">Products</span></a><div class="gnb-drop"><a href="./products.html"><span class="ko-only">금속제창 (AL)</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div></div>
+      <div class="gnb-item"><a href="./certificates.html" class="active"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><div class="gnb-drop"><a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a><a href="./certs-eco.html"><span class="ko-only">환경표지</span><span class="en-only">Eco-Label</span></a><a href="./certs-social.html"><span class="ko-only">사회적기업</span><span class="en-only">Social Ent.</span></a><a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a><a href="./certs-staff.html"><span class="ko-only">전문인력</span><span class="en-only">Specialists</span></a></div></div>
+      <div class="gnb-item"><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><div class="gnb-drop"><a href="./projects.html"><span class="ko-only">주요납품실적</span><span class="en-only">Deliveries</span></a><a href="./projects-gallery.html"><span class="ko-only">시공갤러리</span><span class="en-only">Gallery</span></a></div></div>
+      <div class="gnb-item"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><div class="gnb-drop"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><a href="./contact-koneps.html"><span class="ko-only">조달청 등록 현황</span><span class="en-only">KONEPS</span></a><a href="./contact-map.html"><span class="ko-only">찾아오시는 길</span><span class="en-only">Location</span></a><a href="./contact-resources.html"><span class="ko-only">자료실</span><span class="en-only">Resources</span></a></div></div>
+    </nav>
+    <div class="header-right">
+      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" onclick="toggleNav()"><span></span><span></span><span></span></button>
+      <div class="lang-wrap">
+        <button class="lang-btn active" onclick="setLang('ko')">KR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-banner page-banner--center" style="background-image: url('./images/certs-banner.jpg');">
+  <div class="page-banner-inner"></div>
+  <div class="page-banner-title"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></div>
+  <p class="page-banner-sub"><span class="ko-only">한국환경산업기술원 환경표지인증 (EL745) 취득</span><span class="en-only">Eco-Label Certification (EL745) — Korea Environmental Industry &amp; Technology Institute</span></p>
+</div>
+
+<div class="sub-nav-bar">
+  <div class="sub-nav-inner">
+    <a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a>
+    <a href="./certs-eco.html" class="active"><span class="ko-only">환경표지</span><span class="en-only">Eco-Label</span></a>
+    <a href="./certs-social.html"><span class="ko-only">사회적기업</span><span class="en-only">Social Enterprise</span></a>
+    <a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a>
+    <a href="./certs-staff.html"><span class="ko-only">전문인력</span><span class="en-only">Specialists</span></a>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <p class="sec-label">ECO-LABEL</p>
+        <h2 class="sec-title"><span class="ko-only">환경표지인증</span><span class="en-only">Eco-Label Certification</span></h2>
+      </div>
+    </div>
+    <div class="doc-grid" id="doc-grid"></div>
+  </div>
+</section>
+
+<footer id="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><img data-img="company.logo_footer" src="./images/logo-footer-white.png" alt="하나스토리"><p><span class="ko-only">ECO 실천으로 더 나은 미래를 만들어 갈 수 있는 기업. 더 좋은 창호와 차양으로.</span><span class="en-only">Building a better future through ECO practices. Better windows &amp; awnings.</span></p></div>
+      <div class="footer-col"><h4><span class="ko-only">회사소개</span><span class="en-only">About</span></h4><a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a><a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a><a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">제품</span><span class="en-only">Products</span></h4><a href="./products.html"><span class="ko-only">금속제창</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">정보</span><span class="en-only">Info</span></h4><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a></div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2024 유한회사 하나스토리. All rights reserved. | 063-852-7971 | hns240429@naver.com</p>
+      <div class="footer-badges"><span class="f-badge">KS F 3117</span><span class="f-badge">KS F 4536</span><span class="f-badge">KS F 3109</span><span class="f-badge ko-only">환경표지</span><span class="f-badge ko-only">사회적기업</span><span class="f-badge en-only">Eco-Label</span><span class="f-badge en-only">Social Enterprise</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.classList.toggle('en', lang === 'en');
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang-btn').forEach((b,i) => b.classList.toggle('active', i === (lang==='ko'?0:1)));
+    localStorage.setItem('hs_lang', lang);
+  }
+  (function(){ const l = localStorage.getItem('hs_lang'); if(l) setLang(l); })();
+  function toggleNav() {
+    document.querySelector('nav.gnb').classList.toggle('open');
+    document.getElementById('navToggle').classList.toggle('open');
+  }
+
+  function renderDocs(list) {
+    list = list || [];
+    document.getElementById('doc-grid').innerHTML = list.map(function(d) {
+      return '<div class="doc-card reveal-item">'
+        + '<div class="doc-thumb"><img src="' + d.image + '" alt="' + d.title_ko + '"></div>'
+        + '<div class="doc-title">' + d.title_ko + '</div>'
+        + '<div class="doc-issuer">' + d.issuer_ko + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  if (location.protocol !== 'file:') {
+    fetch('/api/content').then(function(r){ return r.json(); }).then(function(data) {
+      renderDocs(data.certificates && data.certificates.eco_docs); initReveal();
+    }).catch(function(){});
+  }
+</script>
+<script src="./reveal.js"></script>
+</body>
+</html>

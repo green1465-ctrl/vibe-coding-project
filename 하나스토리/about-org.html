@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>조직도 | 회사소개 | 하나스토리</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header id="site-header">
+  <div class="header-inner">
+    <a href="./index.html" class="header-logo">
+      <img data-img="company.logo_header" src="./images/logo-header.png" alt="하나스토리 HANASTORY">
+    </a>
+    <nav class="gnb">
+      <div class="gnb-item">
+        <a href="./about.html" class="active"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></a>
+        <div class="gnb-drop">
+          <a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a>
+          <a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a>
+          <a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a>
+        </div>
+      </div>
+      <div class="gnb-item"><a href="./products.html"><span class="ko-only">제품소개</span><span class="en-only">Products</span></a><div class="gnb-drop"><a href="./products.html"><span class="ko-only">금속제창 (AL)</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div></div>
+      <div class="gnb-item"><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><div class="gnb-drop"><a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a><a href="./certs-eco.html"><span class="ko-only">환경표지</span><span class="en-only">Eco-Label</span></a><a href="./certs-social.html"><span class="ko-only">사회적기업</span><span class="en-only">Social Ent.</span></a><a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a><a href="./certs-staff.html"><span class="ko-only">전문인력</span><span class="en-only">Specialists</span></a></div></div>
+      <div class="gnb-item"><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><div class="gnb-drop"><a href="./projects.html"><span class="ko-only">주요납품실적</span><span class="en-only">Deliveries</span></a><a href="./projects-gallery.html"><span class="ko-only">시공갤러리</span><span class="en-only">Gallery</span></a></div></div>
+      <div class="gnb-item"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><div class="gnb-drop"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><a href="./contact-koneps.html"><span class="ko-only">조달청 등록 현황</span><span class="en-only">KONEPS</span></a><a href="./contact-map.html"><span class="ko-only">찾아오시는 길</span><span class="en-only">Location</span></a><a href="./contact-resources.html"><span class="ko-only">자료실</span><span class="en-only">Resources</span></a></div></div>
+    </nav>
+    <div class="header-right">
+      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" onclick="toggleNav()"><span></span><span></span><span></span></button>
+      <div class="lang-wrap">
+        <button class="lang-btn active" onclick="setLang('ko')">KR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-banner page-banner--center" style="background-image: url('./images/about-banner.jpg');">
+  <div class="page-banner-inner"></div>
+  <div class="page-banner-title"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></div>
+  <p class="page-banner-sub"><span class="ko-only">친환경을 실천하는 전문 창호 제조기업, 하나스토리</span><span class="en-only">Eco-friendly specialist window manufacturer, Hana Story</span></p>
+</div>
+
+<div class="sub-nav-bar">
+  <div class="sub-nav-inner">
+    <a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a>
+    <a href="./about-org.html" class="active"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a>
+    <a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a>
+  </div>
+</div>
+
+<!-- 조직도 -->
+<section class="section" id="org">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <p class="sec-label"><span class="ko-only">조직도</span><span class="en-only">Organization</span></p>
+        <h2 class="sec-title"><span class="ko-only">조직도</span><span class="en-only">Organization Chart</span></h2>
+      </div>
+    </div>
+    <div class="org-wrap">
+      <div class="org-ceo-box">
+        <div class="ceo-card"><span class="ko-only">대표이사 · <span data-c="company.ceo">박상은</span></span><span class="en-only">CEO · Park Sang-Eun</span></div>
+        <div class="ceo-line"></div>
+      </div>
+      <div class="dept-connector" id="dept-connector"></div>
+    </div>
+  </div>
+</section>
+
+<footer id="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><img data-img="company.logo_footer" src="./images/logo-footer-white.png" alt="하나스토리"><p><span class="ko-only">ECO 실천으로 더 나은 미래를 만들어 갈 수 있는 기업. 더 좋은 창호와 차양으로.</span><span class="en-only">Building a better future through ECO practices. Better windows &amp; awnings.</span></p></div>
+      <div class="footer-col"><h4><span class="ko-only">회사소개</span><span class="en-only">About</span></h4><a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a><a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a><a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">제품</span><span class="en-only">Products</span></h4><a href="./products.html"><span class="ko-only">금속제창</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">정보</span><span class="en-only">Info</span></h4><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a></div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2024 유한회사 하나스토리. All rights reserved. | 063-852-7971 | hns240429@naver.com</p>
+      <div class="footer-badges"><span class="f-badge">KS F 3117</span><span class="f-badge">KS F 4536</span><span class="f-badge">KS F 3109</span><span class="f-badge ko-only">환경표지</span><span class="f-badge ko-only">사회적기업</span><span class="f-badge en-only">Eco-Label</span><span class="f-badge en-only">Social Enterprise</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.classList.toggle('en', lang === 'en');
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang-btn').forEach((b,i) => b.classList.toggle('active', i === (lang==='ko'?0:1)));
+    localStorage.setItem('hs_lang', lang);
+  }
+  (function(){ const l = localStorage.getItem('hs_lang'); if(l) setLang(l); })();
+  function toggleNav() {
+    document.querySelector('nav.gnb').classList.toggle('open');
+    document.getElementById('navToggle').classList.toggle('open');
+  }
+
+  var DEPT_EN = [
+    { name: 'Management',   tasks: ['HR / General', 'Accounting', 'Contracts'] },
+    { name: 'Sales',        tasks: ['Sales &amp; Mktg', 'Estimating', 'CRM'] },
+    { name: 'Design',       tasks: ['CAD Drafting', 'Structural Calc.', 'Permits'] },
+    { name: 'Production',   tasks: ['Materials', 'Machining', 'QC'] },
+    { name: 'Installation', tasks: ['On-site Install', 'Safety Mgmt', 'Progress Ctrl'] },
+    { name: 'After Service',tasks: ['Defect Repair', 'Customer A/S', 'QA Feedback'] }
+  ];
+  function renderOrgChart(about) {
+    about = about || {};
+    var html = '';
+    for (var i = 1; i <= 6; i++) {
+      var nameKo = about['dept' + i + '_name_ko'] || '';
+      var tasksKo = (about['dept' + i + '_tasks_ko'] || '').split('/').map(function(t){ return t.trim(); }).filter(Boolean);
+      var en = DEPT_EN[i-1];
+      html += '<div class="dept-col reveal-item"><div class="dept-vline"></div><div class="dept-card">'
+        + '<div class="dept-name"><span class="ko-only">' + nameKo + '</span><span class="en-only">' + en.name + '</span></div>'
+        + '<div class="dept-tasks ko-only">' + tasksKo.map(function(t){ return '• ' + t; }).join('<br>') + '</div>'
+        + '<div class="dept-tasks en-only">' + en.tasks.map(function(t){ return '• ' + t; }).join('<br>') + '</div>'
+        + '</div></div>';
+    }
+    document.getElementById('dept-connector').innerHTML = html;
+    initReveal();
+  }
+  if (location.protocol !== 'file:') {
+    fetch('/api/content').then(function(r){ return r.json(); }).then(function(data) {
+      renderOrgChart(data.about);
+    }).catch(function(){});
+  }
+</script>
+<script src="./reveal.js"></script>
+<script src="./content-loader.js"></script>
+</body>
+</html>
