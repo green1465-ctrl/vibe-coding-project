@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>조직도 | 회사소개 | 하나스토리</title>
   <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/png" href="./images/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="조직도 | 회사소개 | 하나스토리">
+  <meta property="og:description" content="친환경 알루미늄 금속제창·차양·금속문세트 전문 제조기업 — 유한회사 하나스토리">
+  <meta property="og:image" content="https://hanastory.vercel.app/images/social-preview.png">
+  <meta property="og:url" content="https://hanastory.vercel.app/about-org.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://hanastory.vercel.app/images/social-preview.png">
 </head>
 <body>
 
@@ -98,25 +106,18 @@
     document.getElementById('navToggle').classList.toggle('open');
   }
 
-  var DEPT_EN = [
-    { name: 'Management',   tasks: ['HR / General', 'Accounting', 'Contracts'] },
-    { name: 'Sales',        tasks: ['Sales &amp; Mktg', 'Estimating', 'CRM'] },
-    { name: 'Design',       tasks: ['CAD Drafting', 'Structural Calc.', 'Permits'] },
-    { name: 'Production',   tasks: ['Materials', 'Machining', 'QC'] },
-    { name: 'Installation', tasks: ['On-site Install', 'Safety Mgmt', 'Progress Ctrl'] },
-    { name: 'After Service',tasks: ['Defect Repair', 'Customer A/S', 'QA Feedback'] }
-  ];
   function renderOrgChart(about) {
     about = about || {};
     var html = '';
     for (var i = 1; i <= 6; i++) {
       var nameKo = about['dept' + i + '_name_ko'] || '';
+      var nameEn = about['dept' + i + '_name_en'] || nameKo;
       var tasksKo = (about['dept' + i + '_tasks_ko'] || '').split('/').map(function(t){ return t.trim(); }).filter(Boolean);
-      var en = DEPT_EN[i-1];
+      var tasksEn = (about['dept' + i + '_tasks_en'] || '').split('/').map(function(t){ return t.trim(); }).filter(Boolean);
       html += '<div class="dept-col reveal-item"><div class="dept-vline"></div><div class="dept-card">'
-        + '<div class="dept-name"><span class="ko-only">' + nameKo + '</span><span class="en-only">' + en.name + '</span></div>'
+        + '<div class="dept-name"><span class="ko-only">' + nameKo + '</span><span class="en-only">' + nameEn + '</span></div>'
         + '<div class="dept-tasks ko-only">' + tasksKo.map(function(t){ return '• ' + t; }).join('<br>') + '</div>'
-        + '<div class="dept-tasks en-only">' + en.tasks.map(function(t){ return '• ' + t; }).join('<br>') + '</div>'
+        + '<div class="dept-tasks en-only">' + tasksEn.map(function(t){ return '• ' + t; }).join('<br>') + '</div>'
         + '</div></div>';
     }
     document.getElementById('dept-connector').innerHTML = html;

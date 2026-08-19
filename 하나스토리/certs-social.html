@@ -16,6 +16,14 @@
     .doc-title { margin-top:14px; font-size:15px; font-weight:700; color:#222; }
     .doc-issuer { margin-top:4px; font-size:13px; color:var(--green,#1a7d4a); }
   </style>
+  <link rel="icon" type="image/png" href="./images/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="사회적기업 | 인증현황 | 하나스토리">
+  <meta property="og:description" content="친환경 알루미늄 금속제창·차양·금속문세트 전문 제조기업 — 유한회사 하나스토리">
+  <meta property="og:image" content="https://hanastory.vercel.app/images/social-preview.png">
+  <meta property="og:url" content="https://hanastory.vercel.app/certs-social.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://hanastory.vercel.app/images/social-preview.png">
 </head>
 <body>
 
@@ -102,8 +110,8 @@
     document.getElementById('doc-grid').innerHTML = list.map(function(d) {
       return '<div class="doc-card reveal-item">'
         + '<div class="doc-thumb"><img src="' + d.image + '" alt="' + d.title_ko + '"></div>'
-        + '<div class="doc-title">' + d.title_ko + '</div>'
-        + '<div class="doc-issuer">' + d.issuer_ko + '</div>'
+        + '<div class="doc-title"><span class="ko-only">' + d.title_ko + '</span><span class="en-only">' + (d.title_en||d.title_ko) + '</span></div>'
+        + '<div class="doc-issuer"><span class="ko-only">' + d.issuer_ko + '</span><span class="en-only">' + (d.issuer_en||d.issuer_ko) + '</span></div>'
         + '</div>';
     }).join('');
   }

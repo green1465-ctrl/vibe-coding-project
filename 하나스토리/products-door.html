@@ -9,30 +9,42 @@
     .pd-tabs { display:flex; gap:8px; flex-wrap:wrap; border-bottom:2px solid #e5e5e5; margin-bottom:28px; }
     .pd-tabs button { padding:14px 22px; font-size:15px; font-weight:600; color:#666; background:none; border:none; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; }
     .pd-tabs button.active { color:var(--green,#1a7d4a); border-bottom-color:var(--green,#1a7d4a); }
-    .pd-hero { position:relative; height:340px; overflow:hidden; background-size:cover; background-position:center; margin-bottom:24px; }
-    .pd-hero::after { content:''; position:absolute; inset:0; background:linear-gradient(0deg, rgba(0,0,0,.65), rgba(0,0,0,.1) 60%); }
-    .pd-hero-text { position:absolute; left:32px; bottom:24px; z-index:1; color:#fff; }
+    .pd-hero { position:relative; height:140px; display:flex; align-items:center; background:var(--navy,#1a2b45); padding:0 32px; margin-bottom:24px; }
+    .pd-hero-text { color:#fff; }
     .pd-hero-text .pd-h-ko { font-size:15px; opacity:.85; margin-bottom:6px; }
     .pd-hero-text .pd-h-en { font-size:34px; font-weight:800; line-height:1.2; text-transform:uppercase; }
     .pd-hero-text .pd-h-tag { display:inline-block; font-size:12px; font-weight:700; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.5); padding:2px 8px; margin-left:8px; vertical-align:middle; }
     .pd-modeltabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
     .pd-modeltabs button { padding:9px 16px; font-size:14px; border:1px solid #ddd; background:#fafafa; cursor:pointer; color:#444; }
     .pd-modeltabs button.active { background:#222; color:#fff; border-color:#222; }
-    .pd-infobox { display:grid; grid-template-columns:1.2fr 1fr; gap:28px; background:#f8f8f6; padding:28px; margin-bottom:32px; }
+    .pd-infobox { display:grid; grid-template-columns:1fr 1.3fr; gap:28px; background:#f8f8f6; padding:28px; margin-bottom:32px; }
     .pd-spec-table { width:100%; border-collapse:collapse; margin-bottom:18px; }
     .pd-spec-table th, .pd-spec-table td { text-align:left; padding:10px 12px; border-bottom:1px solid #e5e5e5; font-size:14px; }
+    .pd-spec-table td { word-break:normal; overflow-wrap:break-word; }
     .pd-spec-table th { width:110px; color:#777; font-weight:600; }
-    .pd-certs { display:flex; flex-wrap:wrap; gap:28px; }
-    .pd-cert { width:auto; min-width:56px; text-align:center; }
-    .pd-cert img { height:56px; width:auto; max-width:100px; object-fit:contain; display:block; margin:0 auto; }
-    .pd-cert span { display:block; font-size:11px; color:#666; margin-top:6px; white-space:nowrap; }
-    .pd-photo { display:flex; align-items:center; justify-content:center; }
-    .pd-photo img { max-width:100%; max-height:280px; object-fit:contain; }
+    .pd-certs { display:flex; flex-wrap:nowrap; gap:14px; }
+    .pd-cert { width:70px; flex-shrink:0; text-align:center; }
+    .pd-cert img { height:44px; width:auto; max-width:100%; object-fit:contain; display:block; margin:0 auto; }
+    .pd-cert-label { margin-top:6px; font-size:11px; color:#666; line-height:1.2; }
+    .pd-photo { display:flex; align-items:center; justify-content:center; width:100%; height:600px; }
+    .pd-photo img { width:100%; height:100%; object-fit:contain; }
     .pd-tech-title { font-size:20px; font-weight:800; margin-bottom:4px; }
     .pd-tech-title small { display:block; font-size:11px; font-weight:700; color:var(--green,#1a7d4a); letter-spacing:.06em; margin-top:4px; }
     .pd-tech-sub { font-size:13px; color:#888; margin-bottom:14px; }
-    @media (max-width:720px){ .pd-infobox{ grid-template-columns:1fr; } .pd-hero{ height:220px; } .pd-hero-text .pd-h-en{ font-size:24px; } }
+    @media (max-width:720px){ .pd-infobox{ grid-template-columns:1fr; padding:14px; } .pd-hero{ height:auto; min-height:110px; padding:16px 20px; } .pd-hero-text .pd-h-en{ font-size:24px; } .pd-certs{ flex-wrap:wrap; } .pd-photo{ height:280px; } .pd-spec-table tr{ display:block; padding:8px 0; border-bottom:1px solid #e5e5e5; } .pd-spec-table th, .pd-spec-table td{ display:block; width:auto; padding:0; border-bottom:none; } .pd-spec-table th{ font-size:12px; margin-bottom:3px; } .pd-spec-table tr:nth-of-type(2), .pd-spec-table tr:nth-of-type(3){ display:inline-block; width:48%; box-sizing:border-box; vertical-align:top; } .pd-spec-table tr:nth-of-type(3){ margin-left:4%; } }
+    #pd-hero, #pd-infobox, #pd-techdata { transition: opacity .22s ease, transform .22s ease; }
+    .pd-swap-out { opacity:0; transform:translateY(8px); }
+    .reveal { opacity:0; transform:translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in-view { opacity:1; transform:translateY(0); }
   </style>
+  <link rel="icon" type="image/png" href="./images/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="금속문세트 | 제품소개 | 하나스토리">
+  <meta property="og:description" content="친환경 알루미늄 금속제창·차양·금속문세트 전문 제조기업 — 유한회사 하나스토리">
+  <meta property="og:image" content="https://hanastory.vercel.app/images/social-preview.png">
+  <meta property="og:url" content="https://hanastory.vercel.app/products-door.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://hanastory.vercel.app/images/social-preview.png">
 </head>
 <body>
 
@@ -74,7 +86,7 @@
 
 <section class="section">
   <div class="container">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div>
         <p class="sec-label">KS F 3109 | METAL DOOR SETS</p>
         <h2 class="sec-title"><span class="ko-only">금속문세트 — 총 2종</span><span class="en-only">Metal Door Sets — 2 Products</span></h2>
@@ -85,7 +97,7 @@
     <div class="pd-hero" id="pd-hero"></div>
     <div class="pd-modeltabs" id="pd-modeltabs"></div>
     <div class="pd-infobox" id="pd-infobox"></div>
-    <div id="pd-techdata"></div>
+    <div id="pd-techdata" class="reveal"></div>
 
   </div>
 </section>
@@ -137,10 +149,35 @@
     PD.model = items[0];
     pdRenderTabs();
     pdRenderModelTabs(items);
-    pdRenderHero();
-    pdRenderInfobox();
-    pdRenderTechTable(items);
+    pdSwap(['pd-hero','pd-infobox','pd-techdata'], function(){
+      pdRenderHero();
+      pdRenderInfobox();
+      pdRenderTechTable(items);
+    });
   }
+
+  function pdSwap(ids, renderFn) {
+    var els = ids.map(function(id){ return document.getElementById(id); }).filter(Boolean);
+    els.forEach(function(el){ el.classList.add('pd-swap-out'); });
+    setTimeout(function(){
+      renderFn();
+      requestAnimationFrame(function(){
+        els.forEach(function(el){ el.classList.remove('pd-swap-out'); });
+      });
+    }, 160);
+  }
+
+  function pdInitReveal() {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(function(el){ el.classList.add('in-view'); }); return; }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) { entry.target.classList.add('in-view'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.15 });
+    els.forEach(function(el){ io.observe(el); });
+  }
+  pdInitReveal();
 
   function pdRenderModelTabs(items) {
     document.getElementById('pd-modeltabs').innerHTML = items.map(function(p){
@@ -151,14 +188,16 @@
   function pdSetModel(model) {
     PD.model = PD.list.find(function(p){ return p.model === model; });
     pdRenderModelTabs(PD.list.filter(function(p){ return p.category_ko === PD.category; }));
-    pdRenderHero();
-    pdRenderInfobox();
+    pdSwap(['pd-hero','pd-infobox'], function(){
+      pdRenderHero();
+      pdRenderInfobox();
+    });
   }
 
   function pdRenderHero() {
     var p = PD.model;
-    document.getElementById('pd-hero').style.backgroundImage = "url('" + p.image + "')";
-    document.getElementById('pd-hero').innerHTML =
+    var heroEl = document.getElementById('pd-hero');
+    heroEl.innerHTML =
       '<div class="pd-hero-text">'
       + '<div class="pd-h-ko">' + p.category_ko + ' — ' + p.model + '</div>'
       + '<div class="pd-h-en">' + p.name_en + '<span class="pd-h-tag">' + p.ks + '</span></div>'
@@ -169,16 +208,14 @@
     var p = PD.model;
     var ksBadge = (PD.certs || []).find(function(b){ return b.key === 'ks'; });
     var certsHtml = (PD.certs || []).filter(function(b){ return b.key !== 'ks'; }).map(function(badge){
-      return '<div class="pd-cert"><img src="' + badge.image + '" alt="' + badge.name_ko + '"><span>' + badge.name_ko + '</span></div>';
-    }).join('') + (ksBadge ? '<div class="pd-cert"><img src="' + ksBadge.image + '" alt="' + p.ks + '"><span>' + p.ks + '</span></div>' : '');
+      return '<div class="pd-cert"><img src="' + badge.image + '" alt="' + badge.name_ko + '"><div class="pd-cert-label"><span class="ko-only">' + badge.name_ko + '</span><span class="en-only">' + (badge.name_en || badge.name_ko) + '</span></div></div>';
+    }).join('') + (ksBadge ? '<div class="pd-cert"><img src="' + ksBadge.image + '" alt="' + p.ks + '"><div class="pd-cert-label">' + p.ks + '</div></div>' : '');
     document.getElementById('pd-infobox').innerHTML =
       '<div>'
       + '<table class="pd-spec-table">'
       + '<tr><th><span class="ko-only">제품코드</span><span class="en-only">Model</span></th><td>' + p.model + '</td></tr>'
       + '<tr><th><span class="ko-only">관리번호</span><span class="en-only">ID No.</span></th><td>' + p.id_no + '</td></tr>'
-      + '<tr><th><span class="ko-only">사이즈</span><span class="en-only">Width</span></th><td>' + p.width + '</td></tr>'
-      + '<tr><th><span class="ko-only">코팅</span><span class="en-only">Coating</span></th><td><span class="ko-only">' + p.coating_ko + '</span><span class="en-only">' + p.coating_en + '</span></td></tr>'
-      + '<tr><th><span class="ko-only">납품기한</span><span class="en-only">Lead Time</span></th><td><span class="ko-only">' + p.lead_time_ko + '</span><span class="en-only">' + p.lead_time_en + '</span></td></tr>'
+      + '<tr><th><span class="ko-only">사이즈</span><span class="en-only">Spec</span></th><td>' + p.spec + '</td></tr>'
       + '</table>'
       + '<div class="pd-certs">' + certsHtml + '</div>'
       + '</div>'
@@ -189,8 +226,7 @@
     var rows = items.map(function(p){
       return '<tr><td>' + p.id_no + '</td>'
         + '<td><span class="ko-only">' + p.name_ko + '</span><span class="en-only">' + p.name_en + '</span></td>'
-        + '<td>' + p.model + '</td><td>' + p.ks + '</td>'
-        + '<td><span class="ko-only">' + p.lead_time_ko + '</span><span class="en-only">' + p.lead_time_en + '</span></td></tr>';
+        + '<td>' + p.model + '</td><td>' + p.spec + '</td><td>' + p.ks + '</td></tr>';
     }).join('');
     document.getElementById('pd-techdata').innerHTML =
       '<div class="spec-wrap">'
@@ -198,11 +234,11 @@
       + '<div class="pd-tech-sub">' + PD.category + '</div>'
       + '<div style="overflow-x:auto;">'
       + '<table class="spec-table"><thead><tr>'
-      + '<th style="width:90px;"><span class="ko-only">관리번호</span><span class="en-only">KONEPS ID</span></th>'
+      + '<th style="width:90px;"><span class="ko-only">관리번호</span><span class="en-only">ID</span></th>'
       + '<th><span class="ko-only">제품명</span><span class="en-only">Product Name</span></th>'
       + '<th style="width:130px;"><span class="ko-only">제품코드</span><span class="en-only">Model</span></th>'
+      + '<th style="width:90px;"><span class="ko-only">사이즈</span><span class="en-only">Spec</span></th>'
       + '<th style="width:90px;"><span class="ko-only">KS 규격</span><span class="en-only">KS Std.</span></th>'
-      + '<th style="width:80px;"><span class="ko-only">납품기한</span><span class="en-only">Lead Time</span></th>'
       + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
     pdNudgeScroll();
     pdSetupScrollbar();

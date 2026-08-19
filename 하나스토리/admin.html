@@ -254,6 +254,7 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 .sub-tab-pane { display: none; }
 .sub-tab-pane.active { display: block; }
 </style>
+  <link rel="icon" type="image/png" href="./images/favicon.png">
 </head>
 <body>
 
@@ -300,6 +301,7 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
         <div class="top-bar-actions">
           <span class="save-status" id="save-status"></span>
           <button class="preview-btn" id="discard-btn" onclick="discardChanges()" style="display:none;">변경 취소</button>
+          <button class="preview-btn" id="ai-translate-btn" onclick="aiTranslateAll()" title="빈 영문 칸을 AI가 자동으로 채워줍니다. 저장 전에 검토해주세요.">🌐 AI 번역</button>
           <button class="preview-btn" onclick="openPreview()">미리보기 →</button>
           <button class="save-btn" id="save-btn" onclick="saveAll()">💾 저장하기</button>
         </div>
@@ -389,8 +391,10 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
           <div class="card">
             <div class="card-title">회사소개 표 — 기본 정보</div>
             <div class="field-grid three">
-              <div class="field"><label>설립일</label><input data-key="company.founded"></div>
-              <div class="field"><label>대표이사</label><input data-key="company.ceo"></div>
+              <div class="field"><label>설립일 (한국어)</label><input data-key="company.founded"></div>
+              <div class="field"><label>설립일 (영어)</label><input data-key="company.founded_en"></div>
+              <div class="field"><label>대표이사 (한국어)</label><input data-key="company.ceo"></div>
+              <div class="field"><label>대표이사 (영어)</label><input data-key="company.ceo_en"></div>
               <div class="field"><label>보유면허</label><input data-key="company.license_ko"></div>
               <div class="field"><label>전화번호</label><input data-key="company.phone"></div>
               <div class="field"><label>이메일</label><input data-key="company.email"></div>
@@ -427,8 +431,10 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
             <div class="field-grid three">
               <div class="field"><label>회사명 (한국어)</label><input data-key="company.name_ko"></div>
               <div class="field"><label>회사명 (영어)</label><input data-key="company.name_en"></div>
-              <div class="field"><label>대표이사</label><input data-key="company.ceo"></div>
-              <div class="field"><label>설립일</label><input data-key="company.founded"></div>
+              <div class="field"><label>대표이사 (한국어)</label><input data-key="company.ceo"></div>
+              <div class="field"><label>대표이사 (영어)</label><input data-key="company.ceo_en"></div>
+              <div class="field"><label>설립일 (한국어)</label><input data-key="company.founded"></div>
+              <div class="field"><label>설립일 (영어)</label><input data-key="company.founded_en"></div>
               <div class="field"><label>사업자번호</label><input data-key="company.reg_no"></div>
               <div class="field"><label>전화번호</label><input data-key="company.phone"></div>
               <div class="field"><label>이메일</label><input data-key="company.email"></div>
@@ -442,7 +448,7 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
           </div>
 
           <div class="card">
-            <div class="card-title">조직도 — 부서명 & 업무</div>
+            <div class="card-title">조직도 — 부서명 & 업무 (한국어)</div>
             <div class="field-grid three">
               <div class="field"><label>1팀 이름</label><input data-key="about.dept1_name_ko"></div>
               <div class="field"><label>2팀 이름</label><input data-key="about.dept2_name_ko"></div>
@@ -457,6 +463,30 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
               <div class="field"><label>5팀 업무</label><input data-key="about.dept5_tasks_ko"></div>
               <div class="field"><label>6팀 업무</label><input data-key="about.dept6_tasks_ko"></div>
             </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">조직도 — 부서명 & 업무 (영어)</div>
+            <div class="field-grid three">
+              <div class="field"><label>1팀 이름</label><input data-key="about.dept1_name_en"></div>
+              <div class="field"><label>2팀 이름</label><input data-key="about.dept2_name_en"></div>
+              <div class="field"><label>3팀 이름</label><input data-key="about.dept3_name_en"></div>
+              <div class="field"><label>1팀 업무 (/ 구분)</label><input data-key="about.dept1_tasks_en"></div>
+              <div class="field"><label>2팀 업무</label><input data-key="about.dept2_tasks_en"></div>
+              <div class="field"><label>3팀 업무</label><input data-key="about.dept3_tasks_en"></div>
+              <div class="field"><label>4팀 이름</label><input data-key="about.dept4_name_en"></div>
+              <div class="field"><label>5팀 이름</label><input data-key="about.dept5_name_en"></div>
+              <div class="field"><label>6팀 이름</label><input data-key="about.dept6_name_en"></div>
+              <div class="field"><label>4팀 업무</label><input data-key="about.dept4_tasks_en"></div>
+              <div class="field"><label>5팀 업무</label><input data-key="about.dept5_tasks_en"></div>
+              <div class="field"><label>6팀 업무</label><input data-key="about.dept6_tasks_en"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">회사연혁</div>
+            <div id="history-list-wrap"></div>
+            <button class="add-row-btn" onclick="historyEditor.addNew()">+ 항목 추가</button>
           </div>
         </div>
 
@@ -548,10 +578,13 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
                 <table class="proj-table">
                   <thead>
                     <tr>
-                      <th>자격 종목</th>
-                      <th style="width:90px">등급</th>
+                      <th>자격 종목(KO)</th>
+                      <th>자격 종목(EN)</th>
+                      <th style="width:90px">등급(KO)</th>
+                      <th style="width:90px">등급(EN)</th>
                       <th style="width:70px">인원</th>
-                      <th style="width:160px">발급기관</th>
+                      <th style="width:160px">발급기관(KO)</th>
+                      <th style="width:200px">발급기관(EN)</th>
                       <th style="width:40px"></th>
                     </tr>
                   </thead>
@@ -647,10 +680,12 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
               <table class="proj-table">
                 <thead>
                   <tr>
-                    <th>등록 품목</th>
+                    <th>등록 품목(KO)</th>
+                    <th>등록 품목(EN)</th>
                     <th style="width:110px">KS 규격</th>
                     <th style="width:100px">분류</th>
-                    <th style="width:100px">등록 상태</th>
+                    <th style="width:100px">등록 상태(KO)</th>
+                    <th style="width:100px">등록 상태(EN)</th>
                     <th style="width:40px"></th>
                   </tr>
                 </thead>
@@ -752,6 +787,7 @@ async function init() {
   efficiencyDocsEditor.buildTable(content.certificates && content.certificates.efficiency_docs);
   galleryEditor.buildTable(content.projects && content.projects.gallery);
   resourcesEditor.buildTable(content.contact && content.contact.resources);
+  historyEditor.buildTable(content.about && content.about.history);
   buildProjTable();
   buildKonepsTable();
   buildStaffTable();
@@ -863,6 +899,7 @@ function collectForms() {
   f['certificates.efficiency_docs'] = efficiencyDocsEditor.collectRows();
   f['projects.gallery'] = galleryEditor.collectRows();
   f['contact.resources'] = resourcesEditor.collectRows();
+  f['about.history'] = historyEditor.collectRows();
   // flat → 중첩 객체로 복원
   var result = {};
   var LIST_KEYS = {
@@ -878,7 +915,8 @@ function collectForms() {
     'certificates.docs': ['certificates','docs'],
     'certificates.eco_docs': ['certificates','eco_docs'],
     'certificates.social_docs': ['certificates','social_docs'],
-    'certificates.efficiency_docs': ['certificates','efficiency_docs']
+    'certificates.efficiency_docs': ['certificates','efficiency_docs'],
+    'about.history': ['about','history']
   };
   Object.keys(f).forEach(function(k) {
     if (LIST_KEYS[k]) {
@@ -896,6 +934,64 @@ function collectForms() {
     cur[parts[parts.length-1]] = f[k];
   });
   return result;
+}
+
+/* ══════════════════════════════════════
+   AI 번역 — 빈 영문(_en) 칸을 찾아서 한 번에 OpenAI로 채움.
+   단순 입력창(data-key)과 표 형태 리스트에디터(data-field) 둘 다 스캔.
+   "_en"으로 끝나는 필드의 짝은 "_ko"로 끝나는 필드, 그게 없으면 "_en"만 뗀 필드(예: founded_en ↔ founded).
+══════════════════════════════════════ */
+function findKoCounterpart(scopeEl, base, attr) {
+  return scopeEl.querySelector('[' + attr + '="' + base + '_ko"]') || scopeEl.querySelector('[' + attr + '="' + base + '"]');
+}
+
+function collectUntranslated() {
+  var items = [];
+
+  document.querySelectorAll('[data-key$="_en"]').forEach(function(enEl) {
+    var base = enEl.dataset.key.slice(0, -3);
+    var koEl = findKoCounterpart(document, base, 'data-key');
+    if (!koEl || enEl.value.trim() || !koEl.value.trim()) return;
+    items.push({ el: enEl, ko: koEl.value.trim() });
+  });
+
+  document.querySelectorAll('[data-field$="_en"]').forEach(function(enEl) {
+    var base = enEl.dataset.field.slice(0, -3);
+    var row = enEl.closest('tr');
+    if (!row) return;
+    var koEl = findKoCounterpart(row, base, 'data-field');
+    if (!koEl || enEl.value.trim() || !koEl.value.trim()) return;
+    items.push({ el: enEl, ko: koEl.value.trim() });
+  });
+
+  return items;
+}
+
+async function aiTranslateAll() {
+  var items = collectUntranslated();
+  if (!items.length) { toast('번역할 빈 영문 항목이 없습니다'); return; }
+  if (!confirm(items.length + '개의 빈 영문 항목을 AI로 번역할까요?\n번역 결과는 저장 전까지 검토·수정할 수 있습니다.')) return;
+
+  var btn = document.getElementById('ai-translate-btn');
+  btn.disabled = true; btn.textContent = '번역 중...';
+  try {
+    var res = await fetch('/admin/translate-batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: items.map(function(i) { return i.ko; }) })
+    });
+    var data = await res.json();
+    if (!data.ok) { toast('❌ ' + (data.error || '번역 실패'), true); return; }
+    data.translations.forEach(function(t, i) {
+      items[i].el.value = t;
+      markDirty();
+    });
+    toast('✅ ' + items.length + '개 항목 번역 완료 — 저장 전에 확인해주세요');
+  } catch (e) {
+    toast('❌ 번역 요청 중 오류가 발생했습니다', true);
+  } finally {
+    btn.disabled = false; btn.textContent = '🌐 AI 번역';
+  }
 }
 
 /* ══════════════════════════════════════
@@ -1043,16 +1139,13 @@ var windowEditor = makeListEditor('window-list-wrap', [
 var awningEditor = makeListEditor('awning-list-wrap', [
   {key:'category_ko', label:'분류(KO)', w:150}, {key:'category_en', label:'분류(EN)', w:200},
   {key:'name_ko', label:'제품명(KO)', w:150}, {key:'name_en', label:'제품명(EN)', w:170},
-  {key:'model', label:'모델명', w:110}, {key:'type_ko', label:'구분(KO)', w:80},
-  {key:'type_en', label:'구분(EN)', w:100}, {key:'price', label:'단가(원/㎡)', w:90},
+  {key:'model', label:'모델명', w:110}, {key:'spec', label:'규격', w:110},
   {key:'id_no', label:'식별번호', w:90}, {key:'image', label:'이미지 경로', w:160, img:true}
 ]);
 var doorEditor = makeListEditor('door-list-wrap', [
   {key:'category_ko', label:'분류(KO)', w:120}, {key:'category_en', label:'분류(EN)', w:170},
-  {key:'name_ko', label:'제품명(KO)', w:190}, {key:'name_en', label:'제품명(EN)', w:230},
-  {key:'model', label:'모델명', w:110}, {key:'width', label:'규격', w:60},
-  {key:'coating_ko', label:'코팅(KO)', w:140}, {key:'coating_en', label:'코팅(EN)', w:150},
-  {key:'lead_time_ko', label:'납품기한(KO)', w:80}, {key:'lead_time_en', label:'납품기한(EN)', w:80},
+  {key:'name_ko', label:'제품명(KO)', w:150}, {key:'name_en', label:'제품명(EN)', w:170},
+  {key:'model', label:'모델명', w:110}, {key:'spec', label:'규격', w:80},
   {key:'id_no', label:'식별번호', w:90}, {key:'ks', label:'KS', w:90}, {key:'image', label:'이미지 경로', w:160, img:true}
 ]);
 
@@ -1060,28 +1153,44 @@ var doorEditor = makeListEditor('door-list-wrap', [
 // 새로 추가하는 로고는 비워두면 된다.
 var certsEditor = makeListEditor('certs-badge-wrap', [
   {key:'key', label:'식별키(선택, ks만 특수)', w:130},
-  {key:'name_ko', label:'로고명', w:150},
+  {key:'name_ko', label:'로고명(KO)', w:150},
+  {key:'name_en', label:'로고명(EN)', w:150},
   {key:'image', label:'이미지 경로', w:200, img:true}
 ]);
 
 // 인증현황 — 게시글형 목록 4종 (제목 + 발급기관 + 이미지)
 var docsEditor = makeListEditor('docs-list-wrap', [
-  {key:'title_ko', label:'제목', w:260}, {key:'issuer_ko', label:'발급기관', w:180}, {key:'image', label:'이미지 경로', w:220, img:true}
+  {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
+  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
+  {key:'image', label:'이미지 경로', w:220, img:true}
 ]);
 var ecoDocsEditor = makeListEditor('ecodocs-list-wrap', [
-  {key:'title_ko', label:'제목', w:260}, {key:'issuer_ko', label:'발급기관', w:180}, {key:'image', label:'이미지 경로', w:220, img:true}
+  {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
+  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
+  {key:'image', label:'이미지 경로', w:220, img:true}
 ]);
 var socialDocsEditor = makeListEditor('socialdocs-list-wrap', [
-  {key:'title_ko', label:'제목', w:260}, {key:'issuer_ko', label:'발급기관', w:180}, {key:'image', label:'이미지 경로', w:220, img:true}
+  {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
+  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
+  {key:'image', label:'이미지 경로', w:220, img:true}
 ]);
 var efficiencyDocsEditor = makeListEditor('effdocs-list-wrap', [
-  {key:'title_ko', label:'제목', w:260}, {key:'issuer_ko', label:'발급기관', w:180}, {key:'image', label:'이미지 경로', w:220, img:true}
+  {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
+  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
+  {key:'image', label:'이미지 경로', w:220, img:true}
 ]);
 
 // 시공갤러리 — 이미지 + 한/영 설명
 var galleryEditor = makeListEditor('gallery-list-wrap', [
   {key:'image', label:'이미지 경로', w:220, img:true},
   {key:'caption_ko', label:'설명(KO)', w:200}, {key:'caption_en', label:'설명(EN)', w:220}
+]);
+
+// 회사연혁 — 연도/월 + 제목/부제 (한/영)
+var historyEditor = makeListEditor('history-list-wrap', [
+  {key:'year', label:'연도', w:70}, {key:'date', label:'월', w:60},
+  {key:'title_ko', label:'제목(KO)', w:200}, {key:'title_en', label:'제목(EN)', w:220},
+  {key:'sub_ko', label:'부제(KO)', w:220}, {key:'sub_en', label:'부제(EN)', w:240}
 ]);
 
 // 자료실 — 다운로드 파일(PDF 등) 목록
@@ -1155,17 +1264,21 @@ function buildKonepsTable() {
   list.forEach(function(item) { appendKonepsRow(item); });
 }
 
+var konepsCatEn = { '금속제창':'Metal Windows', '차양':'Awnings', '문세트':'Door Sets', '기타':'Other' };
+
 function appendKonepsRow(item) {
   item = item || {};
   var tr = document.createElement('tr');
   tr.innerHTML =
     '<td><input class="koneps-item" value="'+(item.item_ko||'')+'" placeholder="등록 품목명"></td>'
+   +'<td><input class="koneps-item-en" value="'+(item.item_en||'')+'" placeholder="Registered Item"></td>'
    +'<td><input class="koneps-ks" value="'+(item.ks||'')+'" placeholder="KS F 0000"></td>'
    +'<td><select class="koneps-cat">'
    +['금속제창','차양','문세트','기타'].map(function(c){
      return '<option'+(c===item.category_ko?' selected':'')+'>'+c+'</option>';
    }).join('')+'</select></td>'
    +'<td><input class="koneps-status" value="'+(item.status_ko||'등록완료')+'" placeholder="등록완료"></td>'
+   +'<td><input class="koneps-status-en" value="'+(item.status_en||'Registered')+'" placeholder="Registered"></td>'
    +'<td><button class="row-del" onclick="confirmRemoveRow(this)">✕</button></td>';
   document.getElementById('koneps-tbody').appendChild(tr);
 }
@@ -1174,11 +1287,15 @@ function addKonepsRow() { appendKonepsRow({}); }
 
 function collectKonepsRows() {
   return Array.from(document.querySelectorAll('#koneps-tbody tr')).map(function(tr) {
+    var cat = tr.querySelector('.koneps-cat').value;
     return {
       item_ko:     tr.querySelector('.koneps-item').value,
+      item_en:     tr.querySelector('.koneps-item-en').value,
       ks:          tr.querySelector('.koneps-ks').value,
-      category_ko: tr.querySelector('.koneps-cat').value,
-      status_ko:   tr.querySelector('.koneps-status').value
+      category_ko: cat,
+      category_en: konepsCatEn[cat] || cat,
+      status_ko:   tr.querySelector('.koneps-status').value,
+      status_en:   tr.querySelector('.koneps-status-en').value
     };
   });
 }
@@ -1198,9 +1315,12 @@ function appendStaffRow(item) {
   var tr = document.createElement('tr');
   tr.innerHTML =
     '<td><input class="staff-qual" value="'+(item.qualification_ko||'')+'" placeholder="자격 종목명"></td>'
+   +'<td><input class="staff-qual-en" value="'+(item.qualification_en||'')+'" placeholder="Qualification"></td>'
    +'<td><input class="staff-grade" value="'+(item.grade_ko||'')+'" placeholder="기사/기능사"></td>'
+   +'<td><input class="staff-grade-en" value="'+(item.grade_en||'')+'" placeholder="Engineer/Craftsman"></td>'
    +'<td><input class="staff-count" value="'+(item.count||'')+'" placeholder="1" style="width:100%;"></td>'
    +'<td><input class="staff-issuer" value="'+(item.issuer_ko||'')+'" placeholder="발급기관"></td>'
+   +'<td><input class="staff-issuer-en" value="'+(item.issuer_en||'')+'" placeholder="Issuing Body"></td>'
    +'<td><button class="row-del" onclick="confirmRemoveRow(this)">✕</button></td>';
   document.getElementById('staff-tbody').appendChild(tr);
 }
@@ -1211,9 +1331,12 @@ function collectStaffRows() {
   return Array.from(document.querySelectorAll('#staff-tbody tr')).map(function(tr) {
     return {
       qualification_ko: tr.querySelector('.staff-qual').value,
+      qualification_en: tr.querySelector('.staff-qual-en').value,
       grade_ko:         tr.querySelector('.staff-grade').value,
+      grade_en:         tr.querySelector('.staff-grade-en').value,
       count:            tr.querySelector('.staff-count').value,
-      issuer_ko:        tr.querySelector('.staff-issuer').value
+      issuer_ko:        tr.querySelector('.staff-issuer').value,
+      issuer_en:        tr.querySelector('.staff-issuer-en').value
     };
   });
 }

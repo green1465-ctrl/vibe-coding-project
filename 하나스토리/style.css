@@ -1203,7 +1203,11 @@ nav.gnb {
 }
 @media (max-width: 768px) {
   :root { --header-h: 84px; }
-  .header-logo img { height: 60px; }
+  .header-logo { left: 8px; }
+  .header-logo img { height: 64px; }
+  .header-right { right: 10px; gap: 14px; top: 60%; }
+  .lang-wrap { padding: 2px; }
+  .lang-btn { padding: 7px 10px; font-size: 12px; line-height: 1; }
   .cert-grid, .prod-preview, .stats-row, .stats-cards { grid-template-columns: 1fr; }
   .gallery-grid { columns: 1; padding: 0 16px; }
   .section { padding: 48px 0 56px; }

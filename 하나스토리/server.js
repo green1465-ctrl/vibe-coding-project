@@ -115,12 +115,23 @@ app.get('/admin/check', (req, res) => {
 
 /* ────────────────────────────────────
    CONTENT API (Supabase: hanastory_content 단일 행 JSONB)
+   방문할 때마다 DB를 직접 조회하면 Supabase 무료 대역폭을 금방 소모하므로,
+   같은 인스턴스에서는 60초간 메모리에 캐시해두고 재사용한다.
+   관리자가 저장하면 캐시를 즉시 최신 데이터로 교체한다.
 ──────────────────────────────────── */
+const CONTENT_CACHE_TTL_MS = 60 * 1000;
+let contentCache = { data: null, ts: 0 };
+
 app.get('/api/content', async (req, res) => {
   if (!process.env.DATABASE_URL) return res.json(readLocalContentFallback());
+  if (contentCache.data && Date.now() - contentCache.ts < CONTENT_CACHE_TTL_MS) {
+    return res.json(contentCache.data);
+  }
   try {
     const { rows } = await pool.query('SELECT data FROM hanastory_content WHERE id = 1');
-    res.json(rows[0] ? rows[0].data : {});
+    const data = rows[0] ? rows[0].data : {};
+    contentCache = { data, ts: Date.now() };
+    res.json(data);
   } catch (e) {
     res.status(500).json({ error: '콘텐츠 조회 실패: ' + e.message });
   }
@@ -141,6 +152,7 @@ app.post('/api/content', auth, async (req, res) => {
        ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = now()`,
       [req.body]
     );
+    contentCache = { data: req.body, ts: Date.now() };
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: '저장 실패: ' + e.message });
@@ -206,6 +218,52 @@ app.post('/api/upload', auth, upload.single('image'), async (req, res) => {
   }
 });
 
+/* ────────────────────────────────────
+   AI 번역 — OpenAI API 키가 없으면 안내만 (이미지킷과 동일한 패턴)
+──────────────────────────────────── */
+app.post('/admin/translate-batch', auth, async (req, res) => {
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(503).json({ ok: false, error: 'OpenAI API 키가 아직 설정되지 않았습니다.' });
+  }
+  const texts = req.body.texts;
+  if (!Array.isArray(texts) || !texts.length) {
+    return res.status(400).json({ ok: false, error: '번역할 텍스트가 없습니다.' });
+  }
+  try {
+    const prompt = '다음은 한국의 알루미늄 창호·차양·금속문 제조업체 웹사이트에 들어가는 한국어 문구 목록입니다. '
+      + '각 항목을 자연스러운 영어로 번역해서, 입력과 정확히 같은 순서·같은 개수의 JSON 문자열 배열로만 응답하세요. '
+      + '설명이나 다른 텍스트는 절대 포함하지 마세요.\n\n' + JSON.stringify(texts);
+
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      return res.status(502).json({ ok: false, error: (data.error && data.error.message) || 'OpenAI 요청 실패' });
+    }
+
+    let content = data.choices[0].message.content.trim();
+    content = content.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/```$/, '').trim();
+    const translations = JSON.parse(content);
+
+    if (!Array.isArray(translations) || translations.length !== texts.length) {
+      return res.status(502).json({ ok: false, error: '번역 결과 형식이 올바르지 않습니다.' });
+    }
+    res.json({ ok: true, translations });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: '번역 처리 중 오류: ' + e.message });
+  }
+});
+
 app.delete('/api/images/:filename', auth, async (req, res) => {
   const filename = path.basename(req.params.filename);
 
@@ -241,6 +299,7 @@ if (require.main === module) {
     console.log(`  비밀번호:     ${ADMIN_PW}`);
     console.log(`  DB 연결:      ${process.env.DATABASE_URL ? '설정됨' : '⚠️  DATABASE_URL 없음'}`);
     console.log(`  이미지킷:     ${imagekit ? '설정됨' : '⚠️  아직 미설정 (업로드 기능 비활성)'}`);
+    console.log(`  AI 번역:      ${process.env.OPENAI_API_KEY ? '설정됨' : '⚠️  아직 미설정 (AI 번역 버튼 비활성)'}`);
     console.log('══════════════════════════════════════');
     console.log('');
   });

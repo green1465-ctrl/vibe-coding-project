@@ -3,7 +3,9 @@
     "name_ko": "유한회사 하나스토리",
     "name_en": "Hana Story Co., Ltd.",
     "ceo": "박상은",
+    "ceo_en": "Park Sang-Eun",
     "founded": "2024년 4월 30일",
+    "founded_en": "April 30, 2024",
     "reg_no": "418-87-03137",
     "address_ko": "전북 완주군 이서면 이서로 154",
     "address_en": "154 Iseoro, Iseo-myeon, Wanju-gun, Jeonbuk",
@@ -58,45 +60,71 @@
         "year": "2025",
         "date": "05월",
         "title_ko": "사회적기업 인증 취득",
-        "sub_ko": "고용노동부 사회적기업 공식 인증"
+        "sub_ko": "고용노동부 사회적기업 공식 인증",
+        "title_en": "Social Enterprise Certification",
+        "sub_en": "Ministry of Employment and Labor official certification"
       },
       {
         "year": "2025",
         "date": "03월",
         "title_ko": "KS F 3109 문세트 인증 취득",
-        "sub_ko": "금속문세트 KS 한국산업표준 인증"
+        "sub_ko": "금속문세트 KS 한국산업표준 인증",
+        "title_en": "KS F 3109 Door Set Certification",
+        "sub_en": "Metal door sets Korean Industrial Standard certification"
       },
       {
         "year": "2025",
         "date": "01월",
         "title_ko": "환경표지인증 취득",
-        "sub_ko": "한국환경산업기술원 환경표지 인증 (EL745)"
+        "sub_ko": "한국환경산업기술원 환경표지 인증 (EL745)",
+        "title_en": "Eco-Label Certification",
+        "sub_en": "Korea Environmental Industry & Technology Institute (EL745)"
       },
       {
         "year": "2024",
         "date": "11월",
         "title_ko": "KS F 4536 알루미늄 압출형재 인증 취득",
-        "sub_ko": "알루미늄 합금 압출 형재 KS 인증"
+        "sub_ko": "알루미늄 합금 압출 형재 KS 인증",
+        "title_en": "KS F 4536 Al Alloy Extrusion Certification",
+        "sub_en": "Aluminum alloy extrusion Korean Industrial Standard certification"
       },
       {
         "year": "2024",
         "date": "09월",
         "title_ko": "KS F 3117 금속제창 인증 취득",
-        "sub_ko": "알루미늄 금속제창 KS 한국산업표준 인증"
+        "sub_ko": "알루미늄 금속제창 KS 한국산업표준 인증",
+        "title_en": "KS F 3117 Metal Window Certification",
+        "sub_en": "Aluminum metal window Korean Industrial Standard certification"
       },
       {
         "year": "2024",
         "date": "07월",
         "title_ko": "조달청 나라장터 제품 등록 (금속제창 12종)",
-        "sub_ko": "공공조달 시장 진출 및 납품 개시"
+        "sub_ko": "공공조달 시장 진출 및 납품 개시",
+        "title_en": "KONEPS Registration — 12 Metal Window Types",
+        "sub_en": "Entry into public procurement, delivery commenced"
       },
       {
         "year": "2024",
         "date": "04월",
         "title_ko": "유한회사 하나스토리 설립",
-        "sub_ko": "전북 완주군 이서면 / 금속구조물·창호·온실공사업 면허 취득"
+        "sub_ko": "전북 완주군 이서면 / 금속구조물·창호·온실공사업 면허 취득",
+        "title_en": "Hana Story Co., Ltd. Founded",
+        "sub_en": "Wanju-gun, Jeonbuk / Metal Structure, Window & Greenhouse Construction License"
       }
-    ]
+    ],
+    "dept1_name_en": "Management Support",
+    "dept1_tasks_en": "HR & General Affairs / Accounting & Tax / Contract Management",
+    "dept2_name_en": "Sales",
+    "dept2_tasks_en": "Sales & Marketing / Estimating & Orders / Customer Management",
+    "dept3_name_en": "Design",
+    "dept3_tasks_en": "Drafting & CAD / Structural Calculation / Permits & Approvals",
+    "dept4_name_en": "Production",
+    "dept4_tasks_en": "Material Management / Cutting & Processing / Quality Inspection",
+    "dept5_name_en": "Installation",
+    "dept5_tasks_en": "On-site Installation / Safety Management / Process Management",
+    "dept6_name_en": "After-Sales (A/S)",
+    "dept6_tasks_en": "Defect Repair / Customer AS / Quality Feedback"
   },
   "products": {
     "window1_name_ko": "미서기창",
@@ -362,69 +390,43 @@
         "airtight": "",
         "ks": "KS F 4536",
         "image": "/images/products/HNS40-RSC.png"
-      },
-      {
-        "category_ko": "방충망",
-        "category_en": "Window Screens",
-        "subcategory_ko": "15",
-        "subcategory_en": "",
-        "name_ko": "방충망",
-        "name_en": "",
-        "model": "",
-        "spec": "",
-        "glass_ko": "",
-        "id_no": "",
-        "u_value": "",
-        "airtight": "",
-        "ks": "",
-        "image": ""
-      },
-      {
-        "category_ko": "미서기창",
-        "category_en": "Sliding Windows",
-        "subcategory_ko": "699",
-        "subcategory_en": "",
-        "name_ko": "미서기 단창",
-        "name_en": "",
-        "model": "",
-        "spec": "",
-        "glass_ko": "",
-        "id_no": "",
-        "u_value": "",
-        "airtight": "",
-        "ks": "",
-        "image": ""
       }
     ],
     "certs": [
       {
         "key": "ks",
         "name_ko": "KS인증",
+        "name_en": "KS Certified",
         "image": "/images/certs/ks.png"
       },
       {
         "key": "sme",
         "name_ko": "중소기업",
+        "name_en": "SME",
         "image": "/images/certs/sme.png"
       },
       {
         "key": "employment",
-        "name_ko": "정규직전환기업",
+        "name_ko": "정규직<br>전환기업",
+        "name_en": "Regular Employment<br>Conversion",
         "image": "/images/certs/employment.png"
       },
       {
         "key": "social",
         "name_ko": "사회적기업",
+        "name_en": "Social Enterprise",
         "image": "/images/certs/social.png"
       },
       {
         "key": "women",
         "name_ko": "여성기업",
+        "name_en": "Women-Owned<br>Business",
         "image": "/images/certs/women.png"
       },
       {
         "key": "eco",
         "name_ko": "환경표지",
+        "name_en": "Eco-Label",
         "image": "/images/certs/eco.png"
       }
     ],
@@ -432,226 +434,256 @@
       {
         "category_ko": "지붕재교체형",
         "category_en": "Roof Replacement Type",
-        "name_ko": "차양 — 지붕재교체용 1,000×1,000mm",
-        "name_en": "Awning — Roof Replacement 1,000×1,000mm",
+        "name_ko": "지붕재교체",
+        "name_en": "Roof Replacement",
+        "model": "HNS-C01",
+        "spec": "1000x1000mm",
+        "id_no": "25503152",
+        "image": "/images/products/HNS-C01.jpg"
+      },
+      {
+        "category_ko": "지붕재교체형",
+        "category_en": "Roof Replacement Type",
+        "name_ko": "지붕재교체(준불연)",
+        "name_en": "Roof Replacement (Semi-Incombustible)",
         "model": "HNS-C01-I",
-        "type_ko": "지붕재교체형",
-        "type_en": "Roof Replace",
-        "price": "160,000",
+        "spec": "1000x1000mm",
         "id_no": "25503151",
-        "image": "/images/product-awning.jpg"
+        "image": "/images/products/HNS-C01-I.jpg"
       },
       {
-        "category_ko": "일체형 — E·S·J 시리즈",
-        "category_en": "Integrated Type — E · S · J Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-E02",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "200,000",
-        "id_no": "25567478",
-        "image": "/images/product-awning.jpg"
+        "category_ko": "아치형 차양",
+        "category_en": "Arch Awning",
+        "name_ko": "아치형차양",
+        "name_en": "Arch Awning",
+        "model": "HNS-A01",
+        "spec": "1000x1000mm",
+        "id_no": "25479909",
+        "image": "/images/products/HNS-A01.jpg"
       },
       {
-        "category_ko": "일체형 — E·S·J 시리즈",
-        "category_en": "Integrated Type — E · S · J Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-E01",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "230,000",
-        "id_no": "25479911",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — E·S·J 시리즈",
-        "category_en": "Integrated Type — E · S · J Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-S01",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "245,000",
-        "id_no": "25479912",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — E·S·J 시리즈",
-        "category_en": "Integrated Type — E · S · J Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-ET03",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "280,000",
-        "id_no": "25553790",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — E·S·J 시리즈",
-        "category_en": "Integrated Type — E · S · J Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-J01",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "280,000",
-        "id_no": "25553791",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — E·S·J 시리즈",
-        "category_en": "Integrated Type — E · S · J Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-S02",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "310,000",
-        "id_no": "25479913",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — AT·JT·RT 시리즈",
-        "category_en": "Integrated Type — AT · JT · RT Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
+        "category_ko": "아치형 차양",
+        "category_en": "Arch Awning",
+        "name_ko": "아치형차양",
+        "name_en": "Arch Awning",
         "model": "HNS-AT02",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "300,000",
+        "spec": "1000x1000mm",
         "id_no": "25479910",
-        "image": "/images/product-awning.jpg"
+        "image": "/images/products/HNS-AT02.jpg"
       },
       {
-        "category_ko": "일체형 — AT·JT·RT 시리즈",
-        "category_en": "Integrated Type — AT · JT · RT Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-JT04",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "300,000",
-        "id_no": "25479914",
-        "image": "/images/product-awning.jpg"
+        "category_ko": "아치형 차양",
+        "category_en": "Arch Awning",
+        "name_ko": "아치형차양(준불연)",
+        "name_en": "Arch Awning (Semi-Incombustible)",
+        "model": "HNS-A01-I",
+        "spec": "1000x1000mm",
+        "id_no": "25503153",
+        "image": "/images/products/HNS-A01-I.jpg"
       },
       {
-        "category_ko": "일체형 — AT·JT·RT 시리즈",
-        "category_en": "Integrated Type — AT · JT · RT Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-JT03",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "310,000",
-        "id_no": "25553793",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — AT·JT·RT 시리즈",
-        "category_en": "Integrated Type — AT · JT · RT Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-JT02",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "310,000",
-        "id_no": "25553792",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — AT·JT·RT 시리즈",
-        "category_en": "Integrated Type — AT · JT · RT Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-JT05",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "365,000",
-        "id_no": "25479915",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "일체형 — AT·JT·RT 시리즈",
-        "category_en": "Integrated Type — AT · JT · RT Series",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-RT01",
-        "type_ko": "일체형",
-        "type_en": "Integrated",
-        "price": "465,000",
-        "id_no": "25479916",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "교체형",
-        "category_en": "Replacement Type",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-E01-I",
-        "type_ko": "교체형",
-        "type_en": "Replacement",
-        "price": "260,000",
-        "id_no": "25503154",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "교체형",
-        "category_en": "Replacement Type",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
-        "model": "HNS-ET03-I",
-        "type_ko": "교체형",
-        "type_en": "Replacement",
-        "price": "330,000",
-        "id_no": "25503156",
-        "image": "/images/product-awning.jpg"
-      },
-      {
-        "category_ko": "교체형",
-        "category_en": "Replacement Type",
-        "name_ko": "차양 1,000×1,000mm",
-        "name_en": "Awning 1,000×1,000mm",
+        "category_ko": "아치형 차양",
+        "category_en": "Arch Awning",
+        "name_ko": "아치형차양(준불연)",
+        "name_en": "Arch Awning (Semi-Incombustible)",
         "model": "HNS-AT02-I",
-        "type_ko": "교체형",
-        "type_en": "Replacement",
-        "price": "340,000",
+        "spec": "1000x1000mm",
         "id_no": "25503155",
-        "image": "/images/product-awning.jpg"
+        "image": "/images/products/HNS-AT02-I.jpg"
+      },
+      {
+        "category_ko": "벽부형 차양",
+        "category_en": "Wall-mounted Awning",
+        "name_ko": "벽부형차양",
+        "name_en": "Wall-mounted Awning",
+        "model": "HNS-E01",
+        "spec": "1000x1000mm",
+        "id_no": "25479911",
+        "image": "/images/products/HNS-E01.jpg"
+      },
+      {
+        "category_ko": "벽부형 차양",
+        "category_en": "Wall-mounted Awning",
+        "name_ko": "벽부형차양",
+        "name_en": "Wall-mounted Awning",
+        "model": "HNS-ET02",
+        "spec": "1000x1000mm",
+        "id_no": "25567478",
+        "image": "/images/products/HNS-ET02.png"
+      },
+      {
+        "category_ko": "벽부형 차양",
+        "category_en": "Wall-mounted Awning",
+        "name_ko": "벽부형차양",
+        "name_en": "Wall-mounted Awning",
+        "model": "HNS-ET03",
+        "spec": "1000x1000mm",
+        "id_no": "25553790",
+        "image": "/images/products/HNS-ET03.jpg"
+      },
+      {
+        "category_ko": "벽부형 차양",
+        "category_en": "Wall-mounted Awning",
+        "name_ko": "벽부형차양(준불연)",
+        "name_en": "Wall-mounted Awning (Semi-Incombustible)",
+        "model": "HNS-ET01-I",
+        "spec": "1000x1000mm",
+        "id_no": "25503154",
+        "image": "/images/products/HNS-ET01-I.jpg"
+      },
+      {
+        "category_ko": "벽부형 차양",
+        "category_en": "Wall-mounted Awning",
+        "name_ko": "벽부형차양(준불연)",
+        "name_en": "Wall-mounted Awning (Semi-Incombustible)",
+        "model": "HNS-ET03-I",
+        "spec": "1000x1000mm",
+        "id_no": "25503156",
+        "image": "/images/products/HNS-ET03-I.jpg"
+      },
+      {
+        "category_ko": "관람석·조례대 차양",
+        "category_en": "Stand & Podium Awning",
+        "name_ko": "관람석차양",
+        "name_en": "Stand Awning",
+        "model": "HNS-S01",
+        "spec": "1000x1000mm",
+        "id_no": "25479912",
+        "image": "/images/products/HNS-S01.jpg"
+      },
+      {
+        "category_ko": "관람석·조례대 차양",
+        "category_en": "Stand & Podium Awning",
+        "name_ko": "조례대차양",
+        "name_en": "Podium Awning",
+        "model": "HNS-JT05",
+        "spec": "1000x1000mm",
+        "id_no": "25479915",
+        "image": "/images/products/HNS-JT05.jpg"
+      },
+      {
+        "category_ko": "주차장 차양",
+        "category_en": "Parking Awning",
+        "name_ko": "주차장 차양",
+        "name_en": "Parking Awning",
+        "model": "HNS-JT01",
+        "spec": "1000x1000mm",
+        "id_no": "25553791",
+        "image": "/images/products/HNS-JT01.png"
+      },
+      {
+        "category_ko": "주차장 차양",
+        "category_en": "Parking Awning",
+        "name_ko": "주차장 차양",
+        "name_en": "Parking Awning",
+        "model": "HNS-JT02",
+        "spec": "1000x1000mm",
+        "id_no": "25553792",
+        "image": "/images/products/HNS-JT02.png"
+      },
+      {
+        "category_ko": "주차장 차양",
+        "category_en": "Parking Awning",
+        "name_ko": "주차장 차양",
+        "name_en": "Parking Awning",
+        "model": "HNS-JT03",
+        "spec": "1000x1000mm",
+        "id_no": "25553793",
+        "image": "/images/products/HNS-JT03.png"
+      },
+      {
+        "category_ko": "주차장 차양",
+        "category_en": "Parking Awning",
+        "name_ko": "주차장(램프) 차양",
+        "name_en": "Parking Ramp Awning",
+        "model": "HNS-RT01",
+        "spec": "1000x1000mm",
+        "id_no": "25479916",
+        "image": "/images/products/HNS-RT01.png"
+      },
+      {
+        "category_ko": "부속자재",
+        "category_en": "Accessories",
+        "name_ko": "물받이",
+        "name_en": "Rain Gutter",
+        "model": "HNS-W01",
+        "spec": "",
+        "id_no": "25479908",
+        "image": "/images/products/HNS-W01.png"
+      },
+      {
+        "category_ko": "부속자재",
+        "category_en": "Accessories",
+        "name_ko": "선홈통 Φ63.5",
+        "name_en": "Downspout Φ63.5",
+        "model": "HNS-W02",
+        "spec": "Φ63.5×1000",
+        "id_no": "25479907",
+        "image": "/images/products/HNS-W02.png"
+      },
+      {
+        "category_ko": "부속자재",
+        "category_en": "Accessories",
+        "name_ko": "선홈통 Φ76.3",
+        "name_en": "Downspout Φ76.3",
+        "model": "HNS-W03",
+        "spec": "Φ76.3×1000",
+        "id_no": "25479906",
+        "image": "/images/products/HNS-W02.png"
+      },
+      {
+        "category_ko": "부속자재",
+        "category_en": "Accessories",
+        "name_ko": "기둥커버 Φ101",
+        "name_en": "Column Cover Φ101",
+        "model": "HNS-W04",
+        "spec": "Φ101.6×1500",
+        "id_no": "25479905",
+        "image": "/images/products/HNS-W04.png"
+      },
+      {
+        "category_ko": "부속자재",
+        "category_en": "Accessories",
+        "name_ko": "기둥커버 Φ127",
+        "name_en": "Column Cover Φ127",
+        "model": "HNS-W05",
+        "spec": "Φ127.0×1500",
+        "id_no": "25479904",
+        "image": "/images/products/HNS-W04.png"
+      },
+      {
+        "category_ko": "부속자재",
+        "category_en": "Accessories",
+        "name_ko": "기둥커버 Φ152",
+        "name_en": "Column Cover Φ152",
+        "model": "HNS-W06",
+        "spec": "Φ152.4×1500",
+        "id_no": "25479903",
+        "image": "/images/products/HNS-W04.png"
       }
     ],
     "door_list": [
       {
-        "category_ko": "여닫이 문세트",
-        "category_en": "Swing Door Sets",
-        "name_ko": "금속문세트 여닫이/불소수지2회 (SF형)",
-        "name_en": "Metal Door Set Swing, Fluororesin 2-coat (SF)",
-        "model": "HNS-AD-SF80",
-        "width": "80mm",
-        "coating_ko": "불소수지코팅 2회",
-        "coating_en": "2-coat Fluororesin",
-        "lead_time_ko": "30일",
-        "lead_time_en": "30 days",
-        "id_no": "26038460",
-        "ks": "KS F 3109",
-        "image": "/images/product-door.jpg"
-      },
-      {
-        "category_ko": "여닫이 문세트",
-        "category_en": "Swing Door Sets",
-        "name_ko": "금속문세트 여닫이/불소수지2회 (ST형)",
-        "name_en": "Metal Door Set Swing, Fluororesin 2-coat (ST)",
+        "category_ko": "금속문세트",
+        "category_en": "Metal Door Sets",
+        "name_ko": "시스템도어",
+        "name_en": "System Door",
         "model": "HNS-AD-ST80",
-        "width": "80mm",
-        "coating_ko": "불소수지코팅 2회",
-        "coating_en": "2-coat Fluororesin",
-        "lead_time_ko": "30일",
-        "lead_time_en": "30 days",
+        "spec": "80mm",
         "id_no": "26038459",
         "ks": "KS F 3109",
-        "image": "/images/prodimg-door-gray.jpg"
+        "image": "/images/products/HNS-AD-ST80.jpg"
+      },
+      {
+        "category_ko": "금속문세트",
+        "category_en": "Metal Door Sets",
+        "name_ko": "세이프도어",
+        "name_en": "Safe Door",
+        "model": "HNS-AD-SF80",
+        "spec": "80mm",
+        "id_no": "26038460",
+        "ks": "KS F 3109",
+        "image": "/images/products/HNS-AD-SF80.jpg"
       }
     ]
   },
@@ -679,52 +711,72 @@
     "docs": [
       {
         "title_ko": "여성기업 확인서",
+        "title_en": "Women-Owned Business Certificate",
         "issuer_ko": "전북지방중소벤처기업청",
+        "issuer_en": "Jeonbuk Regional SME Administration",
         "image": "/images/certs-docs/women-biz.png"
       },
       {
         "title_ko": "건설업 등록증",
+        "title_en": "Construction Business Registration",
         "issuer_ko": "전북특별자치도 익산시장",
+        "issuer_en": "Iksan City, Jeonbuk State",
         "image": "/images/certs-docs/construction-reg.png"
       },
       {
         "title_ko": "중소기업확인서",
+        "title_en": "SME Confirmation Certificate",
         "issuer_ko": "중소벤처기업부",
+        "issuer_en": "Ministry of SMEs and Startups",
         "image": "/images/certs-docs/sme-confirm.png"
       },
       {
         "title_ko": "직접생산확인증명 (차양)",
+        "title_en": "Direct Production Certificate (Awning)",
         "issuer_ko": "중소기업유통센터",
+        "issuer_en": "SME Distribution Center",
         "image": "/images/certs-docs/direct-production-awning.png"
       },
       {
         "title_ko": "직접생산확인증명 (금속제창)",
+        "title_en": "Direct Production Certificate (Metal Window)",
         "issuer_ko": "중소기업유통센터",
+        "issuer_en": "SME Distribution Center",
         "image": "/images/certs-docs/direct-production-window.png"
       },
       {
         "title_ko": "KS 창세트 [KS F 3117]",
+        "title_en": "KS Window Set [KS F 3117]",
         "issuer_ko": "한국표준협회",
+        "issuer_en": "Korean Standards Association",
         "image": "/images/certs-docs/ks-window.png"
       },
       {
         "title_ko": "KS 창호용 망창 [KS F 4536]",
+        "title_en": "KS Window Screen [KS F 4536]",
         "issuer_ko": "한국표준협회",
+        "issuer_en": "Korean Standards Association",
         "image": "/images/certs-docs/ks-screen.png"
       },
       {
         "title_ko": "KS 문세트 [KS F 3109]",
+        "title_en": "KS Door Set [KS F 3109]",
         "issuer_ko": "한국표준협회",
+        "issuer_en": "Korean Standards Association",
         "image": "/images/certs-docs/ks-door.png"
       },
       {
         "title_ko": "기업부설연구소 인정서",
+        "title_en": "Corporate R&D Center Certificate",
         "issuer_ko": "한국산업기술진흥협회",
+        "issuer_en": "Korea Industrial Technology Association",
         "image": "/images/certs-docs/rnd-institute.png"
       },
       {
         "title_ko": "특허증 (스마트 절곡 시스템)",
+        "title_en": "Patent Certificate (Smart Bending System)",
         "issuer_ko": "특허청",
+        "issuer_en": "Korean Intellectual Property Office",
         "image": "/images/certs-docs/patent.png"
       }
     ],
@@ -732,14 +784,18 @@
     "eco_docs": [
       {
         "title_ko": "환경표지 인증서",
+        "title_en": "Eco-Label Certificate",
         "issuer_ko": "한국환경산업기술원",
+        "issuer_en": "Korea Environmental Industry & Technology Institute",
         "image": "/images/certs-docs/eco-label.png"
       }
     ],
     "social_docs": [
       {
         "title_ko": "사회적기업 인증서",
+        "title_en": "Social Enterprise Certificate",
         "issuer_ko": "고용노동부",
+        "issuer_en": "Ministry of Employment and Labor",
         "image": "/images/certs-docs/social-enterprise.png"
       }
     ],
@@ -747,77 +803,107 @@
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS222-16SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS222-16SL.png"
+        "image": "/images/certs-docs/efficiency/HNS222-16SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS222-16SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS222-8SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS222-8SL.png"
+        "image": "/images/certs-docs/efficiency/HNS222-8SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS222-8SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS222-4SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS222-4SL.png"
+        "image": "/images/certs-docs/efficiency/HNS222-4SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS222-4SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS94-CM)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS94-CM.png"
+        "image": "/images/certs-docs/efficiency/HNS94-CM.png",
+        "title_en": "Efficiency Equipment Declaration (HNS94-CM)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS94-PJ)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS94-PJ.png"
+        "image": "/images/certs-docs/efficiency/HNS94-PJ.png",
+        "title_en": "Efficiency Equipment Declaration (HNS94-PJ)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS165-2SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS165-2SL.png"
+        "image": "/images/certs-docs/efficiency/HNS165-2SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS165-2SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS-94PJ-WJ)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS-94PJ-WJ.png"
+        "image": "/images/certs-docs/efficiency/HNS-94PJ-WJ.png",
+        "title_en": "Efficiency Equipment Declaration (HNS-94PJ-WJ)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS220-4SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS220-4SL.png"
+        "image": "/images/certs-docs/efficiency/HNS220-4SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS220-4SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS-94CM-WJ)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS-94CM-WJ.png"
+        "image": "/images/certs-docs/efficiency/HNS-94CM-WJ.png",
+        "title_en": "Efficiency Equipment Declaration (HNS-94CM-WJ)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS220-8SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS220-8SL.png"
+        "image": "/images/certs-docs/efficiency/HNS220-8SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS220-8SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS-71PD-WJ)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS-71PD-WJ.png"
+        "image": "/images/certs-docs/efficiency/HNS-71PD-WJ.png",
+        "title_en": "Efficiency Equipment Declaration (HNS-71PD-WJ)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS165-2SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS165-2SL-2.png"
+        "image": "/images/certs-docs/efficiency/HNS165-2SL-2.png",
+        "title_en": "Efficiency Equipment Declaration (HNS165-2SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS155-2SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS155-2SL.png"
+        "image": "/images/certs-docs/efficiency/HNS155-2SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS155-2SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS222-8SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS222-8SL-2.png"
+        "image": "/images/certs-docs/efficiency/HNS222-8SL-2.png",
+        "title_en": "Efficiency Equipment Declaration (HNS222-8SL)",
+        "issuer_en": "Korea Energy Agency"
       },
       {
         "title_ko": "효율관리기자재 신고 확인서 (HNS220-16SL)",
         "issuer_ko": "한국에너지공단",
-        "image": "/images/certs-docs/efficiency/HNS220-16SL.png"
+        "image": "/images/certs-docs/efficiency/HNS220-16SL.png",
+        "title_en": "Efficiency Equipment Declaration (HNS220-16SL)",
+        "issuer_en": "Korea Energy Agency"
       }
     ]
   },
@@ -1158,73 +1244,109 @@
         "item_ko": "금속제창 (AL) — 미서기창 1짝",
         "ks": "KS F 3117",
         "category_ko": "금속제창",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Window (AL) — Sliding, 1-panel",
+        "category_en": "Metal Windows",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속제창 (AL) — 미서기창 2짝",
         "ks": "KS F 3117",
         "category_ko": "금속제창",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Window (AL) — Sliding, 2-panel",
+        "category_en": "Metal Windows",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속제창 (AL) — 미서기창 3짝",
         "ks": "KS F 3117",
         "category_ko": "금속제창",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Window (AL) — Sliding, 3-panel",
+        "category_en": "Metal Windows",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속제창 (AL) — 프로젝트창",
         "ks": "KS F 3117",
         "category_ko": "금속제창",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Window (AL) — Project Window",
+        "category_en": "Metal Windows",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속제창 (AL) — 케이스먼트창",
         "ks": "KS F 3117",
         "category_ko": "금속제창",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Window (AL) — Casement Window",
+        "category_en": "Metal Windows",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속제창 (AL) — 커튼월",
         "ks": "KS F 3117",
         "category_ko": "금속제창",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Window (AL) — Curtain Wall",
+        "category_en": "Metal Windows",
+        "status_en": "Registered"
       },
       {
         "item_ko": "차양 — 주차장 차양",
         "ks": "—",
         "category_ko": "차양",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Awning — Parking Lot",
+        "category_en": "Awnings",
+        "status_en": "Registered"
       },
       {
         "item_ko": "차양 — 운동장 스탠드",
         "ks": "—",
         "category_ko": "차양",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Awning — Stadium Stand",
+        "category_en": "Awnings",
+        "status_en": "Registered"
       },
       {
         "item_ko": "차양 — 벽부형 비가림",
         "ks": "—",
         "category_ko": "차양",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Awning — Wall-mounted Rain Shield",
+        "category_en": "Awnings",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속문세트 — 단열 외부용",
         "ks": "KS F 3109",
         "category_ko": "문세트",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Door Set — Insulated, Exterior",
+        "category_en": "Door Sets",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속문세트 — 일반 내부용",
         "ks": "KS F 3109",
         "category_ko": "문세트",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Door Set — Standard, Interior",
+        "category_en": "Door Sets",
+        "status_en": "Registered"
       },
       {
         "item_ko": "금속문세트 — 방화 60분",
         "ks": "KS F 3109",
         "category_ko": "문세트",
-        "status_ko": "등록완료"
+        "status_ko": "등록완료",
+        "item_en": "Metal Door Set — Fire-rated 60min",
+        "category_en": "Door Sets",
+        "status_en": "Registered"
       }
     ]
   },
@@ -1234,19 +1356,28 @@
         "qualification_ko": "건축기사",
         "grade_ko": "기사",
         "count": "1",
-        "issuer_ko": "한국산업인력공단"
+        "issuer_ko": "한국산업인력공단",
+        "qualification_en": "Architectural Engineer",
+        "grade_en": "Engineer",
+        "issuer_en": "Human Resources Development Service of Korea"
       },
       {
         "qualification_ko": "전산응용건축제도기능사",
         "grade_ko": "기능사",
         "count": "1",
-        "issuer_ko": "한국산업인력공단"
+        "issuer_ko": "한국산업인력공단",
+        "qualification_en": "Computer-Aided Architectural Drafting Technician",
+        "grade_en": "Craftsman",
+        "issuer_en": "Human Resources Development Service of Korea"
       },
       {
         "qualification_ko": "금속재창호기능사",
         "grade_ko": "기능사",
         "count": "2",
-        "issuer_ko": "한국산업인력공단"
+        "issuer_ko": "한국산업인력공단",
+        "qualification_en": "Metal Window & Door Craftsman",
+        "grade_en": "Craftsman",
+        "issuer_en": "Human Resources Development Service of Korea"
       }
     ]
   },
