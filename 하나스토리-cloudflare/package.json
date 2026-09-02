@@ -1,0 +1,15 @@
+{
+  "name": "hana-story-cms",
+  "version": "2.0.0",
+  "description": "하나스토리 홈페이지 + 관리자 시스템 (Cloudflare Pages + Workers + D1 + R2)",
+  "scripts": {
+    "dev": "wrangler pages dev . --compatibility-flags=nodejs_compat",
+    "deploy": "wrangler pages deploy ."
+  },
+  "dependencies": {
+    "@tsndr/cloudflare-worker-jwt": "^3.2.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.124.0"
+  }
+}

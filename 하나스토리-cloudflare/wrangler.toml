@@ -1,0 +1,9 @@
+name = "hanastory"
+pages_build_output_dir = "."
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hanastory-content"
+database_id = "55056bbf-2965-4437-adeb-cc8f8df22e48"

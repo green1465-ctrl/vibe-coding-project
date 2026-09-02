@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>주요납품실적 | 주요실적 | 하나스토리</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .proj-stats-wrap { padding: 48px 0 8px; }
+    .proj-stats-card { background: var(--navy); box-shadow: 0 10px 30px rgba(10,20,40,0.18); }
+    .proj-stats-card > div { border-left: 1px solid rgba(255,255,255,0.1); }
+    .proj-stats-card > div:first-child { border-left: none; }
+  </style>
+  <link rel="icon" type="image/png" href="./images/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="주요납품실적 | 주요실적 | 하나스토리">
+  <meta property="og:description" content="친환경 알루미늄 금속제창·차양·금속문세트 전문 제조기업 — 유한회사 하나스토리">
+  <meta property="og:image" content="https://hanastory.vercel.app/images/social-preview.png">
+  <meta property="og:url" content="https://hanastory.vercel.app/projects.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://hanastory.vercel.app/images/social-preview.png">
+</head>
+<body>
+
+<header id="site-header">
+  <div class="header-inner">
+    <a href="./index.html" class="header-logo">
+      <img data-img="company.logo_header" src="./images/logo-header.png" alt="하나스토리 HANASTORY">
+    </a>
+    <nav class="gnb">
+      <div class="gnb-item"><a href="./about.html"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></a><div class="gnb-drop"><a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a><a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a><a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a></div></div>
+      <div class="gnb-item"><a href="./products.html"><span class="ko-only">제품소개</span><span class="en-only">Products</span></a><div class="gnb-drop"><a href="./products.html"><span class="ko-only">금속제창 (AL)</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div></div>
+      <div class="gnb-item"><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><div class="gnb-drop"><a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a><a href="./certs-eco.html"><span class="ko-only">환경표지</span><span class="en-only">Eco-Label</span></a><a href="./certs-social.html"><span class="ko-only">사회적기업</span><span class="en-only">Social Ent.</span></a><a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a><a href="./certs-staff.html"><span class="ko-only">전문인력</span><span class="en-only">Specialists</span></a></div></div>
+      <div class="gnb-item"><a href="./projects.html" class="active"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><div class="gnb-drop"><a href="./projects.html"><span class="ko-only">주요납품실적</span><span class="en-only">Deliveries</span></a><a href="./projects-gallery.html"><span class="ko-only">시공갤러리</span><span class="en-only">Gallery</span></a></div></div>
+      <div class="gnb-item"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><div class="gnb-drop"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><a href="./contact-koneps.html"><span class="ko-only">조달청 등록 현황</span><span class="en-only">KONEPS</span></a><a href="./contact-map.html"><span class="ko-only">찾아오시는 길</span><span class="en-only">Location</span></a><a href="./contact-resources.html"><span class="ko-only">자료실</span><span class="en-only">Resources</span></a></div></div>
+    </nav>
+    <div class="header-right">
+      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" onclick="toggleNav()"><span></span><span></span><span></span></button>
+      <div class="lang-wrap">
+        <button class="lang-btn active" onclick="setLang('ko')">KR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-banner page-banner--center" style="background-image: url('./images/projects-banner.jpg');">
+  <div class="page-banner-inner"></div>
+  <div class="page-banner-title"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></div>
+  <p class="page-banner-sub"><span class="ko-only">학교·관공서·공공시설 납품 실적 58건 이상</span><span class="en-only">58+ deliveries to schools, government offices &amp; public facilities</span></p>
+</div>
+
+<div class="sub-nav-bar">
+  <div class="sub-nav-inner">
+    <a href="./projects.html" class="active"><span class="ko-only">주요납품실적</span><span class="en-only">Deliveries</span></a>
+    <a href="./projects-gallery.html"><span class="ko-only">시공갤러리</span><span class="en-only">Gallery</span></a>
+  </div>
+</div>
+
+<div class="proj-stats-wrap">
+  <div class="container">
+    <div class="proj-stats-card" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;">
+      <div style="padding: 28px 20px; text-align: center;">
+        <div style="font-size:36px; font-weight:700; color:#ffffff; line-height:1;">58<span style="font-size:18px;">+</span></div>
+        <div style="font-size:13px; line-height:1.3; color:rgba(255,255,255,0.55); margin-top:6px;"><span class="ko-only">총 납품 건수</span><span class="en-only">Total Deliveries</span></div>
+      </div>
+      <div style="padding: 28px 20px; text-align: center;">
+        <div style="font-size:36px; font-weight:700; color:#ffffff; line-height:1;">30<span style="font-size:18px;">+</span></div>
+        <div style="font-size:13px; line-height:1.3; color:rgba(255,255,255,0.55); margin-top:6px;"><span class="ko-only">학교 납품</span><span class="en-only">School Deliveries</span></div>
+      </div>
+      <div style="padding: 28px 20px; text-align: center;">
+        <div style="font-size:36px; font-weight:700; color:#ffffff; line-height:1;">15<span style="font-size:18px;">+</span></div>
+        <div style="font-size:13px; line-height:1.3; color:rgba(255,255,255,0.55); margin-top:6px;"><span class="ko-only">관공서 납품</span><span class="en-only">Gov. Deliveries</span></div>
+      </div>
+      <div style="padding: 28px 20px; text-align: center;">
+        <div style="font-size:36px; font-weight:700; color:#ffffff; line-height:1;">13<span style="font-size:18px;">+</span></div>
+        <div style="font-size:13px; line-height:1.3; color:rgba(255,255,255,0.55); margin-top:6px;"><span class="ko-only">기타 공공시설</span><span class="en-only">Other Public</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <p class="sec-label"><span class="ko-only">납품 실적</span><span class="en-only">Delivery Records</span></p>
+        <h2 class="sec-title"><span class="ko-only">주요 납품 실적</span><span class="en-only">Major Delivery Records</span></h2>
+      </div>
+    </div>
+
+    <div class="proj-year-block">
+      <div class="proj-year-head">2025</div>
+      <div class="proj-board-wrap">
+      <table class="proj-board">
+        <thead>
+          <tr>
+            <th style="width:54px;">No.</th>
+            <th style="width:80px;"><span class="ko-only">월</span><span class="en-only">Month</span></th>
+            <th><span class="ko-only">납품처</span><span class="en-only">Client</span></th>
+            <th><span class="ko-only">품목</span><span class="en-only">Item</span></th>
+            <th style="width:100px;"><span class="ko-only">분류</span><span class="en-only">Category</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="month">01월</td><td><span class="ko-only">전주시 덕진구청</span><span class="en-only">Deokjin-gu Office, Jeonju</span></td><td><span class="ko-only">금속제창 (AL) 미서기창</span><span class="en-only">Metal Window (AL) Sliding</span></td><td><span class="ko-only">관공서</span><span class="en-only">Gov. Office</span></td></tr>
+          <tr><td class="num">2</td><td class="month">02월</td><td><span class="ko-only">완주군 이서초등학교</span><span class="en-only">Iseo Elementary School</span></td><td><span class="ko-only">금속제창 (AL) 케이스먼트창</span><span class="en-only">Metal Window (AL) Casement</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">3</td><td class="month">03월</td><td><span class="ko-only">전북도청 별관</span><span class="en-only">Jeonbuk Provincial Office Annex</span></td><td><span class="ko-only">금속문세트</span><span class="en-only">Metal Door Sets</span></td><td><span class="ko-only">관공서</span><span class="en-only">Gov. Office</span></td></tr>
+          <tr><td class="num">4</td><td class="month">03월</td><td><span class="ko-only">익산 함라초등학교</span><span class="en-only">Hamna Elementary School, Iksan</span></td><td><span class="ko-only">금속제창 (AL) 프로젝트창</span><span class="en-only">Metal Window (AL) Project</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">5</td><td class="month">04월</td><td><span class="ko-only">군산시 문화복지센터</span><span class="en-only">Gunsan Culture &amp; Welfare Center</span></td><td><span class="ko-only">차양 (주차장 차양)</span><span class="en-only">Awning (Parking)</span></td><td><span class="ko-only">공공시설</span><span class="en-only">Public Facility</span></td></tr>
+          <tr><td class="num">6</td><td class="month">04월</td><td><span class="ko-only">정읍 정우중학교</span><span class="en-only">Jeongu Middle School, Jeongeup</span></td><td><span class="ko-only">금속제창 (AL) 미서기창</span><span class="en-only">Metal Window (AL) Sliding</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">7</td><td class="month">05월</td><td><span class="ko-only">남원시 광한루원 관리사무소</span><span class="en-only">Gwanghallu Garden Admin Office</span></td><td><span class="ko-only">금속제창 (AL) 커튼월</span><span class="en-only">Metal Window (AL) Curtain Wall</span></td><td><span class="ko-only">관광시설</span><span class="en-only">Tourism</span></td></tr>
+          <tr><td class="num">8</td><td class="month">06월</td><td><span class="ko-only">완주 봉동고등학교</span><span class="en-only">Bongdong High School, Wanju</span></td><td><span class="ko-only">금속제창 (AL) + 금속문세트</span><span class="en-only">Metal Window + Door Sets</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="proj-year-block">
+      <div class="proj-year-head">2024</div>
+      <div class="proj-board-wrap">
+      <table class="proj-board">
+        <thead>
+          <tr>
+            <th style="width:54px;">No.</th>
+            <th style="width:80px;"><span class="ko-only">월</span><span class="en-only">Month</span></th>
+            <th><span class="ko-only">납품처</span><span class="en-only">Client</span></th>
+            <th><span class="ko-only">품목</span><span class="en-only">Item</span></th>
+            <th style="width:100px;"><span class="ko-only">분류</span><span class="en-only">Category</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="month">07월</td><td><span class="ko-only">전주 완산초등학교</span><span class="en-only">Wansan Elementary School, Jeonju</span></td><td><span class="ko-only">금속제창 (AL) 미서기창 12세트</span><span class="en-only">Metal Window (AL) Sliding 12 sets</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">2</td><td class="month">07월</td><td><span class="ko-only">전주 삼천동 주민센터</span><span class="en-only">Samcheon-dong Community Center</span></td><td><span class="ko-only">금속제창 (AL) 케이스먼트창</span><span class="en-only">Metal Window (AL) Casement</span></td><td><span class="ko-only">관공서</span><span class="en-only">Gov. Office</span></td></tr>
+          <tr><td class="num">3</td><td class="month">08월</td><td><span class="ko-only">임실군 임실초등학교</span><span class="en-only">Imsil Elementary School</span></td><td><span class="ko-only">금속제창 (AL) 미서기창</span><span class="en-only">Metal Window (AL) Sliding</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">4</td><td class="month">08월</td><td><span class="ko-only">완주군 운주중학교</span><span class="en-only">Unju Middle School, Wanju</span></td><td><span class="ko-only">차양 (운동장 스탠드)</span><span class="en-only">Awning (Stadium)</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">5</td><td class="month">09월</td><td><span class="ko-only">익산시 도서관</span><span class="en-only">Iksan City Library</span></td><td><span class="ko-only">금속제창 (AL) 프로젝트창</span><span class="en-only">Metal Window (AL) Project</span></td><td><span class="ko-only">공공시설</span><span class="en-only">Public Facility</span></td></tr>
+          <tr><td class="num">6</td><td class="month">09월</td><td><span class="ko-only">전주 효천고등학교</span><span class="en-only">Hyocheon High School, Jeonju</span></td><td><span class="ko-only">금속제창 (AL) 미서기창</span><span class="en-only">Metal Window (AL) Sliding</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">7</td><td class="month">10월</td><td><span class="ko-only">군산시청 별관</span><span class="en-only">Gunsan City Hall Annex</span></td><td><span class="ko-only">금속제창 (AL) + 차양</span><span class="en-only">Metal Window + Awning</span></td><td><span class="ko-only">관공서</span><span class="en-only">Gov. Office</span></td></tr>
+          <tr><td class="num">8</td><td class="month">10월</td><td><span class="ko-only">정읍 정읍초등학교</span><span class="en-only">Jeongeup Elementary School</span></td><td><span class="ko-only">금속제창 (AL) 케이스먼트창</span><span class="en-only">Metal Window (AL) Casement</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+          <tr><td class="num">9</td><td class="month">11월</td><td><span class="ko-only">완주군 상관면사무소</span><span class="en-only">Sanggwan Township Office, Wanju</span></td><td><span class="ko-only">금속제창 (AL) + 금속문세트</span><span class="en-only">Metal Window + Door Sets</span></td><td><span class="ko-only">관공서</span><span class="en-only">Gov. Office</span></td></tr>
+          <tr><td class="num">10</td><td class="month">12월</td><td><span class="ko-only">남원 인월중학교</span><span class="en-only">Inwol Middle School, Namwon</span></td><td><span class="ko-only">금속제창 (AL) 미서기창</span><span class="en-only">Metal Window (AL) Sliding</span></td><td><span class="ko-only">학교</span><span class="en-only">School</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><img data-img="company.logo_footer" src="./images/logo-footer-white.png" alt="하나스토리"><p><span class="ko-only">ECO 실천으로 더 나은 미래를 만들어 갈 수 있는 기업. 더 좋은 창호와 차양으로.</span><span class="en-only">Building a better future through ECO practices. Better windows &amp; awnings.</span></p></div>
+      <div class="footer-col"><h4><span class="ko-only">회사소개</span><span class="en-only">About</span></h4><a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a><a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a><a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">제품</span><span class="en-only">Products</span></h4><a href="./products.html"><span class="ko-only">금속제창</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">정보</span><span class="en-only">Info</span></h4><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a></div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2024 유한회사 하나스토리. All rights reserved. | 063-852-7971 | hns240429@naver.com</p>
+      <div class="footer-badges"><span class="f-badge">KS F 3117</span><span class="f-badge">KS F 4536</span><span class="f-badge">KS F 3109</span><span class="f-badge ko-only">환경표지</span><span class="f-badge ko-only">사회적기업</span><span class="f-badge en-only">Eco-Label</span><span class="f-badge en-only">Social Enterprise</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.classList.toggle('en', lang === 'en');
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang-btn').forEach((b,i) => b.classList.toggle('active', i === (lang==='ko'?0:1)));
+    localStorage.setItem('hs_lang', lang);
+  }
+  (function(){ const l = localStorage.getItem('hs_lang'); if(l) setLang(l); })();
+  function toggleNav() {
+    document.querySelector('nav.gnb').classList.toggle('open');
+    document.getElementById('navToggle').classList.toggle('open');
+  }
+
+  // 납품실적 표 — 가로 스크롤 진행바 (제품 규격표와 동일한 방식)
+  document.querySelectorAll('.proj-board-wrap').forEach(function(wrap) {
+    if (wrap.scrollWidth <= wrap.clientWidth) return;
+    var bar = document.createElement('div');
+    bar.className = 'pd-scrollbar';
+    var thumb = document.createElement('div');
+    thumb.className = 'pd-scrollbar-thumb';
+    bar.appendChild(thumb);
+    wrap.insertAdjacentElement('afterend', bar);
+    function render() {
+      var barW = bar.clientWidth;
+      var thumbW = Math.max(30, (wrap.clientWidth / wrap.scrollWidth) * barW);
+      thumb.style.width = thumbW + 'px';
+      var maxScroll = wrap.scrollWidth - wrap.clientWidth;
+      var maxThumbX = barW - thumbW;
+      var x = maxScroll > 0 ? (wrap.scrollLeft / maxScroll) * maxThumbX : 0;
+      thumb.style.transform = 'translateX(' + x + 'px)';
+    }
+    wrap.addEventListener('scroll', render);
+    window.addEventListener('resize', render);
+    render();
+  });
+</script>
+</body>
+</html>

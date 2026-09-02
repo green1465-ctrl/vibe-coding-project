@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>하나스토리 | 금속제창·차양·금속문세트 제조기업</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/png" href="./images/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="하나스토리 | 금속제창·차양·금속문세트 제조기업">
+  <meta property="og:description" content="친환경 알루미늄 금속제창·차양·금속문세트 전문 제조기업 — 유한회사 하나스토리">
+  <meta property="og:image" content="https://hanastory.vercel.app/images/social-preview.png">
+  <meta property="og:url" content="https://hanastory.vercel.app/index.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://hanastory.vercel.app/images/social-preview.png">
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header id="site-header">
+  <div class="header-inner">
+    <a href="./index.html" class="header-logo">
+      <img data-img="company.logo_header" src="./images/logo-header.png" alt="하나스토리 HANASTORY">
+    </a>
+    <nav class="gnb">
+      <div class="gnb-item">
+        <a href="./about.html"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></a>
+        <div class="gnb-drop">
+          <a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a>
+          <a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a>
+          <a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a>
+        </div>
+      </div>
+      <div class="gnb-item"><a href="./products.html"><span class="ko-only">제품소개</span><span class="en-only">Products</span></a><div class="gnb-drop"><a href="./products.html"><span class="ko-only">금속제창 (AL)</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div></div>
+      <div class="gnb-item"><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><div class="gnb-drop"><a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a><a href="./certs-eco.html"><span class="ko-only">환경표지</span><span class="en-only">Eco-Label</span></a><a href="./certs-social.html"><span class="ko-only">사회적기업</span><span class="en-only">Social Ent.</span></a><a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a><a href="./certs-staff.html"><span class="ko-only">전문인력</span><span class="en-only">Specialists</span></a></div></div>
+      <div class="gnb-item"><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><div class="gnb-drop"><a href="./projects.html"><span class="ko-only">주요납품실적</span><span class="en-only">Deliveries</span></a><a href="./projects-gallery.html"><span class="ko-only">시공갤러리</span><span class="en-only">Gallery</span></a></div></div>
+      <div class="gnb-item"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><div class="gnb-drop"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><a href="./contact-koneps.html"><span class="ko-only">조달청 등록 현황</span><span class="en-only">KONEPS</span></a><a href="./contact-map.html"><span class="ko-only">찾아오시는 길</span><span class="en-only">Location</span></a><a href="./contact-resources.html"><span class="ko-only">자료실</span><span class="en-only">Resources</span></a></div></div>
+    </nav>
+    <div class="header-right">
+      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" onclick="toggleNav()"><span></span><span></span><span></span></button>
+      <div class="lang-wrap">
+        <button class="lang-btn active" onclick="setLang('ko')">KR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ HERO ══ -->
+<section class="hero" id="snap-0">
+  <div class="hero-slides">
+    <div class="hero-slide active" data-bg="home.hero_image1" style="background-image:url('./images/hero-gunsan.jpg')"></div>
+    <div class="hero-slide" data-bg="home.hero_image2" style="background-image:url('./images/hero-namwon.jpg')"></div>
+    <div class="hero-slide" data-bg="home.hero_image3" style="background-image:url('./images/hero-buan.jpg')"></div>
+    <div class="hero-slide" data-bg="home.hero_image4" style="background-image:url('./images/hero-yeongdong.jpg')"></div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">
+      <span class="ko-only"><span class="tw-bold">ECO 실천으로</span><br><span class="tw-bold">더 나은 미래를 만드는 기업</span></span>
+      <span class="en-only" data-c="home.hero_title_en">Building a Better Future Through ECO Practices</span>
+    </h1>
+    <p class="hero-sub">
+      <span class="ko-only"><span class="tw-thin">더 좋은 창호와 차양으로, 오늘의 공간이 미래 세대의 자산이 되도록 —</span><span class="tw-medium">유한회사 하나스토리가 함께합니다.</span></span>
+      <span class="en-only" data-c="home.hero_sub_en">Better Windows &amp; Awnings — Hana Story Co., Ltd.</span>
+    </p>
+    <a href="./about.html" class="hero-cta">
+      <span class="ko-only">회사 알아보기 →</span>
+      <span class="en-only">Discover More →</span>
+    </a>
+  </div>
+  <div class="hero-dots">
+    <button class="hero-dot active" data-slide="0" aria-label="1번 이미지"></button>
+    <button class="hero-dot" data-slide="1" aria-label="2번 이미지"></button>
+    <button class="hero-dot" data-slide="2" aria-label="3번 이미지"></button>
+    <button class="hero-dot" data-slide="3" aria-label="4번 이미지"></button>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-bar"></div>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- ══ COMPANY INTRO ══ -->
+<section class="section" id="snap-1" style="padding: 130px 0 140px;">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="intro-img reveal-item">
+        <img src="./images/p01_img02_609x709.jpeg" alt="하나스토리 공장">
+        <div class="intro-badge">
+          <div class="intro-badge-num">58+</div>
+          <div class="intro-badge-txt"><span class="ko-only">공공기관 납품 실적</span><span class="en-only">Public Deliveries</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="reveal-item">
+          <p class="sec-label"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></p>
+          <h2 class="sec-title">
+            <span class="ko-only" data-c="home.intro_title_ko">친환경을 실천하는 전문 창호 제조기업</span>
+            <span class="en-only" data-c="home.intro_title_en">Eco-Friendly Manufacturer of Premium Windows</span>
+          </h2>
+        </div>
+        <p class="sec-desc reveal-item">
+          <span class="ko-only" data-c="home.intro_desc_ko">하나스토리는 알루미늄 금속제창, 차양, 금속문세트를 전문으로 생산하는 친환경 제조 기업입니다. 2024년 4월 설립 이후 KS 인증 3종, 환경표지인증, 사회적기업 인증을 취득하며 품질과 신뢰를 빠르게 입증하고 있습니다.</span>
+          <span class="en-only">Hana Story is an eco-friendly manufacturer specializing in aluminum metal windows, awnings, and metal door sets. Since our founding in April 2024, we have rapidly obtained 3 KS certifications, eco-label certification, and social enterprise certification.</span>
+        </p>
+
+        <table class="board-table reveal-item" style="margin-top: 28px;">
+          <tbody>
+            <tr>
+              <th style="width:130px;"><span class="ko-only">설립일</span><span class="en-only">Founded</span></th>
+              <td><span class="ko-only" data-c="company.founded">2024년 4월 30일</span><span class="en-only" data-c="company.founded_en">April 30, 2024</span></td>
+              <th style="width:130px;"><span class="ko-only">대표자</span><span class="en-only">CEO</span></th>
+              <td><span class="ko-only" data-c="company.ceo">박상은</span><span class="en-only" data-c="company.ceo_en">Park Sang-Eun</span></td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">보유면허</span><span class="en-only">License</span></th>
+              <td colspan="3"><span class="ko-only" data-c="company.license_ko">금속구조물·창호·온실공사업</span><span class="en-only">Metal Structure · Window · Greenhouse Construction</span></td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">연락처</span><span class="en-only">Contact</span></th>
+              <td data-c="company.phone">063-852-7971</td>
+              <th>E-MAIL</th>
+              <td data-c="company.email">hns240429@naver.com</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="reveal-item" style="margin-top: 24px;">
+          <a href="./about.html" class="btn btn-green"><span class="ko-only">회사 더 알아보기 →</span><span class="en-only">Learn More →</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATS ══ -->
+<section class="section-sm" id="snap-2">
+  <div class="container">
+    <div class="stats-cards">
+      <div class="stat-card reveal-item">
+        <div><span class="stat-num" data-c="home.stat1_num">3</span><span class="stat-unit"> <span class="ko-only">종</span><span class="en-only">KS</span></span></div>
+        <div class="stat-label"><span class="ko-only" data-c="home.stat1_label_ko">KS 한국산업표준 인증</span><span class="en-only">KS Certifications</span></div>
+      </div>
+      <div class="stat-card reveal-item">
+        <div><span class="stat-num" data-c="home.stat2_num">1</span><span class="stat-unit"> <span class="ko-only">등급</span><span class="en-only">Grade</span></span></div>
+        <div class="stat-label"><span class="ko-only" data-c="home.stat2_label_ko">에너지 효율등급</span><span class="en-only">Energy Efficiency</span></div>
+      </div>
+      <div class="stat-card reveal-item">
+        <div><span class="stat-num" data-c="home.stat3_num">58</span><span class="stat-unit">+</span></div>
+        <div class="stat-label"><span class="ko-only" data-c="home.stat3_label_ko">공공기관 납품 실적</span><span class="en-only">Public Deliveries</span></div>
+      </div>
+      <div class="stat-card reveal-item">
+        <div><span class="stat-num" data-c="home.stat4_num">12</span><span class="stat-unit"> <span class="ko-only">종</span><span class="en-only">Types</span></span></div>
+        <div class="stat-label"><span class="ko-only" data-c="home.stat4_label_ko">조달청 등록 제품</span><span class="en-only">KONEPS Products</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRODUCTS PREVIEW ══ -->
+<section class="section section-gray" id="snap-3">
+  <div class="container">
+    <div class="sec-head">
+      <div class="reveal-item">
+        <p class="sec-label"><span class="ko-only">주요 제품</span><span class="en-only">Our Products</span></p>
+        <h2 class="sec-title">
+          <span class="ko-only">에너지 효율 1등급<br>알루미늄 창호 시스템</span>
+          <span class="en-only">Energy Efficiency Grade 1<br>Aluminum Window Systems</span>
+        </h2>
+      </div>
+    </div>
+    <div class="prod-preview">
+      <div class="pp-card reveal-item">
+        <div class="pp-thumb"><img src="./images/prodimg-window-tower.jpg" alt="금속제창"></div>
+        <div class="pp-body">
+          <div class="pp-num">PRODUCT 01</div>
+          <div class="pp-name"><span class="ko-only">금속제창 (AL)</span><span class="en-only">Metal Windows (AL)</span></div>
+          <p class="pp-desc"><span class="ko-only">미서기창, 프로젝트창, 케이스먼트창, 커튼월 등 12종. 에너지 효율 1등급, 조달청 등록.</span><span class="en-only">12 types including sliding, casement, project windows. Energy Grade 1. KONEPS registered.</span></p>
+          <a href="./products.html#windows" class="pp-link"><span class="ko-only">자세히 보기</span><span class="en-only">View Details</span></a>
+        </div>
+      </div>
+      <div class="pp-card reveal-item">
+        <div class="pp-thumb"><img src="./images/home-pp-awning.jpg" alt="차양"></div>
+        <div class="pp-body">
+          <div class="pp-num">PRODUCT 02</div>
+          <div class="pp-name"><span class="ko-only">차양</span><span class="en-only">Awnings</span></div>
+          <p class="pp-desc"><span class="ko-only">주차장 차양, 운동장 스탠드, 비가림 시설, 벽부형 차양 등. 준불연 성적서 보유. 조달청 등록.</span><span class="en-only">Parking canopies, stadium, rain shields. Quasi-nonflammable cert. KONEPS registered.</span></p>
+          <a href="./products.html#awnings" class="pp-link"><span class="ko-only">자세히 보기</span><span class="en-only">View Details</span></a>
+        </div>
+      </div>
+      <div class="pp-card reveal-item">
+        <div class="pp-thumb"><img src="./images/product-door.jpg" alt="금속문세트"></div>
+        <div class="pp-body">
+          <div class="pp-num">PRODUCT 03</div>
+          <div class="pp-name"><span class="ko-only">금속문세트</span><span class="en-only">Metal Door Sets</span></div>
+          <p class="pp-desc"><span class="ko-only">KS F 3109 인증 취득. 조달청 등록. 공공건축물 그린리모델링에 최적화된 금속문 솔루션.</span><span class="en-only">KS F 3109 certified. KONEPS registered. Optimized for public building green remodeling.</span></p>
+          <a href="./products.html#doors" class="pp-link"><span class="ko-only">자세히 보기</span><span class="en-only">View Details</span></a>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; padding: 36px 0 0;">
+      <a href="./products.html" class="btn btn-green">
+        <span class="ko-only">제품소개 바로가기</span><span class="en-only">Go to Products</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ GALLERY PREVIEW ══ -->
+<section class="section section-dark" id="snap-4">
+  <div class="container" style="padding-bottom: 40px;">
+    <div class="sec-head" style="margin-bottom: 32px;">
+      <div class="reveal-item">
+        <p class="sec-label" style="color: rgba(255,255,255,0.8);"><span class="ko-only">시공 갤러리</span><span class="en-only">Gallery</span></p>
+        <h2 class="sec-title" style="color: #fff;">
+          <span class="ko-only">공공기관 납품 시공 실적</span>
+          <span class="en-only">Public Facility Projects</span>
+        </h2>
+      </div>
+    </div>
+  </div>
+  <div class="home-gal-grid">
+    <div class="gal-item reveal-item"><img src="./images/p32_img04_1370x770.jpeg" alt="금속제창 시공"><div class="gal-overlay"></div><div class="gal-caption"><span class="ko-only">금속제창 시공</span><span class="en-only">Metal Window Installation</span></div></div>
+    <div class="gal-item reveal-item"><img src="./images/gallery/site-02.jpg" alt="군산상일고 조감도"><div class="gal-overlay"></div><div class="gal-caption"><span class="ko-only">군산상일고 조감도</span><span class="en-only">Gunsan Sangil High School</span></div></div>
+    <div class="gal-item reveal-item"><img src="./images/p31_img04_1212x874.jpeg" alt="학교 창호"><div class="gal-overlay"></div><div class="gal-caption"><span class="ko-only">학교 창호 교체</span><span class="en-only">School Window Replacement</span></div></div>
+    <div class="gal-item reveal-item"><img src="./images/p33_img04_1333x800.jpeg" alt="차양 시공"><div class="gal-overlay"></div><div class="gal-caption"><span class="ko-only">운동장 차양 시공</span><span class="en-only">Athletic Field Awning</span></div></div>
+    <div class="gal-item reveal-item"><img src="./images/gallery/site-15.jpg" alt="완주 봉동초 그린스마트스쿨 조감도"><div class="gal-overlay"></div><div class="gal-caption"><span class="ko-only">완주 봉동초 그린스마트스쿨 조감도</span><span class="en-only">Wanju Bongdong Elementary Green Smart School</span></div></div>
+    <div class="gal-item reveal-item"><img src="./images/p36_img04_1517x854.jpeg" alt="관공서 납품"><div class="gal-overlay"></div><div class="gal-caption"><span class="ko-only">관공서 납품</span><span class="en-only">Government Office</span></div></div>
+  </div>
+  <div style="text-align:center; padding: 36px 0 0;">
+    <a href="./projects-gallery.html" class="btn btn-outline" style="border-color:rgba(255,255,255,0.4); color:#fff;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+      <span class="ko-only">전체 실적 보기 →</span><span class="en-only">View All Projects →</span>
+    </a>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer id="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img data-img="company.logo_footer" src="./images/logo-footer-white.png" alt="하나스토리">
+        <p><span class="ko-only">ECO 실천으로 더 나은 미래를 만들어 갈 수 있는 기업.<br>더 좋은 창호와 차양으로.</span><span class="en-only">Building a better future through ECO practices.<br>Better windows &amp; awnings.</span></p>
+      </div>
+      <div class="footer-col">
+        <h4><span class="ko-only">회사</span><span class="en-only">Company</span></h4>
+        <a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a>
+        <a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a>
+        <a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a>
+      </div>
+      <div class="footer-col">
+        <h4><span class="ko-only">제품</span><span class="en-only">Products</span></h4>
+        <a href="./products.html#windows"><span class="ko-only">금속제창</span><span class="en-only">Metal Windows</span></a>
+        <a href="./products.html#awnings"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a>
+        <a href="./products.html#doors"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a>
+      </div>
+      <div class="footer-col">
+        <h4><span class="ko-only">정보</span><span class="en-only">Info</span></h4>
+        <a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a>
+        <a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a>
+        <a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2024 유한회사 하나스토리. All rights reserved. | 063-852-7971 | hns240429@naver.com</p>
+      <div class="footer-badges">
+        <span class="f-badge">KS F 3117</span><span class="f-badge">KS F 4536</span><span class="f-badge">KS F 3109</span>
+        <span class="f-badge ko-only">환경표지</span><span class="f-badge ko-only">사회적기업</span>
+        <span class="f-badge en-only">Eco-Label</span><span class="f-badge en-only">Social Enterprise</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.classList.toggle('en', lang === 'en');
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang-btn').forEach((b,i) => b.classList.toggle('active', i === (lang==='ko'?0:1)));
+    localStorage.setItem('hs_lang', lang);
+  }
+  (function(){ const l = localStorage.getItem('hs_lang'); if(l) setLang(l); })();
+  function toggleNav() {
+    document.querySelector('nav.gnb').classList.toggle('open');
+    document.getElementById('navToggle').classList.toggle('open');
+  }
+  (function() {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dot');
+    if (slides.length > 1) {
+      let idx = 0;
+      let timer;
+      function goTo(i) {
+        slides[idx].classList.remove('active');
+        if (dots[idx]) dots[idx].classList.remove('active');
+        idx = i;
+        slides[idx].classList.add('active');
+        if (dots[idx]) dots[idx].classList.add('active');
+      }
+      function start() {
+        timer = setInterval(function() { goTo((idx + 1) % slides.length); }, 5000);
+      }
+      dots.forEach(function(dot, i) {
+        dot.addEventListener('click', function() {
+          clearInterval(timer);
+          goTo(i);
+          start();
+        });
+      });
+      const heroEl = document.querySelector('.hero');
+      heroEl.addEventListener('click', function(e) {
+        if (e.target.closest('.hero-content, .hero-dots, .hero-scroll')) return;
+        clearInterval(timer);
+        goTo((idx + 1) % slides.length);
+        start();
+      });
+      start();
+    }
+  })();
+  window.addEventListener('scroll', function() {
+    document.getElementById('site-header').style.boxShadow = window.scrollY > 60 ? '0 2px 16px rgba(0,0,0,0.25)' : 'none';
+  });
+  (function() {
+    var sections = ['snap-0','snap-1','snap-2','snap-3','snap-4'].map(function(id){ return document.getElementById(id); }).filter(Boolean);
+    if (!sections.length || window.matchMedia('(max-width: 900px)').matches) return;
+    var headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 100;
+    var isAnimating = false;
+    var animId = null;
+
+    // The last section's own top has extra internal padding before its heading,
+    // so the visible "시공갤러리" label would land below the header. Scroll to the
+    // heading itself instead so it sits flush under the nav bar in a single scroll.
+    // (query .sec-head, not the .reveal-item/.sec-label inside it — that child is
+    // still translateY(28px) offset pre-reveal, which would throw off the measurement)
+    var scrollTargets = sections.map(function(el) {
+      return (el.id === 'snap-4' && el.querySelector('.sec-head')) || el;
+    });
+
+    function sectionTop(el) { return Math.round(el.getBoundingClientRect().top + window.scrollY - headerH); }
+    function lastSectionTop() { return sectionTop(scrollTargets[scrollTargets.length - 1]); }
+    function currentIndex() {
+      var y = window.scrollY + 10;
+      var idx = 0;
+      sections.forEach(function(el, i) { if (sectionTop(el) <= y) idx = i; });
+      return idx;
+    }
+    function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    function animateScrollTo(targetY) {
+      if (animId) cancelAnimationFrame(animId);
+      var startY = window.scrollY;
+      var dist = targetY - startY;
+      var duration = 850;
+      var startTime = null;
+      isAnimating = true;
+      function step(ts) {
+        if (!startTime) startTime = ts;
+        var t = Math.min((ts - startTime) / duration, 1);
+        window.scrollTo(0, startY + dist * easeInOutCubic(t));
+        if (t < 1) {
+          animId = requestAnimationFrame(step);
+        } else {
+          isAnimating = false;
+          animId = null;
+          if (queuedDelta !== 0) {
+            var d = queuedDelta;
+            queuedDelta = 0;
+            trigger(d);
+          }
+        }
+      }
+      animId = requestAnimationFrame(step);
+    }
+
+    function goForward() {
+      var y = window.scrollY;
+      var lastTop = lastSectionTop();
+      if (y >= lastTop - 5) return; // reached final locked section; hand off to native scroll
+      var idx = Math.min(currentIndex() + 1, sections.length - 1);
+      animateScrollTo(sectionTop(scrollTargets[idx]));
+    }
+    function goBackward() {
+      var y = window.scrollY;
+      var lastTop = lastSectionTop();
+      if (y > lastTop + 40) return; // still inside free-scroll zone below the locked sections
+      if (y <= 5) return;
+      var idx2 = Math.max(currentIndex() - 1, 0);
+      animateScrollTo(sectionTop(scrollTargets[idx2]));
+    }
+    function trigger(dir) { if (dir > 0) goForward(); else if (dir < 0) goBackward(); }
+
+    // A single physical scroll gesture (especially a trackpad flick) fires many
+    // small 'wheel' events, not one. Debounce them into a single intent so one
+    // gesture = one section move. If that intent lands while a previous section's
+    // animation is still finishing, queue it instead of dropping it — previously,
+    // wheel input that arrived mid-animation was silently discarded, which could
+    // leave the page looking "stuck" until the user scrolled again.
+    var queuedDelta = 0;
+    var pendingDir = 0;
+    var wheelTimer = null;
+    function onGestureEnd() {
+      wheelTimer = null;
+      var dir = pendingDir;
+      pendingDir = 0;
+      if (dir === 0) return;
+      if (isAnimating) { queuedDelta = dir; return; }
+      trigger(dir);
+    }
+
+    window.addEventListener('wheel', function(e) {
+      var y = window.scrollY;
+      var lastTop = lastSectionTop();
+      if (e.deltaY > 0) {
+        if (!isAnimating && y >= lastTop - 5) return; // reached final locked section; hand off to native scroll
+        e.preventDefault();
+        pendingDir = 1;
+      } else if (e.deltaY < 0) {
+        if (!isAnimating && (y > lastTop + 40 || y <= 5)) return; // free-scroll zone / already at very top
+        e.preventDefault();
+        pendingDir = -1;
+      } else {
+        return;
+      }
+      if (wheelTimer) clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(onGestureEnd, 60);
+    }, { passive: false });
+  })();
+  (function() {
+    function animateCount(el) {
+      var text = el.textContent.trim();
+      var match = text.match(/^(\d+)(.*)$/);
+      if (!match) return;
+      var target = parseInt(match[1], 10);
+      var suffix = match[2] || '';
+      var duration = 1200;
+      var start = null;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target + suffix;
+      }
+      requestAnimationFrame(step);
+    }
+    var countEls = document.querySelectorAll('.stat-num, .intro-badge-num');
+    var countObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          animateCount(entry.target);
+          countObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    countEls.forEach(function(el) { countObserver.observe(el); });
+  })();
+</script>
+<script src="./reveal.js"></script>
+<script src="./content-loader.js"></script>
+</body>
+</html>

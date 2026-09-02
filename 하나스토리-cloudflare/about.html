@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회사개요 | 회사소개 | 하나스토리</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/png" href="./images/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="회사개요 | 회사소개 | 하나스토리">
+  <meta property="og:description" content="친환경 알루미늄 금속제창·차양·금속문세트 전문 제조기업 — 유한회사 하나스토리">
+  <meta property="og:image" content="https://hanastory.vercel.app/images/social-preview.png">
+  <meta property="og:url" content="https://hanastory.vercel.app/about.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://hanastory.vercel.app/images/social-preview.png">
+</head>
+<body>
+
+<header id="site-header">
+  <div class="header-inner">
+    <a href="./index.html" class="header-logo">
+      <img data-img="company.logo_header" src="./images/logo-header.png" alt="하나스토리 HANASTORY">
+    </a>
+    <nav class="gnb">
+      <div class="gnb-item">
+        <a href="./about.html" class="active"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></a>
+        <div class="gnb-drop">
+          <a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a>
+          <a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a>
+          <a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a>
+        </div>
+      </div>
+      <div class="gnb-item"><a href="./products.html"><span class="ko-only">제품소개</span><span class="en-only">Products</span></a><div class="gnb-drop"><a href="./products.html"><span class="ko-only">금속제창 (AL)</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div></div>
+      <div class="gnb-item"><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><div class="gnb-drop"><a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a><a href="./certs-eco.html"><span class="ko-only">환경표지</span><span class="en-only">Eco-Label</span></a><a href="./certs-social.html"><span class="ko-only">사회적기업</span><span class="en-only">Social Ent.</span></a><a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a><a href="./certs-staff.html"><span class="ko-only">전문인력</span><span class="en-only">Specialists</span></a></div></div>
+      <div class="gnb-item"><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><div class="gnb-drop"><a href="./projects.html"><span class="ko-only">주요납품실적</span><span class="en-only">Deliveries</span></a><a href="./projects-gallery.html"><span class="ko-only">시공갤러리</span><span class="en-only">Gallery</span></a></div></div>
+      <div class="gnb-item"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><div class="gnb-drop"><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a><a href="./contact-koneps.html"><span class="ko-only">조달청 등록 현황</span><span class="en-only">KONEPS</span></a><a href="./contact-map.html"><span class="ko-only">찾아오시는 길</span><span class="en-only">Location</span></a><a href="./contact-resources.html"><span class="ko-only">자료실</span><span class="en-only">Resources</span></a></div></div>
+    </nav>
+    <div class="header-right">
+      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" onclick="toggleNav()"><span></span><span></span><span></span></button>
+      <div class="lang-wrap">
+        <button class="lang-btn active" onclick="setLang('ko')">KR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-banner page-banner--center" style="background-image: url('./images/about-banner.jpg');">
+  <div class="page-banner-inner"></div>
+  <div class="page-banner-title"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></div>
+  <p class="page-banner-sub"><span class="ko-only">친환경을 실천하는 전문 창호 제조기업, 하나스토리</span><span class="en-only">Eco-friendly specialist window manufacturer, Hana Story</span></p>
+</div>
+
+<div class="sub-nav-bar">
+  <div class="sub-nav-inner">
+    <a href="./about.html" class="active"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a>
+    <a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a>
+    <a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a>
+  </div>
+</div>
+
+<!-- 회사개요 -->
+<section class="section" id="overview">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <p class="sec-label"><span class="ko-only">회사개요</span><span class="en-only">Company Overview</span></p>
+        <h2 class="sec-title"><span class="ko-only">유한회사 하나스토리</span><span class="en-only">Hana Story Co., Ltd.</span></h2>
+      </div>
+    </div>
+    <div class="overview-wrap">
+      <div class="overview-photo">
+        <img src="./images/about-overview.jpg" alt="하나스토리 공장">
+        <div class="overview-photo-caption">🌱 <span class="ko-only">전북 완주군 이서면</span><span class="en-only">Wanju-gun, Jeollabuk-do</span></div>
+      </div>
+      <div>
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <th><span class="ko-only">회사명</span><span class="en-only">Company</span></th>
+              <td><span class="ko-only" data-c="company.name_ko">유한회사 하나스토리</span><span class="en-only" data-c="company.name_en">Hana Story Co., Ltd.</span></td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">대표이사</span><span class="en-only">CEO</span></th>
+              <td><span class="ko-only" data-c="company.ceo">박상은</span><span class="en-only" data-c="company.ceo_en">Park Sang-Eun</span></td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">설립일</span><span class="en-only">Founded</span></th>
+              <td><span class="ko-only" data-c="company.founded">2024년 4월 30일</span><span class="en-only" data-c="company.founded_en">April 30, 2024</span></td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">사업자번호</span><span class="en-only">Reg. No.</span></th>
+              <td data-c="company.reg_no">418-87-03137</td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">소재지</span><span class="en-only">Address</span></th>
+              <td><span class="ko-only" data-c="company.address_ko">전북 완주군 이서면 이서로 154</span><span class="en-only" data-c="company.address_en">154 Iseoro, Iseo-myeon, Wanju-gun, Jeonbuk</span></td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">연락처</span><span class="en-only">Phone</span></th>
+              <td data-c="company.phone">063-852-7971</td>
+            </tr>
+            <tr>
+              <th>E-MAIL</th>
+              <td data-c="company.email">hns240429@naver.com</td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">보유면허</span><span class="en-only">License</span></th>
+              <td><span class="ko-only" data-c="company.license_ko">금속구조물·창호·온실공사업</span><span class="en-only">Metal Structure, Window &amp; Greenhouse Construction</span></td>
+            </tr>
+            <tr>
+              <th><span class="ko-only">사업분야</span><span class="en-only">Business</span></th>
+              <td><span class="ko-only" data-c="company.business_ko">금속제창(AL) / 차양 / 금속문세트 제조 및 공사</span><span class="en-only">Metal Windows / Awnings / Metal Door Sets</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="stats-row" style="margin-top:20px; border:1px solid var(--border);">
+          <div class="stat-box" style="padding:20px 10px;">
+            <div><span class="stat-num" style="font-size:28px;">3</span><span class="stat-unit" style="font-size:14px;"><span class="ko-only">종</span><span class="en-only">KS</span></span></div>
+            <div class="stat-label"><span class="ko-only">KS 인증</span><span class="en-only">KS Certs</span></div>
+          </div>
+          <div class="stat-box" style="padding:20px 10px;">
+            <div><span class="stat-num" style="font-size:28px;">1</span><span class="stat-unit" style="font-size:14px;"><span class="ko-only">등급</span><span class="en-only">Grade</span></span></div>
+            <div class="stat-label"><span class="ko-only">에너지 효율</span><span class="en-only">Energy Efficiency</span></div>
+          </div>
+          <div class="stat-box" style="padding:20px 10px;">
+            <div><span class="stat-num" style="font-size:28px;">58</span><span class="stat-unit" style="font-size:14px;">+</span></div>
+            <div class="stat-label"><span class="ko-only">납품 실적</span><span class="en-only">Deliveries</span></div>
+          </div>
+          <div class="stat-box" style="padding:20px 10px;">
+            <div><span class="stat-num" style="font-size:28px;">12</span><span class="stat-unit" style="font-size:14px;"><span class="ko-only">종</span><span class="en-only">Types</span></span></div>
+            <div class="stat-label"><span class="ko-only">조달청 등록</span><span class="en-only">KONEPS</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><img data-img="company.logo_footer" src="./images/logo-footer-white.png" alt="하나스토리"><p><span class="ko-only">ECO 실천으로 더 나은 미래를 만들어 갈 수 있는 기업. 더 좋은 창호와 차양으로.</span><span class="en-only">Building a better future through ECO practices. Better windows &amp; awnings.</span></p></div>
+      <div class="footer-col"><h4><span class="ko-only">회사소개</span><span class="en-only">About</span></h4><a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a><a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a><a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">제품</span><span class="en-only">Products</span></h4><a href="./products.html#windows"><span class="ko-only">금속제창</span><span class="en-only">Metal Windows</span></a><a href="./products.html#awnings"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products.html#doors"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div>
+      <div class="footer-col"><h4><span class="ko-only">정보</span><span class="en-only">Info</span></h4><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><a href="./projects.html"><span class="ko-only">시공소개</span><span class="en-only">Projects</span></a><a href="./contact.html"><span class="ko-only">문의하기</span><span class="en-only">Contact</span></a></div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2024 유한회사 하나스토리. All rights reserved. | 063-852-7971 | hns240429@naver.com</p>
+      <div class="footer-badges"><span class="f-badge">KS F 3117</span><span class="f-badge">KS F 4536</span><span class="f-badge">KS F 3109</span><span class="f-badge ko-only">환경표지</span><span class="f-badge ko-only">사회적기업</span><span class="f-badge en-only">Eco-Label</span><span class="f-badge en-only">Social Enterprise</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.classList.toggle('en', lang === 'en');
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang-btn').forEach((b,i) => b.classList.toggle('active', i === (lang==='ko'?0:1)));
+    localStorage.setItem('hs_lang', lang);
+  }
+  (function(){ const l = localStorage.getItem('hs_lang'); if(l) setLang(l); })();
+  function toggleNav() {
+    document.querySelector('nav.gnb').classList.toggle('open');
+    document.getElementById('navToggle').classList.toggle('open');
+  }
+</script>
+<script src="./content-loader.js"></script>
+</body>
+</html>
