@@ -3,14 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>전문인력 | 인증현황 | 하나스토리</title>
+  <title>교육시설 | 시공사례 | 하나스토리</title>
   <link rel="stylesheet" href="./style.css">
+  <style>
+    .pg-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:24px; padding:0 20px; max-width:1100px; margin:0 auto; }
+    .pg-item { position:relative; overflow:hidden; aspect-ratio:3/2; border-radius:0; }
+    .pg-item img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s; }
+    .pg-item:hover img { transform:scale(1.05); }
+    .pg-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(10,22,40,0.75) 0%, transparent 55%); opacity:0; transition:opacity 0.3s; }
+    .pg-item:hover .pg-overlay { opacity:1; }
+    .pg-caption { position:absolute; bottom:18px; left:18px; right:18px; color:#fff; font-size:22px; font-weight:700; line-height:1.3; opacity:0; transform:translateY(5px); transition:all 0.3s; }
+    .pg-item:hover .pg-caption { opacity:1; transform:translateY(0); }
+    .pg-pagination { display:flex; justify-content:center; gap:8px; margin-top:32px; }
+    .pg-pagination button { width:36px; height:36px; border:1px solid #ddd; background:#fff; color:#444; cursor:pointer; font-size:14px; }
+    .pg-pagination button.active { background:#222; color:#fff; border-color:#222; }
+    .pg-pagination button:hover:not(.active) { background:#f2f2f2; }
+    @media (max-width:900px){ .pg-grid { grid-template-columns:repeat(2, 1fr); padding:0 16px; } .pg-caption { font-size:14px; } }
+    @media (max-width:560px){ .pg-grid { grid-template-columns:1fr; } .pg-caption { font-size:13px; line-height:1.25; bottom:12px; left:12px; right:12px; } }
+  </style>
   <link rel="icon" type="image/png" href="./images/favicon.png">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="전문인력 | 인증현황 | 하나스토리">
+  <meta property="og:title" content="교육시설 | 시공사례 | 하나스토리">
   <meta property="og:description" content="친환경 알루미늄 금속제창·차양·금속문세트 전문 제조기업 — 유한회사 하나스토리">
   <meta property="og:image" content="https://hanastory.vercel.app/images/social-preview.png">
-  <meta property="og:url" content="https://hanastory.vercel.app/certs-staff.html">
+  <meta property="og:url" content="https://hanastory.vercel.app/projects-edu.html">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://hanastory.vercel.app/images/social-preview.png">
 </head>
@@ -24,8 +40,8 @@
     <nav class="gnb">
       <div class="gnb-item"><a href="./about.html"><span class="ko-only">회사소개</span><span class="en-only">About Us</span></a><div class="gnb-drop"><a href="./about.html"><span class="ko-only">회사개요</span><span class="en-only">Overview</span></a><a href="./about-org.html"><span class="ko-only">조직도</span><span class="en-only">Organization</span></a><a href="./about-history.html"><span class="ko-only">회사연혁</span><span class="en-only">History</span></a></div></div>
       <div class="gnb-item"><a href="./products.html"><span class="ko-only">제품소개</span><span class="en-only">Products</span></a><div class="gnb-drop"><a href="./products.html"><span class="ko-only">금속제창</span><span class="en-only">Metal Windows</span></a><a href="./products-awning.html"><span class="ko-only">차양</span><span class="en-only">Awnings</span></a><a href="./products-door.html"><span class="ko-only">금속문세트</span><span class="en-only">Door Sets</span></a></div></div>
-      <div class="gnb-item"><a href="./certificates.html" class="active"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><div class="gnb-drop"><a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a><a href="./certs-eco.html"><span class="ko-only">품질 / 환경표지</span><span class="en-only">Quality / Eco-Label</span></a><a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a><a href="./certs-patent.html"><span class="ko-only">특허</span><span class="en-only">Patent</span></a></div></div>
-      <div class="gnb-item"><a href="./projects-public.html"><span class="ko-only">시공사례</span><span class="en-only">Projects</span></a><div class="gnb-drop"><a href="./projects-public.html"><span class="ko-only">공공시설</span><span class="en-only">Public Facilities</span></a><a href="./projects-edu.html"><span class="ko-only">교육시설</span><span class="en-only">Educational Facilities</span></a><a href="./projects-etc.html"><span class="ko-only">기타</span><span class="en-only">Others</span></a></div></div>
+      <div class="gnb-item"><a href="./certificates.html"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></a><div class="gnb-drop"><a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a><a href="./certs-eco.html"><span class="ko-only">품질 / 환경표지</span><span class="en-only">Quality / Eco-Label</span></a><a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a><a href="./certs-patent.html"><span class="ko-only">특허</span><span class="en-only">Patent</span></a></div></div>
+      <div class="gnb-item"><a href="./projects-public.html" class="active"><span class="ko-only">시공사례</span><span class="en-only">Projects</span></a><div class="gnb-drop"><a href="./projects-public.html"><span class="ko-only">공공시설</span><span class="en-only">Public Facilities</span></a><a href="./projects-edu.html" class="active"><span class="ko-only">교육시설</span><span class="en-only">Educational Facilities</span></a><a href="./projects-etc.html"><span class="ko-only">기타</span><span class="en-only">Others</span></a></div></div>
       <div class="gnb-item"><a href="./contact-notice.html"><span class="ko-only">고객지원</span><span class="en-only">Customer Support</span></a><div class="gnb-drop"><a href="./contact-notice.html"><span class="ko-only">공지사항</span><span class="en-only">Notice</span></a><a href="./contact-resources.html"><span class="ko-only">자료실</span><span class="en-only">Resources</span></a><a href="./contact-map.html"><span class="ko-only">찾아오시는 길</span><span class="en-only">Location</span></a></div></div>
     </nav>
     <div class="header-right">
@@ -38,17 +54,17 @@
   </div>
 </header>
 
-<div class="page-banner page-banner--center" style="background-image: url('./images/certs-banner.jpg');">
+<div class="page-banner page-banner--center" style="background-image: url('./images/projects-banner.jpg');">
   <div class="page-banner-inner"></div>
-  <div class="page-banner-title"><span class="ko-only">인증현황</span><span class="en-only">Certifications</span></div>
-  <p class="page-banner-sub"><span class="ko-only">건축·설계·시공·창호 전문 자격 보유 인력</span><span class="en-only">Certified Specialists in Architecture, Design, Construction &amp; Windows</span></p>
+  <div class="page-banner-title"><span class="ko-only">시공사례</span><span class="en-only">Projects</span></div>
+  <p class="page-banner-sub"><span class="ko-only">학교·유치원 등 교육시설 시공 현장</span><span class="en-only">Schools & Kindergartens</span></p>
 </div>
 
 <div class="sub-nav-bar">
   <div class="sub-nav-inner">
-    <a href="./certificates.html"><span class="ko-only">기업인증</span><span class="en-only">Company Cert.</span></a>
-    <a href="./certs-eco.html"><span class="ko-only">품질 / 환경표지</span><span class="en-only">Quality / Eco-Label</span></a>
-    <a href="./certs-efficiency.html"><span class="ko-only">효율관리기자재</span><span class="en-only">Efficiency</span></a>
+    <a href="./projects-public.html"><span class="ko-only">공공시설</span><span class="en-only">Public Facilities</span></a>
+    <a href="./projects-edu.html" class="active"><span class="ko-only">교육시설</span><span class="en-only">Educational Facilities</span></a>
+    <a href="./projects-etc.html"><span class="ko-only">기타</span><span class="en-only">Others</span></a>
   </div>
 </div>
 
@@ -56,21 +72,14 @@
   <div class="container">
     <div class="sec-head">
       <div>
-        <p class="sec-label">SPECIALISTS</p>
-        <h2 class="sec-title"><span class="ko-only">전문인력</span><span class="en-only">Certified Specialists</span></h2>
+        <p class="sec-label">EDUCATIONAL FACILITIES</p>
+        <h2 class="sec-title"><span class="ko-only">교육시설</span><span class="en-only">Educational Facilities</span></h2>
       </div>
     </div>
-    <table class="board-table">
-      <thead>
-        <tr>
-          <th style="width:60px;">No.</th>
-          <th><span class="ko-only">자격 종목</span><span class="en-only">Qualification</span></th>
-          <th style="width:100px;"><span class="ko-only">등급</span><span class="en-only">Grade</span></th>
-          <th style="width:140px;"><span class="ko-only">발급기관</span><span class="en-only">Issuing Body</span></th>
-        </tr>
-      </thead>
-      <tbody id="staff-tbody"></tbody>
-    </table>
+  </div>
+  <div class="container">
+    <div class="pg-grid" id="pg-grid"></div>
+    <div class="pg-pagination" id="pg-pagination"></div>
   </div>
 </section>
 
@@ -90,21 +99,6 @@
 </footer>
 
 <script>
-  if (location.protocol !== 'file:') {
-    fetch('/api/content').then(r=>r.json()).then(function(data) {
-      var list = (data.staff && data.staff.list) || [];
-      var tbody = document.getElementById('staff-tbody');
-      tbody.innerHTML = list.map(function(row, i) {
-        return '<tr>'
-          + '<td style="text-align:center;">' + (i+1) + '</td>'
-          + '<td><span class="ko-only">' + (row.qualification_ko||'') + '</span><span class="en-only">' + (row.qualification_en||row.qualification_ko||'') + '</span></td>'
-          + '<td style="text-align:center;"><span class="ko-only">' + (row.grade_ko||'') + '</span><span class="en-only">' + (row.grade_en||row.grade_ko||'') + '</span></td>'
-          + '<td style="text-align:center;"><span class="ko-only">' + (row.issuer_ko||'') + '</span><span class="en-only">' + (row.issuer_en||row.issuer_ko||'') + '</span></td>'
-          + '</tr>';
-      }).join('');
-    }).catch(function(){});
-  }
-
   function setLang(lang) {
     document.body.classList.toggle('en', lang === 'en');
     document.documentElement.lang = lang;
@@ -116,6 +110,45 @@
     document.querySelector('nav.gnb').classList.toggle('open');
     document.getElementById('navToggle').classList.toggle('open');
   }
+
+  var PG = { list: [], page: 1, perPage: 6 };
+
+  function pgRenderGrid() {
+    var start = (PG.page - 1) * PG.perPage;
+    var items = PG.list.slice(start, start + PG.perPage);
+    document.getElementById('pg-grid').innerHTML = items.map(function(g) {
+      return '<div class="pg-item reveal-item"><img src="' + g.image + '" alt="' + g.caption_ko + '">'
+        + '<div class="pg-overlay"></div>'
+        + '<div class="pg-caption"><span class="ko-only">' + g.caption_ko + '</span><span class="en-only">' + g.caption_en + '</span></div>'
+        + '</div>';
+    }).join('');
+    initReveal();
+  }
+
+  function pgRenderPagination() {
+    var totalPages = Math.ceil(PG.list.length / PG.perPage);
+    var html = '';
+    for (var i = 1; i <= totalPages; i++) {
+      html += '<button class="' + (i===PG.page?'active':'') + '" onclick="pgGoTo(' + i + ')">' + i + '</button>';
+    }
+    document.getElementById('pg-pagination').innerHTML = html;
+  }
+
+  function pgGoTo(page) {
+    PG.page = page;
+    pgRenderGrid();
+    pgRenderPagination();
+    document.querySelector('.pg-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  if (location.protocol !== 'file:') {
+    fetch('/api/content').then(function(r){ return r.json(); }).then(function(data) {
+      PG.list = ((data.projects && data.projects.gallery) || []).filter(function(g){ return g.category === '교육시설'; });
+      pgRenderGrid();
+      pgRenderPagination();
+    }).catch(function(){});
+  }
 </script>
+<script src="./reveal.js"></script>
 </body>
 </html>

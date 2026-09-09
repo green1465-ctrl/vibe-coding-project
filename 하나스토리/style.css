@@ -781,7 +781,7 @@ nav.gnb {
   top: 0; right: 0; bottom: 0; left: 0;
   display: flex; align-items: center; justify-content: center;
   text-align: center; padding: 0 24px;
-  font-size: 26px;
+  font-size: 26px; line-height: 1.7;
   transform: scale(0.94); transition: opacity 0.3s, transform 0.3s;
 }
 .home-gal-grid .gal-item:hover .gal-caption { transform: scale(1); }
@@ -902,10 +902,11 @@ nav.gnb {
   height: 2px; background: #ccc;
 }
 .dept-col { display: flex; flex-direction: column; align-items: center; }
-.dept-vline { width: 2px; height: 24px; background: #ccc; }
+.dept-vline { width: 2px; height: 24px; background: #ccc; flex-shrink: 0; }
 .dept-card {
   width: 100%; border: 1px solid #ddd; border-top: 3px solid var(--green);
   background: #fff; padding: 14px 10px; text-align: center;
+  flex: 1; display: flex; flex-direction: column;
 }
 .dept-name { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
 .dept-tasks { font-size: 14px; color: #777; line-height: 1.85; text-align: left; padding-left: 2px; }
@@ -913,39 +914,21 @@ nav.gnb {
 /* ─────────────────────────────────────
    TIMELINE
 ───────────────────────────────────── */
-.tl-wrap { margin-top: 40px; position: relative; }
-.tl-wrap::before {
-  content: ''; position: absolute;
-  left: 113px; top: 8px; bottom: 8px;
-  width: 2px; background: #e0e0e0;
-}
+.tl-wrap { margin-top: 32px; }
 .tl-group { margin-bottom: 48px; }
-.tl-year { display: flex; align-items: center; margin-bottom: 24px; }
-.tl-year-badge {
-  background: var(--navy); color: #fff;
-  font-size: 14px; font-weight: 700;
-  padding: 5px 18px; border-radius: 18px;
-  letter-spacing: 0.04em; position: relative; z-index: 2;
+.tl-year-hd { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; }
+.tl-year-num {
+  font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; font-size: 30px; font-weight: 800;
+  color: var(--navy); letter-spacing: -0.02em; white-space: nowrap;
 }
-.tl-entry {
-  display: grid; grid-template-columns: 100px 28px 1fr;
-  gap: 0; margin-bottom: 18px; align-items: start;
+.tl-year-line { flex: 1; height: 2px; background: linear-gradient(to right, #1e5e68, rgba(30,94,104,0)); }
+.tl-list { list-style: none; margin: 0; padding: 0; }
+.tl-list li {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 9px 0; font-size: 14px; color: var(--text); line-height: 1.4;
 }
-.tl-date {
-  font-size: 14px; font-weight: 700; color: var(--green);
-  padding-top: 3px; text-align: right; padding-right: 14px;
-}
-.tl-dot-col { display: flex; flex-direction: column; align-items: center; padding-top: 5px; }
-.tl-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: var(--green); border: 2px solid #fff;
-  box-shadow: 0 0 0 2px var(--green);
-  position: relative; z-index: 2;
-}
-.tl-content { padding-left: 18px; }
-.tl-content p { font-size: 14px; color: #555; line-height: 1.75; margin: 0; }
-.tl-content strong { color: var(--navy); font-weight: 700; }
-.tl-sub { display: block; font-size: 15px; color: #888; padding-left: 10px; line-height: 1.8; }
+.tl-check { color: #1e5e68; font-weight: 800; font-size: 13px; flex-shrink: 0; padding-top: 1px; }
+.tl-sub-inline { display: block; font-size: 12.5px; color: var(--text-light); margin-top: 2px; }
 
 /* ─────────────────────────────────────
    HERO (index only)
@@ -1083,7 +1066,7 @@ nav.gnb {
   position: relative;
 }
 .pp-card:hover { box-shadow: 0 14px 34px rgba(0,0,0,0.14); transform: scale(1.06); z-index: 2; }
-.pp-thumb { height: 220px; overflow: hidden; }
+.pp-thumb { aspect-ratio: 565 / 511; overflow: hidden; }
 .pp-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
 .pp-card:hover .pp-thumb img { transform: scale(1.05); }
 .pp-body { padding: 20px 22px; }
@@ -1274,3 +1257,9 @@ nav.gnb {
   .info-table th { width: 74px; padding: 10px 8px; font-size: 13px; white-space: normal; }
   .info-table td { padding: 10px 8px; font-size: 13px; line-height: 1.5; }
 }
+
+/* 인증 마크 뱃지 — products.html의 .pd-cert와 동일한 크기/스타일 (다른 페이지에서도 재사용) */
+.pd-certs { display:flex; flex-wrap:wrap; gap:14px; }
+.pd-cert { width:70px; flex-shrink:0; text-align:center; }
+.pd-cert img { height:44px; width:auto; max-width:100%; object-fit:contain; display:block; margin:0 auto; }
+.pd-cert-label { margin-top:6px; font-size:11px; color:#666; line-height:1.2; }

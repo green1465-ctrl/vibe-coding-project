@@ -792,7 +792,15 @@ async function init() {
   buildKonepsTable();
   buildStaffTable();
   loadImages();
+  stampOriginalValues();
   initDirtyTracking();
+}
+
+/* 각 필드의 "현재 값"을 원본 스냅샷으로 저장 — 이후 AI 번역이 "한글이 이 시점에서 바뀌었는지"를 판단하는 기준이 됨 */
+function stampOriginalValues() {
+  document.querySelectorAll('[data-key], [data-field]').forEach(function(el) {
+    el.dataset.orig = el.value;
+  });
 }
 
 /* ══════════════════════════════════════
@@ -945,14 +953,22 @@ function findKoCounterpart(scopeEl, base, attr) {
   return scopeEl.querySelector('[' + attr + '="' + base + '_ko"]') || scopeEl.querySelector('[' + attr + '="' + base + '"]');
 }
 
+/* 한글 필드가 페이지를 연 이후(또는 마지막 저장 이후) 수정됐는지 판단 */
+function koWasEdited(koEl) {
+  var orig = koEl.dataset.orig;
+  return orig === undefined || koEl.value.trim() !== orig.trim();
+}
+
 function collectUntranslated() {
   var items = [];
 
   document.querySelectorAll('[data-key$="_en"]').forEach(function(enEl) {
     var base = enEl.dataset.key.slice(0, -3);
     var koEl = findKoCounterpart(document, base, 'data-key');
-    if (!koEl || enEl.value.trim() || !koEl.value.trim()) return;
-    items.push({ el: enEl, ko: koEl.value.trim() });
+    if (!koEl || !koEl.value.trim()) return;
+    var needsTranslation = !enEl.value.trim() || koWasEdited(koEl);
+    if (!needsTranslation) return;
+    items.push({ el: enEl, koEl: koEl, ko: koEl.value.trim() });
   });
 
   document.querySelectorAll('[data-field$="_en"]').forEach(function(enEl) {
@@ -960,8 +976,10 @@ function collectUntranslated() {
     var row = enEl.closest('tr');
     if (!row) return;
     var koEl = findKoCounterpart(row, base, 'data-field');
-    if (!koEl || enEl.value.trim() || !koEl.value.trim()) return;
-    items.push({ el: enEl, ko: koEl.value.trim() });
+    if (!koEl || !koEl.value.trim()) return;
+    var needsTranslation = !enEl.value.trim() || koWasEdited(koEl);
+    if (!needsTranslation) return;
+    items.push({ el: enEl, koEl: koEl, ko: koEl.value.trim() });
   });
 
   return items;
@@ -969,8 +987,8 @@ function collectUntranslated() {
 
 async function aiTranslateAll() {
   var items = collectUntranslated();
-  if (!items.length) { toast('번역할 빈 영문 항목이 없습니다'); return; }
-  if (!confirm(items.length + '개의 빈 영문 항목을 AI로 번역할까요?\n번역 결과는 저장 전까지 검토·수정할 수 있습니다.')) return;
+  if (!items.length) { toast('번역이 필요한 항목이 없습니다 (빈 영문 칸도, 새로 수정된 한글도 없음)'); return; }
+  if (!confirm(items.length + '개 항목을 AI로 번역할까요? (영문이 비어있거나, 한글이 새로 수정된 항목)\n번역 결과는 저장 전까지 검토·수정할 수 있습니다.')) return;
 
   var btn = document.getElementById('ai-translate-btn');
   btn.disabled = true; btn.textContent = '번역 중...';
@@ -984,6 +1002,7 @@ async function aiTranslateAll() {
     if (!data.ok) { toast('❌ ' + (data.error || '번역 실패'), true); return; }
     data.translations.forEach(function(t, i) {
       items[i].el.value = t;
+      items[i].koEl.dataset.orig = items[i].koEl.value; // 번역 반영 완료 — 재클릭 시 같은 항목 중복 번역 방지
       markDirty();
     });
     toast('✅ ' + items.length + '개 항목 번역 완료 — 저장 전에 확인해주세요');
@@ -1011,6 +1030,7 @@ async function saveAll() {
     if (d.ok) {
       content = data;
       markClean();
+      stampOriginalValues(); // 저장 성공 = 새 기준선. 여기부터 다시 바뀐 부분만 번역 대상이 됨
       toast('✅ 저장되었습니다!');
       document.getElementById('save-status').style.color = 'var(--success)';
       document.getElementById('save-status').textContent = '저장됨 ' + new Date().toLocaleTimeString();
