@@ -10,24 +10,28 @@
     .ntc-item { border-bottom: 1px solid var(--border); }
     .ntc-row {
       display: flex; align-items: center; gap: 20px;
-      padding: 20px 6px; cursor: pointer; user-select: none;
+      padding: 20px 6px; text-decoration: none; color: inherit;
     }
+    .ntc-row:hover { background: var(--bg); text-decoration: none; }
     .ntc-title { flex: 1; font-size: 15px; font-weight: 600; color: var(--navy); }
     .ntc-date { flex: none; font-size: 13px; color: #999; }
-    .ntc-arrow { flex: none; font-size: 13px; color: #999; transition: transform .2s; }
-    .ntc-item.open .ntc-arrow { transform: rotate(180deg); }
-    .ntc-item:not(.has-body) .ntc-row { cursor: default; }
-    .ntc-item:not(.has-body) .ntc-arrow { visibility: hidden; }
-    .ntc-body { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
-    .ntc-item.open .ntc-body { max-height: 1200px; }
-    .ntc-body-inner {
-      padding: 0 6px 22px; font-size: 14px; line-height: 1.8; color: #555; white-space: pre-wrap;
-    }
-    .ntc-img { display: block; max-width: 100%; height: auto; border-radius: 6px; margin-bottom: 14px; }
+    .ntc-chevron { flex: none; font-size: 16px; color: #ccc; }
     .ntc-empty {
       padding: 60px 0; text-align: center; color: #999; font-size: 15px;
       border-bottom: 1px solid var(--border);
     }
+    /* 상세보기(글 하나 전체 화면) */
+    .ntc-detail { border-top: 2px solid var(--navy); padding-top: 28px; }
+    .ntc-detail-title { font-size: 22px; font-weight: 800; color: var(--navy); line-height: 1.4; margin-bottom: 10px; }
+    .ntc-detail-meta { font-size: 13px; color: #999; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .ntc-detail-img { display: block; max-width: 100%; height: auto; border-radius: 6px; margin-bottom: 20px; }
+    .ntc-detail-body { font-size: 15px; line-height: 1.9; color: #444; white-space: pre-wrap; min-height: 80px; }
+    .ntc-back-link {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 36px;
+      font-size: 14px; font-weight: 600; color: var(--navy); text-decoration: none;
+      border: 1px solid var(--border); border-radius: 6px; padding: 10px 18px;
+    }
+    .ntc-back-link:hover { background: var(--bg); text-decoration: none; }
   </style>
   <link rel="icon" type="image/png" href="./images/favicon.png">
   <meta property="og:type" content="website">
@@ -85,6 +89,7 @@
       </div>
     </div>
     <div class="ntc-list" id="ntc-list"></div>
+    <div class="ntc-detail" id="ntc-detail" style="display:none;"></div>
   </div>
 </section>
 
@@ -116,32 +121,58 @@
     document.getElementById('navToggle').classList.toggle('open');
   }
 
-  function renderNotices(list) {
-    list = list || [];
-    const el = document.getElementById('ntc-list');
+  function esc(s) { return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function renderList(list) {
+    document.getElementById('ntc-list').style.display = '';
+    var el = document.getElementById('ntc-list');
     if (!list.length) {
       el.innerHTML = '<div class="ntc-empty"><span class="ko-only">등록된 공지사항이 없습니다.</span><span class="en-only">No notices have been posted yet.</span></div>';
       return;
     }
-    el.innerHTML = list.map(function(n) {
-      var hasBody = !!(n.content_ko || n.content_en || n.image);
-      var imgHtml = n.image ? '<img class="ntc-img" src="' + n.image + '" alt="">' : '';
-      return '<div class="ntc-item' + (hasBody ? ' has-body' : '') + '">'
-        + '<div class="ntc-row" onclick="this.parentElement.classList.toggle(\'open\')">'
-        + '<div class="ntc-title"><span class="ko-only">' + (n.title_ko||'') + '</span><span class="en-only">' + (n.title_en||'') + '</span></div>'
-        + '<div class="ntc-date">' + (n.date||'') + '</div>'
-        + '<div class="ntc-arrow">▼</div>'
-        + '</div>'
-        + (hasBody ? '<div class="ntc-body"><div class="ntc-body-inner">' + imgHtml + '<span class="ko-only">' + (n.content_ko||'') + '</span><span class="en-only">' + (n.content_en||n.content_ko||'') + '</span></div></div>' : '')
+    el.innerHTML = list.map(function(n, i) {
+      return '<div class="ntc-item">'
+        + '<a class="ntc-row" href="./contact-notice.html?id=' + i + '">'
+        + '<div class="ntc-title"><span class="ko-only">' + esc(n.title_ko) + '</span><span class="en-only">' + esc(n.title_en) + '</span></div>'
+        + '<div class="ntc-date">' + esc(n.date) + '</div>'
+        + '<div class="ntc-chevron">›</div>'
+        + '</a>'
         + '</div>';
     }).join('');
   }
+
+  // 글 하나를 페이지 하나처럼 보여주는 상세보기 — 목록(#ntc-list) 대신 #ntc-detail을 채워서 보여준다.
+  function renderDetail(n, idx) {
+    document.getElementById('ntc-list').style.display = 'none';
+    var detailEl = document.getElementById('ntc-detail');
+    detailEl.style.display = '';
+    var imgHtml = n.image ? '<img class="ntc-detail-img" src="' + n.image + '" alt="">' : '';
+    detailEl.innerHTML =
+      '<div class="ntc-detail-title"><span class="ko-only">' + esc(n.title_ko) + '</span><span class="en-only">' + esc(n.title_en) + '</span></div>'
+      + '<div class="ntc-detail-meta">' + esc(n.date) + '</div>'
+      + imgHtml
+      + '<div class="ntc-detail-body"><span class="ko-only">' + esc(n.content_ko) + '</span><span class="en-only">' + esc(n.content_en || n.content_ko) + '</span></div>'
+      + '<a class="ntc-back-link" href="./contact-notice.html">← <span class="ko-only">목록으로</span><span class="en-only">Back to list</span></a>';
+    if (n.title_ko) document.title = n.title_ko + ' | 공지사항 | 하나스토리';
+  }
+
+  function render(list) {
+    list = list || [];
+    var params = new URLSearchParams(location.search);
+    var idParam = params.get('id');
+    if (idParam !== null && list[idParam]) {
+      renderDetail(list[idParam], idParam);
+    } else {
+      renderList(list);
+    }
+  }
+
   if (location.protocol !== 'file:') {
     fetch('/api/content').then(function(r){ return r.json(); }).then(function(data) {
-      renderNotices(data.contact && data.contact.notices);
+      render(data.contact && data.contact.notices);
     }).catch(function(){});
   } else {
-    renderNotices([]);
+    render([]);
   }
 </script>
 <script src="./content-loader.js"></script>
