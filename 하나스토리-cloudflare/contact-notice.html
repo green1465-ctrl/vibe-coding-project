@@ -32,6 +32,17 @@
       border: 1px solid var(--border); border-radius: 6px; padding: 10px 18px;
     }
     .ntc-back-link:hover { background: var(--bg); text-decoration: none; }
+    /* 페이지네이션 — 글 10개 초과 시 목록 아래 숫자 페이지 */
+    .ntc-pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 32px; }
+    .ntc-page-link, .ntc-page-arrow {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 34px; height: 34px; padding: 0 6px;
+      border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--navy);
+      text-decoration: none; border: 1px solid transparent;
+    }
+    .ntc-page-link:hover, .ntc-page-arrow:hover { background: var(--bg); text-decoration: none; }
+    .ntc-page-link.active { background: var(--navy); color: #fff; }
+    .ntc-page-arrow.disabled { color: #ccc; pointer-events: none; }
   </style>
   <link rel="icon" type="image/png" href="./images/favicon.png">
   <meta property="og:type" content="website">
@@ -89,6 +100,7 @@
       </div>
     </div>
     <div class="ntc-list" id="ntc-list"></div>
+    <div class="ntc-pagination" id="ntc-pagination"></div>
     <div class="ntc-detail" id="ntc-detail" style="display:none;"></div>
   </div>
 </section>
@@ -123,27 +135,63 @@
 
   function esc(s) { return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+  var PAGE_SIZE = 10;
+
   function renderList(list) {
     document.getElementById('ntc-list').style.display = '';
     var el = document.getElementById('ntc-list');
+    var pagEl = document.getElementById('ntc-pagination');
+    pagEl.style.display = '';
     if (!list.length) {
       el.innerHTML = '<div class="ntc-empty"><span class="ko-only">등록된 공지사항이 없습니다.</span><span class="en-only">No notices have been posted yet.</span></div>';
+      pagEl.innerHTML = '';
       return;
     }
-    el.innerHTML = list.map(function(n, i) {
+
+    var totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    var params = new URLSearchParams(location.search);
+    var page = parseInt(params.get('page'), 10) || 1;
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+
+    var start = (page - 1) * PAGE_SIZE;
+    var pageItems = list.slice(start, start + PAGE_SIZE);
+
+    el.innerHTML = pageItems.map(function(n, i) {
+      var absIdx = start + i; // 상세보기 링크는 페이지와 무관하게 전체 목록 기준 순번을 그대로 씀
       return '<div class="ntc-item">'
-        + '<a class="ntc-row" href="./contact-notice.html?id=' + i + '">'
+        + '<a class="ntc-row" href="./contact-notice.html?id=' + absIdx + '">'
         + '<div class="ntc-title"><span class="ko-only">' + esc(n.title_ko) + '</span><span class="en-only">' + esc(n.title_en) + '</span></div>'
         + '<div class="ntc-date">' + esc(n.date) + '</div>'
         + '<div class="ntc-chevron">›</div>'
         + '</a>'
         + '</div>';
     }).join('');
+
+    renderPagination(pagEl, page, totalPages);
+  }
+
+  function pageHref(n) { return './contact-notice.html?page=' + n; }
+
+  function renderPagination(pagEl, page, totalPages) {
+    if (totalPages <= 1) { pagEl.innerHTML = ''; return; }
+    var html = '';
+    html += page > 1
+      ? '<a class="ntc-page-arrow" href="' + pageHref(page - 1) + '">‹</a>'
+      : '<span class="ntc-page-arrow disabled">‹</span>';
+    for (var p = 1; p <= totalPages; p++) {
+      html += '<a class="ntc-page-link' + (p === page ? ' active' : '') + '" href="' + pageHref(p) + '">' + p + '</a>';
+    }
+    html += page < totalPages
+      ? '<a class="ntc-page-arrow" href="' + pageHref(page + 1) + '">›</a>'
+      : '<span class="ntc-page-arrow disabled">›</span>';
+    pagEl.innerHTML = html;
   }
 
   // 글 하나를 페이지 하나처럼 보여주는 상세보기 — 목록(#ntc-list) 대신 #ntc-detail을 채워서 보여준다.
   function renderDetail(n, idx) {
     document.getElementById('ntc-list').style.display = 'none';
+    document.getElementById('ntc-pagination').style.display = 'none';
     var detailEl = document.getElementById('ntc-detail');
     detailEl.style.display = '';
     var imgHtml = n.image ? '<img class="ntc-detail-img" src="' + n.image + '" alt="">' : '';
