@@ -1263,6 +1263,8 @@ nav.gnb {
   .cm-grid { grid-template-columns: 1fr; gap: 24px; }
 
   /* 위치정보 표 — 라벨 칸(주소/전화/자가용/대중교통) 줄여서 값 칸이 덜 접히게 */
-  .info-table th { width: 74px; padding: 10px 8px; font-size: 13px; white-space: normal; }
-  .info-table td { padding: 10px 8px; font-size: 13px; line-height: 1.5; }
+  /* 값이 길어서 2줄로 접히는 행(보유면허/사업분야 등)에서, 위쪽(top)에 딱 붙이면
+     한 줄짜리 라벨이랑 안 맞아 보여서 세로 중앙 정렬로 균형을 맞춤 */
+  .info-table th { width: 74px; padding: 10px 8px; font-size: 13px; white-space: normal; vertical-align: middle; }
+  .info-table td { padding: 10px 8px; font-size: 13px; line-height: 1.5; vertical-align: middle; }
 }
