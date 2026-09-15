@@ -148,20 +148,23 @@
   function pdSetCategory(cat) {
     PD.category = cat;
     var items = PD.list.filter(function(p){ return p.category_ko === cat; });
+    // 관리자에서 "규격상세표에만 행 추가"로 만든 항목(spec_only)은 사진·인증마크가 없어서
+    // 모델 선택 탭/히어로에는 띄우지 않고, 아래 규격상세표(전체 items)에만 한 줄로 보여준다.
+    var selItems = items.filter(function(p){ return !p.spec_only; });
     pdRenderTabs();
-    var subs = pdSubcats(items);
+    var subs = pdSubcats(selItems);
     if (subs.length) {
       // 하위분류가 있는 카테고리(예: 커튼월)는 모델탭 자리에 "노출커튼월/히든커튼월"처럼
       // 하위분류 이름만 보여준다 — mm별 개별 버튼은 만들지 않음.
       PD.subcategory = subs[0];
-      PD.model = items.find(function(p){ return p.subcategory_ko === PD.subcategory; });
+      PD.model = selItems.find(function(p){ return p.subcategory_ko === PD.subcategory; }) || items[0];
     } else {
       PD.subcategory = null;
-      PD.model = items[0];
+      PD.model = selItems[0] || items[0];
     }
-    pdRenderModelTabs(items, subs);
+    pdRenderModelTabs(selItems, subs);
     pdSwap(['pd-hero','pd-infobox','pd-techdata'], function(){
-      pdRenderTechTable(items); // 카테고리 전체 표 — mm 사이즈 등 상세정보는 전부 여기서
+      pdRenderTechTable(items); // 카테고리 전체 표 — mm 사이즈 등 상세정보는 전부 여기서 (spec_only 행 포함)
       pdRenderHero();
       pdRenderInfobox();
     });
@@ -229,8 +232,8 @@
 
   function pdSetSubcategory(sub) {
     PD.subcategory = sub;
-    var items = PD.list.filter(function(p){ return p.category_ko === PD.category; });
-    PD.model = items.find(function(p){ return p.subcategory_ko === sub; });
+    var items = PD.list.filter(function(p){ return p.category_ko === PD.category && !p.spec_only; });
+    PD.model = items.find(function(p){ return p.subcategory_ko === sub; }) || PD.model;
     pdRenderModelTabs(items, pdSubcats(items));
     pdSwap(['pd-hero','pd-infobox'], function(){
       pdRenderHero();
@@ -239,8 +242,8 @@
   }
 
   function pdSetModel(model) {
-    PD.model = PD.list.find(function(p){ return p.model === model; });
-    var items = PD.list.filter(function(p){ return p.category_ko === PD.category; });
+    PD.model = PD.list.find(function(p){ return p.model === model; }) || PD.model;
+    var items = PD.list.filter(function(p){ return p.category_ko === PD.category && !p.spec_only; });
     pdRenderModelTabs(items);
     pdSwap(['pd-hero','pd-infobox'], function(){
       pdRenderHero();

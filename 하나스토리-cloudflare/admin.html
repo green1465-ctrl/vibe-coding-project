@@ -362,6 +362,14 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 .pce-spec-table td input:focus { background:#fff; box-shadow:inset 0 0 0 2px rgba(26,43,69,.15); }
 /* 위 카드에서 이미 입력한 값 — 여기서는 참고용으로만 보여줌(회색, 편집 불가) */
 .pce-spec-table td.pce-spec-readonly { padding:7px 9px; font-size:13px; color:var(--text-mut); background:var(--bg); }
+/* 카드 없이 표에만 있는 행 — 살짝 다른 배경으로 구분 */
+.pce-spec-table tr.pce-spec-only-row td { background:#fffceb; }
+.pce-spec-table tr.pce-spec-only-row td input:focus { background:#fff; }
+/* 표 칼럼에 없는 추가 필드(규격/유리사양 등) — spec_only 행 바로 아래 보조 줄 */
+.pce-spec-extra-wrap { display:flex; flex-wrap:wrap; gap:10px; padding:8px 9px; }
+.pce-spec-extra-field { display:flex; flex-direction:column; gap:3px; flex:1; min-width:140px; }
+.pce-spec-extra-field label { font-size:10px; font-weight:700; color:var(--text-mut); text-transform:uppercase; letter-spacing:.04em; }
+.pce-spec-extra-field input, .pce-spec-extra-field textarea { border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-size:13px; font-family:inherit; }
 
 /* 섹션 구분 헤더 — 화면에서 실제로 어느 블록에 해당하는지 크게 묶어서 보여줌 */
 .section-divider {
@@ -1446,6 +1454,8 @@ function ensureListUploadInput() {
 function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMode) {
   var ALL_FIELD_KEYS = topFields.concat(tableColumns, [{key:'name_ko'}, {key:'name_en'}, {key:'image'}]);
   var state = { list: [] };
+  var uidSeq = 0;
+  function nextUid() { return 'u' + (uidSeq++) + '_' + Date.now(); }
 
   function esc(v) { return String(v==null?'':v).replace(/"/g,'&quot;'); }
   function listVal(v) { return Array.isArray(v) ? v.join(',') : (v||''); }
@@ -1464,18 +1474,36 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
   }
 
   // 구조가 바뀌는 조작(추가/삭제/분류 이동) 직전에, 화면에 지금 입력된 값들을 state.list로 그러모은다.
-  // 대표 이미지 카드와 규격상세표 행은 분리된 화면 요소지만 같은 제품 하나를 가리키므로, 섹션(분류) 안에서 같은 순서(i번째 카드 = i번째 표 행)로 짝지어 합친다.
+  // 대표 이미지 카드와 규격상세표 행은 분리된 화면 요소지만 같은 제품 하나를 가리킨다 —
+  // 각 카드/행에 렌더링 시 심어둔 고유 data-uid로 짝짓는다(화면 위치 기준 순번 매칭이 아님).
+  // "규격상세표에만 행 추가"로 만든 항목은 카드가 아예 없을 수 있어(spec_only), 위치 기반 매칭으론 깨지기 때문.
   function syncFromDom() {
     var items = [];
     document.querySelectorAll('#'+wrapId+' .pce-section').forEach(function(section) {
-      var cards = section.querySelectorAll(':scope > .pce-section-body .pce-card');
-      var specRows = section.querySelectorAll(':scope > .pce-spec-block .pce-spec-table tbody tr');
-      cards.forEach(function(card, i) {
-        var item = { category_ko: section.dataset.catKo, category_en: section.dataset.catEn };
-        var subActive = card.querySelector('[data-role="sub-active"]');
-        if (subActive) { item.subcategory_ko = subActive.dataset.subKo; item.subcategory_en = subActive.dataset.subEn; }
-        readFieldsInto(item, card);
-        if (specRows[i]) readFieldsInto(item, specRows[i]);
+      var cardByUid = {};
+      section.querySelectorAll(':scope > .pce-section-body .pce-card').forEach(function(card) {
+        cardByUid[card.dataset.uid] = card;
+      });
+      // spec_only 행 바로 아래, 표 칼럼에 없는 추가 필드(규격/유리사양 등)용 보조 줄 — 진짜 항목이 아니라 같은 uid의 본행에 값만 합쳐준다.
+      var extraByUid = {};
+      section.querySelectorAll(':scope > .pce-spec-block .pce-spec-only-extra').forEach(function(tr) {
+        extraByUid[tr.dataset.uidExtra] = tr;
+      });
+      var specRows = section.querySelectorAll(':scope > .pce-spec-block .pce-spec-table tbody tr:not(.pce-spec-only-extra)');
+      specRows.forEach(function(row) {
+        var uidVal = row.dataset.uid;
+        var item = { category_ko: section.dataset.catKo, category_en: section.dataset.catEn, __uid: uidVal };
+        var card = cardByUid[uidVal];
+        if (card) {
+          var subActive = card.querySelector('[data-role="sub-active"]');
+          if (subActive) { item.subcategory_ko = subActive.dataset.subKo; item.subcategory_en = subActive.dataset.subEn; }
+          readFieldsInto(item, card);
+        } else {
+          item.spec_only = true;
+        }
+        readFieldsInto(item, row);
+        var extraRow = extraByUid[uidVal];
+        if (extraRow) readFieldsInto(item, extraRow);
         items.push(item);
       });
     });
@@ -1520,7 +1548,7 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
     }).join('');
     var certPickerHtml = renderCertBlock(item);
 
-    return '<div class="pce-card">'
+    return '<div class="pce-card" data-uid="'+esc(item.__uid)+'">'
       + subHtml
       + '<div class="pce-card-top">'
       + '<div class="pce-card-thumb"><img class="li-thumb" src="'+esc(item.image)+'" onerror="liThumbError(this)" onload="liThumbLoad(this)"><button type="button" title="이미지 업로드" onclick="pceUpload(this)">📁</button></div>'
@@ -1596,24 +1624,49 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
   function renderSpecTable(catKo, itemsInCat) {
     if (!tableColumns.length) return '';
     var topKeys = topFields.map(function(f){ return f.key; });
+    var tableKeys = tableColumns.map(function(c){ return c.key; });
+    // 카드에서만 입력하던 필드 중 표 칼럼에는 없는 것들(예: 금속제창의 "규격/유리사양") —
+    // 카드가 없는 행(spec_only)은 이 필드들을 입력할 곳이 아예 없으므로, 행 아래 별도 줄로 추가 입력칸을 내준다.
+    var extraTopFields = topFields.filter(function(f){
+      return tableKeys.indexOf(f.key) === -1 && f.key !== 'cert_exclude' && f.key !== 'cert_include';
+    });
     function isReadOnly(col) { return col.key === '_name' || topKeys.indexOf(col.key) !== -1; }
     function cellText(item, col) {
       if (col.key === '_name') return item.name_ko + (item.name_en ? ' / ' + item.name_en : '');
       return item[col.key] || '';
     }
     var thead = '<tr><th style="width:34px;"></th>' + tableColumns.map(function(c){ return '<th>'+c.label+'</th>'; }).join('') + '</tr>';
-    var rows = itemsInCat.map(function(item, i) {
+    var rows = itemsInCat.map(function(item) {
+      var isSpecOnly = !!item.spec_only;
       var cells = tableColumns.map(function(col) {
-        if (isReadOnly(col)) return '<td class="pce-spec-readonly">'+esc(cellText(item, col))+'</td>';
+        // spec_only 행(카드가 없는 행)은 카드에서 대신 입력해줄 곳이 없으므로, 평소엔 회색 참고용인 칸도 여기서 직접 입력한다.
+        if (col.key === '_name' && isSpecOnly) {
+          return '<td><input data-field="name_ko" value="'+esc(item.name_ko||'')+'" placeholder="품명(KO)" style="margin-bottom:4px;">'
+            + '<input data-field="name_en" value="'+esc(item.name_en||'')+'" placeholder="품명(EN)"></td>';
+        }
+        if (isReadOnly(col) && !isSpecOnly) return '<td class="pce-spec-readonly">'+esc(cellText(item, col))+'</td>';
         var val = col.list ? listVal(item[col.key]) : (item[col.key]||'');
         return '<td><input data-field="'+col.key+'" value="'+esc(val)+'" placeholder="'+col.label+'"></td>';
       }).join('');
-      return '<tr><td style="text-align:center;"><button type="button" class="row-del" title="이 제품 삭제" onclick="'+varName+'.deleteRow(this)">✕</button></td>'+cells+'</tr>';
+      var mainRow = '<tr data-uid="'+esc(item.__uid)+'"'+(isSpecOnly?' class="pce-spec-only-row" title="사진·인증마크 없이 표에만 있는 행"':'')+'>'
+        + '<td style="text-align:center;"><button type="button" class="row-del" title="이 '+(isSpecOnly?'행':'제품')+' 삭제" onclick="'+varName+'.deleteRow(this)">✕</button></td>'+cells+'</tr>';
+      var extraRow = '';
+      if (isSpecOnly && extraTopFields.length) {
+        var extraInputs = extraTopFields.map(function(f) {
+          var val = f.list ? listVal(item[f.key]) : (item[f.key]||'');
+          var control = f.longText
+            ? '<textarea data-field="'+f.key+'" placeholder="'+f.label+'">'+esc(val)+'</textarea>'
+            : '<input data-field="'+f.key+'" value="'+esc(val)+'" placeholder="'+f.label+'">';
+          return '<span class="pce-spec-extra-field"><label>'+f.label+'</label>'+control+'</span>';
+        }).join('');
+        extraRow = '<tr class="pce-spec-only-row pce-spec-only-extra" data-uid-extra="'+esc(item.__uid)+'"><td></td><td colspan="'+tableColumns.length+'"><div class="pce-spec-extra-wrap">'+extraInputs+'</div></td></tr>';
+      }
+      return mainRow + extraRow;
     }).join('');
     return '<div class="pce-spec-block">'
-      + '<div class="pce-block-label">📋 규격상세표 <small style="font-weight:400;color:var(--text-mut);">(실제 페이지 하단 표와 동일한 칼럼 — 회색 칸은 위 카드에서 이미 입력한 값이라 참고용, 나머지만 여기서 수정)</small></div>'
+      + '<div class="pce-block-label">📋 규격상세표 <small style="font-weight:400;color:var(--text-mut);">(실제 페이지 하단 표와 동일한 칼럼 — 회색 칸은 위 카드에서 이미 입력한 값이라 참고용, 나머지만 여기서 수정. 사진 없이 표에만 넣을 땐 아래 "행만 추가" 사용)</small></div>'
       + '<div style="overflow-x:auto;"><table class="pce-spec-table pce-spec-table-multi"><thead>'+thead+'</thead><tbody>'+(rows||'')+'</tbody></table></div>'
-      + '<button type="button" class="add-row-btn" style="margin-top:10px;padding:6px 14px;font-size:13px;" onclick="'+varName+'.addNew(\''+esc(catKo).replace(/'/g,"\\'")+'\')">+ 규격상세표에 행 추가</button>'
+      + '<button type="button" class="add-row-btn" style="margin-top:10px;padding:6px 14px;font-size:13px;" onclick="'+varName+'.addSpecRow(\''+esc(catKo).replace(/'/g,"\\'")+'\')">+ 규격상세표에 행만 추가 (카드 없이)</button>'
       + '</div>';
   }
 
@@ -1629,8 +1682,9 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
     }).join('') + '</div>' : '';
     var html = cats.map(function(cat) {
       var itemsInCat = state.list.filter(function(it){ return it.category_ko === cat.ko; });
+      var cardItems = itemsInCat.filter(function(it){ return !it.spec_only; });
       var subs = knownSubcats(cat.ko);
-      var cardsHtml = itemsInCat.map(function(item){ return renderCard(item, cats, subs); }).join('') || '<div class="pce-cards-empty">등록된 제품이 없습니다.</div>';
+      var cardsHtml = cardItems.map(function(item){ return renderCard(item, cats, subs); }).join('') || '<div class="pce-cards-empty">등록된 제품이 없습니다.</div>';
       var hidden = cat.ko === state.activeCat ? '' : ' pce-hidden';
       return '<div class="pce-section'+hidden+'" data-cat-ko="'+esc(cat.ko)+'" data-cat-en="'+esc(cat.en)+'">'
         + '<div class="pce-section-head"><div class="pce-section-title">'+esc(cat.ko)+'<span class="pce-count">'+itemsInCat.length+'</span></div>'
@@ -1649,20 +1703,27 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
     });
   }
 
-  function idxOfCard(card) {
-    return Array.prototype.indexOf.call(document.querySelectorAll('#'+wrapId+' .pce-card'), card);
+  // 카드/표 행 둘 다 고유 data-uid로 state.list 안 항목을 찾는다 (화면 위치 순번 아님 — spec_only 행은 카드가 없어서 위치가 안 맞을 수 있음).
+  function idxOfUid(uidVal) {
+    for (var i = 0; i < state.list.length; i++) if (state.list[i].__uid === uidVal) return i;
+    return -1;
   }
-  // 규격상세표의 특정 행이 state.list 어디에 대응하는지 찾는다 — 같은 섹션 안에서 표 행의 순번(i번째)과 같은 순번의 카드를 기준으로 idxOfCard를 재사용한다.
-  function idxOfRow(row) {
-    var section = row.closest('.pce-section');
-    var localIdx = Array.prototype.indexOf.call(section.querySelectorAll(':scope > .pce-spec-block .pce-spec-table tbody tr'), row);
-    var card = section.querySelectorAll(':scope > .pce-section-body .pce-card')[localIdx];
-    return card ? idxOfCard(card) : -1;
-  }
+  function idxOfCard(card) { return idxOfUid(card.dataset.uid); }
+  function idxOfRow(row) { return idxOfUid(row.dataset.uid); }
 
   return {
-    buildTable: function(list) { state.list = (list||[]).slice(); state.activeCat = null; render(); },
-    collectRows: function() { syncFromDom(); return state.list; },
+    buildTable: function(list) {
+      state.list = (list||[]).map(function(it){ it.__uid = it.__uid || nextUid(); return it; });
+      state.activeCat = null; render();
+    },
+    collectRows: function() {
+      syncFromDom();
+      return state.list.map(function(it) {
+        var copy = {};
+        for (var k in it) if (k !== '__uid') copy[k] = it[k];
+        return copy;
+      });
+    },
     // 탭 전환은 다시 그리지 않고 보이기/숨기기만 함 — 다른 분류 카드에 입력 중이던(아직 저장 전) 값이
     // render()로 통째로 덮어써져 사라지는 일이 없게 하기 위함
     showCat: function(btn, catKo) {
@@ -1696,11 +1757,24 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
     addNew: function(catKo) {
       syncFromDom();
       var existing = state.list.find(function(it){ return it.category_ko === catKo; });
-      var item = { category_ko: catKo, category_en: (existing && existing.category_en) || '', name_ko:'', name_en:'', image:'' };
+      var item = { category_ko: catKo, category_en: (existing && existing.category_en) || '', name_ko:'', name_en:'', image:'', __uid: nextUid() };
       topFields.concat(tableColumns.filter(function(f){ return f.key !== '_name'; })).forEach(function(f){ if (!f.list) item[f.key] = ''; });
       // 그냥 배열 끝에 push하면, 화면은 분류별로 묶어서 보여주는데 state.list 순서는 안 맞게 돼서
       // 삭제(X) 버튼이 화면 위치 기준으로 index를 찾다가 엉뚱한 제품을 지우는 버그가 생긴다.
       // 같은 분류의 마지막 항목 바로 뒤에 끼워 넣어서 화면 순서와 항상 일치시킨다.
+      var insertAt = state.list.length;
+      for (var i = state.list.length - 1; i >= 0; i--) {
+        if (state.list[i].category_ko === catKo) { insertAt = i + 1; break; }
+      }
+      state.list.splice(insertAt, 0, item);
+      render();
+    },
+    // 카드(사진·인증마크) 없이 규격상세표에만 한 줄 추가 — 모델/관리번호/품명/사이즈 등은 표 안에서 직접 입력.
+    addSpecRow: function(catKo) {
+      syncFromDom();
+      var existing = state.list.find(function(it){ return it.category_ko === catKo; });
+      var item = { category_ko: catKo, category_en: (existing && existing.category_en) || '', name_ko:'', name_en:'', spec_only: true, __uid: nextUid() };
+      topFields.concat(tableColumns.filter(function(f){ return f.key !== '_name'; })).forEach(function(f){ if (!f.list) item[f.key] = ''; });
       var insertAt = state.list.length;
       for (var i = state.list.length - 1; i >= 0; i--) {
         if (state.list[i].category_ko === catKo) { insertAt = i + 1; break; }
@@ -1713,7 +1787,7 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
       var ko = prompt('새 분류 이름(한국어)을 입력하세요');
       if (!ko) return;
       var en = prompt('분류 이름(영어)을 입력하세요 (생략 가능)') || '';
-      var item = { category_ko: ko, category_en: en, name_ko:'', name_en:'', image:'' };
+      var item = { category_ko: ko, category_en: en, name_ko:'', name_en:'', image:'', __uid: nextUid() };
       topFields.concat(tableColumns.filter(function(f){ return f.key !== '_name'; })).forEach(function(f){ if (!f.list) item[f.key] = ''; });
       state.list.push(item);
       render();
@@ -1743,7 +1817,8 @@ function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMod
       render();
     },
     deleteRow: function(btn) {
-      if (!confirm('이 제품을 삭제할까요?')) return;
+      var isSpecOnly = btn.closest('tr').classList.contains('pce-spec-only-row');
+      if (!confirm(isSpecOnly ? '이 행을 삭제할까요?' : '이 제품을 삭제할까요? (카드도 함께 삭제됩니다)')) return;
       syncFromDom();
       var idx = idxOfRow(btn.closest('tr'));
       if (idx === -1) return;

@@ -149,13 +149,16 @@
   function pdSetCategory(cat) {
     PD.category = cat;
     var items = PD.list.filter(function(p){ return p.category_ko === cat; });
-    PD.model = items[0];
+    // 관리자에서 "규격상세표에만 행 추가"로 만든 항목(spec_only)은 사진이 없어서
+    // 모델 선택 탭/히어로에는 띄우지 않고, 아래 규격상세표(전체 items)에만 한 줄로 보여준다.
+    var selItems = items.filter(function(p){ return !p.spec_only; });
+    PD.model = selItems[0] || items[0];
     pdRenderTabs();
-    pdRenderModelTabs(items);
+    pdRenderModelTabs(selItems);
     pdSwap(['pd-hero','pd-infobox','pd-techdata'], function(){
       pdRenderHero();
       pdRenderInfobox();
-      pdRenderTechTable(items);
+      pdRenderTechTable(items); // 규격상세표는 spec_only 행 포함 전체
     });
   }
 
@@ -189,8 +192,8 @@
   }
 
   function pdSetModel(model) {
-    PD.model = PD.list.find(function(p){ return p.model === model; });
-    pdRenderModelTabs(PD.list.filter(function(p){ return p.category_ko === PD.category; }));
+    PD.model = PD.list.find(function(p){ return p.model === model; }) || PD.model;
+    pdRenderModelTabs(PD.list.filter(function(p){ return p.category_ko === PD.category && !p.spec_only; }));
     pdSwap(['pd-hero','pd-infobox'], function(){
       pdRenderHero();
       pdRenderInfobox();
