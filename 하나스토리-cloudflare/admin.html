@@ -215,9 +215,8 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 @media (max-width:1300px) { .li-card-grid { grid-template-columns:repeat(3, 1fr); } }
 @media (max-width:900px) { .li-card-grid { grid-template-columns:repeat(2, 1fr); } }
 @media (max-width:560px) { .li-card-grid { grid-template-columns:1fr; } }
-/* 공지사항은 이미지가 없고 본문이 길어서, 다른 카드형 목록보다 넓게 */
-#notices-list-wrap-grid { grid-template-columns:repeat(2, 1fr); }
-@media (max-width:900px) { #notices-list-wrap-grid { grid-template-columns:1fr; } }
+/* 공지사항은 평소엔 접어서 제목/날짜만 한 줄로 보여주는 목록형 — 많이 쌓여도 스크롤이 안 길어지게 1열 */
+#notices-list-wrap-grid { grid-template-columns:1fr; gap:0; }
 .li-card {
   position:relative; border:1px solid var(--border); border-radius:12px; padding:12px;
   background:var(--card); display:flex; flex-direction:column; gap:8px; box-shadow:0 1px 3px rgba(20,30,50,.04);
@@ -238,6 +237,22 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 .li-card-fields .field textarea:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(26,43,69,.08); background:#fff; }
 .li-card-check { grid-column:1/-1; display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-mut); font-weight:600; }
 .li-card-del { position:absolute; top:8px; right:8px; }
+
+/* 접었다 펼치는 카드(공지사항 등) — 평소엔 제목/날짜 한 줄만, 클릭하면 펼쳐져서 편집 */
+.li-card.collapsible { padding:0; border-radius:8px; }
+.li-card-summary {
+  display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; user-select:none;
+}
+.li-card-summary-thumb { width:34px; height:34px; object-fit:cover; border-radius:6px; border:1px solid var(--border); background:var(--bg); flex-shrink:0; }
+.li-card-summary-title { flex:1; font-size:14px; font-weight:700; color:var(--navy); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.li-card-summary-title:empty::before { content:'(제목 없음)'; color:var(--text-mut); font-weight:400; }
+.li-card-summary-date { flex-shrink:0; font-size:12px; color:var(--text-mut); }
+.li-card-summary-chevron { flex-shrink:0; font-size:13px; color:var(--text-mut); transition:transform .15s; }
+.li-card.expanded .li-card-summary-chevron { transform:rotate(90deg); }
+.li-card-body { display:none; padding:0 16px 16px; }
+.li-card.expanded .li-card-body { display:flex; flex-direction:column; gap:8px; }
+.li-card-summary-del { flex-shrink:0; position:static; background:none; border:none; color:var(--text-mut); font-size:14px; cursor:pointer; padding:4px 6px; border-radius:5px; }
+.li-card-summary-del:hover { background:var(--bg); color:var(--danger,#c0392b); }
 
 /* 이미지 관리 */
 .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; }
@@ -1265,9 +1280,9 @@ function makeListEditor(wrapId, columns, opts) {
   // col.list: true인 컬럼은 배열 필드(예: cert_exclude:["ks","eco"])를 "ks,eco" 콤마 목록으로 보여주고, 저장 시 다시 배열로 변환한다.
   function listVal(v) { return Array.isArray(v) ? v.join(',') : (v||''); }
 
-  function appendRow(item) {
+  function appendRow(item, startExpanded) {
     item = item || {};
-    if (cardMode) { appendCard(item); return; }
+    if (cardMode) { appendCard(item, startExpanded); return; }
     var tr = document.createElement('tr');
     tr.innerHTML = columns.map(function(col, i) {
       var lastOfGroup = col.group && (i === columns.length - 1 || columns[i+1].group !== col.group);
@@ -1288,11 +1303,15 @@ function makeListEditor(wrapId, columns, opts) {
   }
 
   // 카드형 — 이미지 미리보기를 크게 위에 두고(세로 배치), 나머지 필드는 그 아래 2열로.
-  function appendCard(item) {
+  // collapsible이면 평소엔 제목/날짜 한 줄(요약)만 보여주고, 클릭해야 전체 필드가 펼쳐진다.
+  var collapsible = !!(opts && opts.collapsible);
+  var summaryTitleKey = (opts && opts.summaryTitleKey) || 'title_ko';
+  var summaryDateKey = (opts && opts.summaryDateKey) || 'date';
+  function appendCard(item, startExpanded) {
     var imgCol = columns.find(function(c){ return c.img; });
     var otherCols = columns.filter(function(c){ return !c.img; });
     var card = document.createElement('div');
-    card.className = 'li-card';
+    card.className = 'li-card' + (collapsible ? ' collapsible' + (startExpanded ? ' expanded' : '') : '');
     var imgHtml = '';
     if (imgCol) {
       imgHtml = '<div class="li-card-thumb-wrap"><img class="li-thumb" src="'+esc(item[imgCol.key])+'" onerror="liThumbError(this)" onload="liThumbLoad(this)"></div>'
@@ -1306,11 +1325,27 @@ function makeListEditor(wrapId, columns, opts) {
         return '<label class="li-card-check"><input type="checkbox" data-field="'+col.key+'"'+(item[col.key]?' checked':'')+'> '+(col.label||'')+'</label>';
       }
       var shown = col.list ? listVal(item[col.key]) : item[col.key];
+      // 접었을 때 보이는 요약(제목/날짜)도 실시간으로 같이 갱신 — 안 그러면 펼쳤다 접었을 때 예전 값이 보임
+      var syncAttr = '';
+      if (collapsible && col.key === summaryTitleKey) syncAttr = ' oninput="var s=this.closest(\'.li-card\').querySelector(\'.li-card-summary-title\'); if(s) s.textContent=this.value;"';
+      else if (collapsible && col.key === summaryDateKey) syncAttr = ' oninput="var s=this.closest(\'.li-card\').querySelector(\'.li-card-summary-date\'); if(s) s.textContent=this.value;"';
       // 한 줄 입력칸 대신 textarea — 글자수에 맞춰 자동으로 늘어나서 긴 제목·발급기관명도 안 잘리고 다 보임
-      return '<div class="field"><label>'+(col.label||'')+'</label><textarea data-field="'+col.key+'" placeholder="'+(col.label||'')+'">'+esc(shown)+'</textarea></div>';
+      return '<div class="field"><label>'+(col.label||'')+'</label><textarea data-field="'+col.key+'" placeholder="'+(col.label||'')+'"'+syncAttr+'>'+esc(shown)+'</textarea></div>';
     }).join('');
-    card.innerHTML = imgHtml + '<div class="li-card-fields">'+fieldsHtml+'</div>'
-      + '<button type="button" class="row-del li-card-del" onclick="confirmRemoveRow(this)">✕</button>';
+    var bodyHtml = imgHtml + '<div class="li-card-fields">'+fieldsHtml+'</div>';
+    if (collapsible) {
+      var summaryThumb = imgCol ? '<img class="li-card-summary-thumb" src="'+esc(item[imgCol.key])+'" onerror="this.style.visibility=\'hidden\'">' : '';
+      var summaryHtml = '<div class="li-card-summary" onclick="this.closest(\'.li-card\').classList.toggle(\'expanded\')">'
+        + summaryThumb
+        + '<span class="li-card-summary-title">'+esc(item[summaryTitleKey]||'')+'</span>'
+        + '<span class="li-card-summary-date">'+esc(item[summaryDateKey]||'')+'</span>'
+        + '<span class="li-card-summary-chevron">▸</span>'
+        + '<button type="button" class="li-card-summary-del" title="삭제" onclick="event.stopPropagation(); confirmRemoveRow(this)">✕</button>'
+        + '</div>';
+      card.innerHTML = summaryHtml + '<div class="li-card-body">'+bodyHtml+'</div>';
+    } else {
+      card.innerHTML = bodyHtml + '<button type="button" class="row-del li-card-del" onclick="confirmRemoveRow(this)">✕</button>';
+    }
     document.getElementById(wrapId+'-grid').appendChild(card);
     // 불러온 값 길이에 맞춰 처음부터 다 보이는 높이로 펼쳐둠
     card.querySelectorAll('.li-card-fields textarea').forEach(function(ta) {
@@ -1364,7 +1399,7 @@ function makeListEditor(wrapId, columns, opts) {
     var filtered = categoryFilter ? (list||[]).filter(function(it){ return it[categoryKey] === categoryFilter; }) : list;
     if (cardMode) {
       document.getElementById(wrapId).innerHTML = '<div class="li-card-grid" id="'+wrapId+'-grid"></div>';
-      (filtered||[]).forEach(appendRow);
+      (filtered||[]).forEach(function(it){ appendRow(it); }); // forEach가 넘기는 index가 startExpanded로 새는 걸 방지
       return;
     }
     var groupRow = buildGroupRow();
@@ -1390,7 +1425,7 @@ function makeListEditor(wrapId, columns, opts) {
         if (el) prefill[k] = el.value;
       });
     }
-    appendRow(prefill);
+    appendRow(prefill, true); // 새로 추가한 항목은 펼친 채로 시작 — 바로 입력할 수 있게
   }
 
   return { appendRow: appendRow, collectRows: collectRows, buildTable: buildTable, addNew: addNew };
@@ -1932,7 +1967,7 @@ var noticesEditor = makeListEditor('notices-list-wrap', [
   {key:'title_ko', label:'제목(KO)'}, {key:'title_en', label:'제목(EN)'},
   {key:'date', label:'날짜 (예: 2026-03-05)'},
   {key:'content_ko', label:'본문(KO)'}, {key:'content_en', label:'본문(EN)'}
-], {cardMode:true});
+], {cardMode:true, collapsible:true});
 
 
 /* ══════════════════════════════════════
