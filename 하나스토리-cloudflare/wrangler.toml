@@ -7,3 +7,10 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "hanastory-content"
 database_id = "55056bbf-2965-4437-adeb-cc8f8df22e48"
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "hanastory-images"
+
+[vars]
+R2_PUBLIC_URL = "https://pub-07e294bbff31431985273d150ca27639.r2.dev"

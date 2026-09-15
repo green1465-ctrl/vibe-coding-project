@@ -18,22 +18,18 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'PDF 업로드는 아직 지원되지 않습니다. 자료실 파일은 배포 전 미리 올려두세요.' }, { status: 501 });
   }
 
-  if (!env.IMAGEKIT_PRIVATE_KEY || !env.IMAGEKIT_URL_ENDPOINT) {
-    return json({ error: '이미지킷이 아직 설정되지 않았습니다' }, { status: 503 });
+  const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+  if (file.size > MAX_SIZE) {
+    return json({ error: '파일이 너무 큽니다 (최대 10MB)' }, { status: 413 });
   }
 
-  const uploadForm = new FormData();
-  uploadForm.append('file', file, fileName);
-  uploadForm.append('fileName', fileName);
-  uploadForm.append('folder', '/hanastory');
+  if (!env.IMAGES || !env.R2_PUBLIC_URL) {
+    return json({ error: '이미지 저장소가 아직 설정되지 않았습니다' }, { status: 503 });
+  }
 
-  const authHeader = 'Basic ' + btoa(env.IMAGEKIT_PRIVATE_KEY + ':');
-  const r = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-    method: 'POST',
-    headers: { Authorization: authHeader },
-    body: uploadForm,
+  await env.IMAGES.put(fileName, file.stream(), {
+    httpMetadata: { contentType: file.type || 'application/octet-stream' },
   });
-  const data = await r.json();
-  if (!r.ok) return json({ error: data.message || '업로드 실패' }, { status: 500 });
-  return json({ ok: true, path: data.url, filename: data.name });
+
+  return json({ ok: true, path: `${env.R2_PUBLIC_URL}/${fileName}`, filename: fileName });
 }
