@@ -12,17 +12,23 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: '번역할 텍스트가 없습니다.' }, { status: 400 });
   }
 
-  const prompt = '다음은 한국의 알루미늄 창호·차양·금속문 제조업체 웹사이트에 들어가는 한국어 문구 목록입니다. '
-    + '각 항목을 자연스러운 영어로 번역해서, 입력과 정확히 같은 순서·같은 개수의 JSON 문자열 배열로만 응답하세요. '
-    + '설명이나 다른 텍스트는 절대 포함하지 마세요.\n\n' + JSON.stringify(texts);
+  // 회사/사이트 배경 설명을 프롬프트에 넣으면 모델이 그 설명에 이끌려 "Welcome to..." 식 광고문구를
+  // 새로 지어내는 문제가 반복 확인됨(문맥 오염) — 그래서 배경 설명 없이 순수 번역 지시만 준다.
+  const systemPrompt = '당신은 기계적으로 정확한 번역기입니다. 입력으로 주어지는 JSON 문자열 배열의 각 원소를 '
+    + '그 글자 그대로의 의미만 담아 영어로 번역하세요. 배열의 각 원소는 서로 무관한 독립된 문구일 수 있습니다. '
+    + '절대로 의역하거나, 내용을 추가·요약·설명하거나, 인사말·광고문구를 새로 지어내지 마세요. '
+    + '응답은 입력과 정확히 같은 개수·순서의 JSON 문자열 배열이어야 하고, 그 외의 텍스트는 절대 포함하지 마세요.';
 
   const r = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + env.OPENAI_API_KEY },
     body: JSON.stringify({
       model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: JSON.stringify(texts) },
+      ],
+      temperature: 0,
     }),
   });
   const data = await r.json();

@@ -130,6 +130,14 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 .field-grid.single { grid-template-columns: 1fr; }
 .field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
 .field { display: flex; flex-direction: column; gap: 7px; }
+/* 한글 칸 바로 아래 영문 칸 — 한 그리드 칸 안에서 두 field를 세로로 묶음 */
+.field-pair { display: flex; flex-direction: column; gap: 12px; }
+/* 조직도 팀별 편집 박스 — 팀 이름/업무의 한/영을 한 박스 안에 묶어서 보여줌 */
+.dept-edit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 900px) { .dept-edit-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .dept-edit-grid { grid-template-columns: 1fr; } }
+.dept-edit-box { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--bg); }
+.dept-edit-label { font-size: 12px; font-weight: 800; color: var(--navy); letter-spacing: .03em; margin-bottom: 10px; }
 .field label { font-size: 12px; font-weight: 600; color: var(--text-mut); letter-spacing: .02em; }
 .field input, .field textarea, .field select {
   background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
@@ -138,6 +146,13 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 }
 .field input:focus, .field textarea:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,43,69,.08); background: #fff; }
 .field textarea { min-height: 80px; }
+
+/* 주요제품 미리보기 카드 편집 — 왼쪽 이름·설명(세로), 오른쪽 이미지 */
+.pp-edit-grid { display: grid; grid-template-columns: 1fr 220px; gap: 20px; align-items: start; }
+.pp-edit-text { display: flex; flex-direction: column; gap: 16px; }
+@media (max-width: 640px) {
+  .pp-edit-grid { grid-template-columns: 1fr; }
+}
 
 /* 이미지 필드 */
 .img-field { display: flex; flex-direction: column; gap: 8px; }
@@ -195,6 +210,35 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 }
 .add-row-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--bg); }
 
+/* 카드형 목록 에디터(li-card) — 표 대신 세로 카드로. 이미지는 잘리지 않고 전체가 작게 보이도록, 글자는 작아도 다 보이게 */
+.li-card-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-top:4px; }
+@media (max-width:1300px) { .li-card-grid { grid-template-columns:repeat(3, 1fr); } }
+@media (max-width:900px) { .li-card-grid { grid-template-columns:repeat(2, 1fr); } }
+@media (max-width:560px) { .li-card-grid { grid-template-columns:1fr; } }
+/* 공지사항은 이미지가 없고 본문이 길어서, 다른 카드형 목록보다 넓게 */
+#notices-list-wrap-grid { grid-template-columns:repeat(2, 1fr); }
+@media (max-width:900px) { #notices-list-wrap-grid { grid-template-columns:1fr; } }
+.li-card {
+  position:relative; border:1px solid var(--border); border-radius:12px; padding:12px;
+  background:var(--card); display:flex; flex-direction:column; gap:8px; box-shadow:0 1px 3px rgba(20,30,50,.04);
+}
+/* object-fit:contain — 이미지를 잘라내지 않고 비율 그대로 전체가 다 보이게, 높이는 작게 고정 */
+.li-card-thumb-wrap .li-thumb { width:100%; height:230px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:var(--bg); display:block; }
+.li-card-imgrow { display:flex; gap:5px; align-items:center; }
+.li-card-imgrow input { flex:1; min-width:0; font-family:'SF Mono',Consolas,monospace; font-size:10px; }
+.li-card-imgrow button { flex-shrink:0; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--navy); font-size:12px; padding:6px 8px; cursor:pointer; }
+.li-card-imgrow button:hover { border-color:var(--navy); }
+.li-card-fields { display:grid; grid-template-columns:1fr; gap:6px; }
+.li-card-fields .field label { font-size:10px; }
+.li-card-fields .field textarea {
+  width:100%; box-sizing:border-box; background:var(--bg); border:1px solid var(--border);
+  border-radius:8px; color:var(--text); font-size:12px; font-family:inherit; padding:7px 9px; outline:none;
+  resize:vertical; min-height:32px; line-height:1.4; overflow:hidden; transition:border-color .2s, box-shadow .2s;
+}
+.li-card-fields .field textarea:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(26,43,69,.08); background:#fff; }
+.li-card-check { grid-column:1/-1; display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-mut); font-weight:600; }
+.li-card-del { position:absolute; top:8px; right:8px; }
+
 /* 이미지 관리 */
 .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; }
 .img-card {
@@ -243,14 +287,102 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
 .stat-card-num { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -.02em; }
 .stat-card-label { font-size: 12px; color: var(--text-mut); margin-top: 5px; font-weight: 500; }
 
-/* 탭 */
-.sub-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-.sub-tab {
-  padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--text-mut); cursor: pointer;
-  border-bottom: 2px solid transparent; transition: all .2s; margin-bottom: -1px;
+/* ── 제품 카드 에디터 (제품소개 — 분류별 섹션 + 카드형) ── */
+.pce-section { border:1px solid var(--border); border-radius:12px; margin-bottom:20px; overflow:hidden; }
+.pce-section-head { background:var(--bg); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+.pce-section-title { font-size:15px; font-weight:800; color:var(--navy); display:flex; align-items:center; gap:10px; }
+.pce-count { font-size:12px; font-weight:600; color:var(--text-mut); background:#fff; border:1px solid var(--border); border-radius:10px; padding:2px 9px; }
+.pce-section-body { padding:18px 20px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:900px) { .pce-section-body { grid-template-columns:1fr; } }
+.pce-cards-empty { color:var(--text-mut); font-size:13px; padding:4px 0; grid-column:1/-1; }
+.pce-pills { display:flex; flex-wrap:wrap; gap:6px; }
+/* 이 배지들은 분류/하위분류를 "구분"하기 위한 것일 뿐, 눌려있는 토글 버튼처럼 보이면 안 됨 —
+   현재 값은 은은한 색 배지 + 체크표시로만 표시하고, 나머지는 얇은 외곽선만 있는 저채도 칩으로 둠 */
+.pce-pill { padding:5px 13px; border-radius:14px; border:1px solid var(--border); background:#fff; font-size:12px; font-weight:600; color:var(--text-mut); cursor:pointer; transition:all .15s; font-family:inherit; }
+.pce-pill:hover { border-color:var(--navy); color:var(--navy); }
+.pce-pill.active { background:#eef2f8; border-color:#c3cede; color:var(--navy); }
+.pce-pill.active::before { content:'✓ '; opacity:.7; }
+.pce-pill-add { padding:5px 11px; border-radius:14px; border:1px dashed #c7cedb; background:transparent; font-size:12px; color:var(--text-mut); cursor:pointer; font-family:inherit; }
+.pce-pill-add:hover { border-color:var(--navy); color:var(--navy); }
+.pce-card { border:1px solid var(--border); border-radius:10px; padding:16px; background:var(--card); }
+.pce-cat-label { font-size:11px; font-weight:700; color:var(--text-mut); letter-spacing:.03em; display:block; margin-bottom:6px; }
+.pce-card-sub { margin-top:10px; }
+.pce-card-top { display:flex; gap:14px; margin-top:12px; }
+.pce-card-thumb { width:74px; height:74px; flex-shrink:0; position:relative; }
+.pce-card-thumb img { width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid var(--border); background:var(--bg); }
+.pce-card-thumb button { position:absolute; bottom:-6px; right:-6px; width:26px; height:26px; border-radius:50%; background:var(--navy); color:#fff; border:2px solid var(--card); font-size:12px; cursor:pointer; }
+.pce-card-names { flex:1; display:grid; grid-template-columns:1fr; gap:8px; align-content:start; }
+.pce-card-del { flex-shrink:0; align-self:flex-start; }
+.pce-spec-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+.pce-spec-row label { font-size:11px; font-weight:700; color:var(--text-mut); display:block; margin-bottom:3px; }
+/* 유리사양처럼 글이 긴 필드는 2열 중 한 칸이 아니라 카드 전체 폭을 다 쓰게 함 */
+.pce-spec-row-full { grid-column:1/-1; }
+/* 카드 안 입력칸들(제품명, 규격, 유리사양) — 다른 페이지 입력칸과 같은 스타일로, 폭은 칸 전체를 꽉 채우고 세로 여백도 넉넉하게 */
+.pce-card-names input, .pce-spec-row input {
+  width:100%; box-sizing:border-box; background:var(--bg); border:1px solid var(--border);
+  border-radius:8px; color:var(--text); font-size:14px; font-family:inherit; padding:13px 14px; outline:none;
+  transition:border-color .2s, box-shadow .2s;
 }
-.sub-tab:hover { color: var(--navy); }
-.sub-tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+.pce-card-names input:focus, .pce-spec-row input:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(26,43,69,.08); background:#fff; }
+/* 여러 줄 필드 — 글자 수에 맞춰 세로로 늘어나서 잘리는 부분 없이 다 보이게 */
+.pce-spec-row textarea {
+  width:100%; box-sizing:border-box; background:var(--bg); border:1px solid var(--border);
+  border-radius:8px; color:var(--text); font-size:14px; font-family:inherit; padding:13px 14px; outline:none;
+  resize:vertical; min-height:64px; line-height:1.5; transition:border-color .2s, box-shadow .2s;
+}
+.pce-spec-row textarea:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(26,43,69,.08); background:#fff; }
+.pce-block-label { font-size:12px; font-weight:800; color:var(--navy); letter-spacing:.02em; margin-top:16px; padding-top:14px; border-top:1px dashed var(--border); }
+/* 인증배지 미리보기 선택기 — 콤마로 키 입력하던 걸 실제 배지 이미지를 클릭해서 켜고 끄는 방식으로 */
+.pce-cert-picker { margin-top:16px; padding-top:14px; border-top:1px dashed var(--border); }
+.pce-cert-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.pce-cert-chip {
+  display:flex; align-items:center; gap:6px; padding:5px 13px 5px 5px; border-radius:20px;
+  border:1.5px solid var(--border); background:#fff; cursor:pointer; font-family:inherit;
+  font-size:12px; font-weight:600; color:var(--text-mut); transition:all .15s; opacity:.5;
+}
+.pce-cert-chip img { width:24px; height:24px; object-fit:contain; border-radius:4px; background:var(--bg); }
+.pce-cert-chip.on { opacity:1; border-color:var(--navy); background:#eef2f8; color:var(--navy); }
+.pce-cert-chip:hover { opacity:1; border-color:var(--navy); }
+/* 분류(카테고리) 탭 — 미서기창/스윙창/방충망·갤러리창/커튼월처럼 한 제품군 안의 세부 분류를 전환.
+   한 번에 하나의 분류만 보여줘서 스크롤 없이 탭만 눌러 이동 가능하게 함 */
+.pce-cat-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+.pce-cat-tab {
+  padding:10px 18px; font-size:13.5px; font-weight:700; color:var(--text-mut);
+  background:#fff; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all .15s; font-family:inherit;
+}
+.pce-cat-tab:hover { border-color:var(--navy); color:var(--navy); }
+.pce-cat-tab.active { background:var(--navy); border-color:var(--navy); color:#fff; }
+.pce-cat-tab-count { opacity:.7; font-weight:600; margin-left:3px; }
+.pce-section.pce-hidden { display:none; }
+/* 규격상세표 — 실제 제품 페이지 하단 표와 같은 모양(이미지 없이 th/td 표)으로 보여줌 */
+.pce-spec-table { width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed; }
+.pce-spec-table th { text-align:left; font-size:11px; font-weight:700; color:var(--text-mut); background:var(--bg); padding:7px 10px; border:1px solid var(--border); width:110px; white-space:nowrap; }
+.pce-spec-table td { padding:0; border:1px solid var(--border); }
+.pce-spec-table td input { width:100%; height:100%; border:none; background:transparent; padding:7px 9px; font-size:13px; font-family:inherit; color:var(--text); outline:none; box-sizing:border-box; }
+.pce-spec-table td input:focus { background:#fff; box-shadow:inset 0 0 0 2px rgba(26,43,69,.15); }
+/* 위 카드에서 이미 입력한 값 — 여기서는 참고용으로만 보여줌(회색, 편집 불가) */
+.pce-spec-table td.pce-spec-readonly { padding:7px 9px; font-size:13px; color:var(--text-mut); background:var(--bg); }
+
+/* 섹션 구분 헤더 — 화면에서 실제로 어느 블록에 해당하는지 크게 묶어서 보여줌 */
+.section-divider {
+  font-size: 15px; font-weight: 800; color: var(--navy);
+  margin: 32px 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--navy);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-divider:first-of-type { margin-top: 0; }
+
+/* 탭 — 큰 박스형, 선택된 탭은 채워진 색으로 뚜렷하게 구분 */
+.sub-tabs { display: flex; gap: 10px; flex-wrap: wrap; border-bottom: none; margin-bottom: 26px; }
+.sub-tab {
+  padding: 13px 26px; font-size: 15px; font-weight: 700; color: var(--text-mut); cursor: pointer;
+  border-radius: 10px; border: 1.5px solid var(--border); background: #fff; transition: all .2s;
+}
+.sub-tab:hover { border-color: var(--navy); color: var(--navy); }
+.sub-tab.active { color: #fff; border-color: transparent; background: var(--navy); }
+/* 제품소개 탭 3개는 서로 완전히 다른 색으로 — 지금 어떤 제품군을 편집 중인지 한눈에 구분되도록 */
+#sec-products .sub-tabs .sub-tab:nth-child(1).active { background: #2c5f8a; }
+#sec-products .sub-tabs .sub-tab:nth-child(2).active { background: #b5762c; }
+#sec-products .sub-tabs .sub-tab:nth-child(3).active { background: #3f7d5c; }
 .sub-tab-pane { display: none; }
 .sub-tab-pane.active { display: block; }
 </style>
@@ -284,8 +416,8 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
         <div class="sb-item" onclick="showPage('about',this)"><span class="ico">🏢</span> 회사소개</div>
         <div class="sb-item" onclick="showPage('products',this)"><span class="ico">🪟</span> 제품소개</div>
         <div class="sb-item" onclick="showPage('certs',this)"><span class="ico">📋</span> 인증현황</div>
-        <div class="sb-item" onclick="showPage('projects',this)"><span class="ico">🏛️</span> 시공소개</div>
-        <div class="sb-item" onclick="showPage('contact',this)"><span class="ico">📞</span> 문의하기</div>
+        <div class="sb-item" onclick="showPage('projects',this)"><span class="ico">🏛️</span> 시공사례</div>
+        <div class="sb-item" onclick="showPage('contact',this)"><span class="ico">📞</span> 고객지원</div>
         <div class="sb-section">자산 관리</div>
         <div class="sb-item" onclick="showPage('images',this)"><span class="ico">🖼️</span> 이미지 관리</div>
       </nav>
@@ -316,6 +448,7 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
             <p>메인 화면에 표시되는 내용을 수정합니다</p>
           </div>
 
+          <div class="section-divider">🖼️ 첫 화면 (히어로)</div>
           <div class="card">
             <div class="card-title">히어로 섹션 — 배경 슬라이드 (4장, 자동 순환)</div>
             <div class="field-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:14px;">
@@ -347,18 +480,15 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
           </div>
 
           <div class="card">
-            <div class="card-title">히어로 섹션 — 문구</div>
+            <div class="card-title">히어로 섹션 — 문구 (영어판에만 반영됩니다)</div>
             <div class="field-grid">
-              <div class="field"><label>히어로 부제 (한국어)</label><input data-key="home.hero_sub_ko"></div>
               <div class="field"><label>히어로 부제 (영어)</label><input data-key="home.hero_sub_en"></div>
-            </div>
-            <div class="field-grid" style="margin-top:14px;">
-              <div class="field"><label>히어로 제목 (한국어)</label><textarea data-key="home.hero_title_ko" rows="2"></textarea></div>
               <div class="field"><label>히어로 제목 (영어)</label><textarea data-key="home.hero_title_en" rows="2"></textarea></div>
             </div>
-            <p style="font-size:12px;color:var(--text-mut);margin-top:10px;">※ 현재 홈페이지 히어로 제목·부제의 한국어 문구는 아직 페이지에 고정 텍스트로 박혀있어, 여기서 수정해도 한국어판 화면에는 반영되지 않아요 (영어판은 반영됨). 별도로 요청 주시면 한국어도 연결해 드릴게요.</p>
+            <p style="font-size:12px;color:var(--text-mut);margin-top:10px;">※ 한국어판 히어로 문구는 굵기가 섞인 특수 디자인(줄바꿈+볼드/얇은 글씨 조합)이라 일반 입력칸으로 바꾸면 그 디자인이 깨져서, 관리자에서는 수정할 수 없게 그대로 뒀습니다. 문구 자체를 바꾸고 싶으시면 말씀해주세요 — 코드로 직접 수정해드릴게요.</p>
           </div>
 
+          <div class="section-divider">🏷️ 공통 요소 (전 페이지)</div>
           <div class="card">
             <div class="card-title">사이트 로고 (전 페이지 공통)</div>
             <div class="field-grid">
@@ -377,45 +507,91 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
             </div>
           </div>
 
+          <div class="section-divider">🏢 회사소개 미리보기</div>
           <div class="card">
             <div class="card-title">회사 소개 섹션</div>
             <div class="field-grid">
-              <div class="field"><label>섹션 제목 (한국어)</label><input data-key="home.intro_title_ko"></div>
-              <div class="field"><label>섹션 제목 (영어)</label><input data-key="home.intro_title_en"></div>
+              <div class="field-pair">
+                <div class="field"><label>섹션 제목 (한국어)</label><input data-key="home.intro_title_ko"></div>
+                <div class="field"><label>섹션 제목 (영어)</label><input data-key="home.intro_title_en"></div>
+              </div>
             </div>
             <div class="field-grid single" style="margin-top:14px;">
               <div class="field"><label>회사 소개 문장 (한국어)</label><textarea data-key="home.intro_desc_ko" rows="3"></textarea></div>
+              <div class="field"><label>회사 소개 문장 (영어)</label><textarea data-key="home.intro_desc_en" rows="3"></textarea></div>
             </div>
           </div>
+          <p style="font-size:12px;color:var(--text-mut);margin:-6px 0 0;">※ 설립일·대표이사·보유면허 등 회사 기본 정보는 <b>회사소개</b> 탭에서 한 곳에서만 수정합니다 (여기서도 자동 반영됩니다).</p>
 
+          <div class="section-divider">🪟 주요제품 미리보기 (카드 3개)</div>
           <div class="card">
-            <div class="card-title">회사소개 표 — 기본 정보</div>
-            <div class="field-grid three">
-              <div class="field"><label>설립일 (한국어)</label><input data-key="company.founded"></div>
-              <div class="field"><label>설립일 (영어)</label><input data-key="company.founded_en"></div>
-              <div class="field"><label>대표이사 (한국어)</label><input data-key="company.ceo"></div>
-              <div class="field"><label>대표이사 (영어)</label><input data-key="company.ceo_en"></div>
-              <div class="field"><label>보유면허</label><input data-key="company.license_ko"></div>
-              <div class="field"><label>전화번호</label><input data-key="company.phone"></div>
-              <div class="field"><label>이메일</label><input data-key="company.email"></div>
-              <div class="field"><label>사업자번호</label><input data-key="company.reg_no"></div>
+            <div class="card-title">금속제창 카드</div>
+            <div class="pp-edit-grid">
+              <div class="pp-edit-text">
+                <div class="field-pair">
+                  <div class="field"><label>이름 (한국어)</label><input data-key="home.pp_window_name_ko"></div>
+                  <div class="field"><label>이름 (영어)</label><input data-key="home.pp_window_name_en"></div>
+                </div>
+                <div class="field-pair">
+                  <div class="field"><label>설명 (한국어)</label><input data-key="home.pp_window_desc_ko"></div>
+                  <div class="field"><label>설명 (영어)</label><input data-key="home.pp_window_desc_en"></div>
+                </div>
+              </div>
+              <div class="img-field">
+                <label>카드 이미지</label>
+                <img class="img-preview" id="prev-home.pp_window_image" src="">
+                <input class="img-path-input" data-key="home.pp_window_image" placeholder="/images/파일명.jpg" oninput="updateImgPreview(this)">
+                <div class="img-upload-btn" onclick="triggerUpload('home.pp_window_image')">📁 업로드/선택</div>
+              </div>
             </div>
           </div>
-
           <div class="card">
-            <div class="card-title">통계 숫자 (4개)</div>
-            <div class="field-grid" style="grid-template-columns: repeat(4,1fr);">
-              <div class="field"><label>통계 1 숫자</label><input data-key="home.stat1_num"></div>
-              <div class="field"><label>통계 2 숫자</label><input data-key="home.stat2_num"></div>
-              <div class="field"><label>통계 3 숫자</label><input data-key="home.stat3_num"></div>
-              <div class="field"><label>통계 4 숫자</label><input data-key="home.stat4_num"></div>
+            <div class="card-title">차양 카드</div>
+            <div class="pp-edit-grid">
+              <div class="pp-edit-text">
+                <div class="field-pair">
+                  <div class="field"><label>이름 (한국어)</label><input data-key="home.pp_awning_name_ko"></div>
+                  <div class="field"><label>이름 (영어)</label><input data-key="home.pp_awning_name_en"></div>
+                </div>
+                <div class="field-pair">
+                  <div class="field"><label>설명 (한국어)</label><input data-key="home.pp_awning_desc_ko"></div>
+                  <div class="field"><label>설명 (영어)</label><input data-key="home.pp_awning_desc_en"></div>
+                </div>
+              </div>
+              <div class="img-field">
+                <label>카드 이미지</label>
+                <img class="img-preview" id="prev-home.pp_awning_image" src="">
+                <input class="img-path-input" data-key="home.pp_awning_image" placeholder="/images/파일명.jpg" oninput="updateImgPreview(this)">
+                <div class="img-upload-btn" onclick="triggerUpload('home.pp_awning_image')">📁 업로드/선택</div>
+              </div>
             </div>
-            <div class="field-grid" style="grid-template-columns:repeat(4,1fr); margin-top:10px;">
-              <div class="field"><label>통계 1 설명</label><input data-key="home.stat1_label_ko"></div>
-              <div class="field"><label>통계 2 설명</label><input data-key="home.stat2_label_ko"></div>
-              <div class="field"><label>통계 3 설명</label><input data-key="home.stat3_label_ko"></div>
-              <div class="field"><label>통계 4 설명</label><input data-key="home.stat4_label_ko"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">금속문세트 카드</div>
+            <div class="pp-edit-grid">
+              <div class="pp-edit-text">
+                <div class="field-pair">
+                  <div class="field"><label>이름 (한국어)</label><input data-key="home.pp_door_name_ko"></div>
+                  <div class="field"><label>이름 (영어)</label><input data-key="home.pp_door_name_en"></div>
+                </div>
+                <div class="field-pair">
+                  <div class="field"><label>설명 (한국어)</label><input data-key="home.pp_door_desc_ko"></div>
+                  <div class="field"><label>설명 (영어)</label><input data-key="home.pp_door_desc_en"></div>
+                </div>
+              </div>
+              <div class="img-field">
+                <label>카드 이미지</label>
+                <img class="img-preview" id="prev-home.pp_door_image" src="">
+                <input class="img-path-input" data-key="home.pp_door_image" placeholder="/images/파일명.jpg" oninput="updateImgPreview(this)">
+                <div class="img-upload-btn" onclick="triggerUpload('home.pp_door_image')">📁 업로드/선택</div>
+              </div>
             </div>
+          </div>
+          <div class="section-divider">🏗️ 시공사례 갤러리 미리보기 (사진 6장)</div>
+          <div class="card">
+            <div class="card-title">홈 화면에 보여줄 사진 고르기</div>
+            <p style="font-size:13px;color:var(--text-mut);line-height:1.7;">홈 화면 하단 "시공 갤러리" 영역에는 <b>시공사례</b>(공공시설/교육시설/기타 탭) 목록에서 <b>"홈 화면 노출"</b>에 체크된 사진이 최대 6장까지 표시됩니다. 사진을 바꾸려면 시공사례 탭으로 이동해서 체크박스를 조정해주세요.</p>
+            <button class="add-row-btn" onclick="showPage('projects', document.querySelector('.sb-item[onclick*=projects]'))" style="margin-top:12px;">시공사례 탭으로 이동 →</button>
           </div>
         </div>
 
@@ -429,57 +605,105 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
           <div class="card">
             <div class="card-title">회사 기본 정보</div>
             <div class="field-grid three">
-              <div class="field"><label>회사명 (한국어)</label><input data-key="company.name_ko"></div>
-              <div class="field"><label>회사명 (영어)</label><input data-key="company.name_en"></div>
-              <div class="field"><label>대표이사 (한국어)</label><input data-key="company.ceo"></div>
-              <div class="field"><label>대표이사 (영어)</label><input data-key="company.ceo_en"></div>
-              <div class="field"><label>설립일 (한국어)</label><input data-key="company.founded"></div>
-              <div class="field"><label>설립일 (영어)</label><input data-key="company.founded_en"></div>
+              <div class="field-pair">
+                <div class="field"><label>회사명 (한국어)</label><input data-key="company.name_ko"></div>
+                <div class="field"><label>회사명 (영어)</label><input data-key="company.name_en"></div>
+              </div>
+              <div class="field-pair">
+                <div class="field"><label>대표이사 (한국어)</label><input data-key="company.ceo"></div>
+                <div class="field"><label>대표이사 (영어)</label><input data-key="company.ceo_en"></div>
+              </div>
+              <div class="field-pair">
+                <div class="field"><label>설립일 (한국어)</label><input data-key="company.founded"></div>
+                <div class="field"><label>설립일 (영어)</label><input data-key="company.founded_en"></div>
+              </div>
+            </div>
+            <div class="field-grid three" style="margin-top:14px;">
               <div class="field"><label>사업자번호</label><input data-key="company.reg_no"></div>
               <div class="field"><label>전화번호</label><input data-key="company.phone"></div>
               <div class="field"><label>이메일</label><input data-key="company.email"></div>
             </div>
             <div class="field-grid" style="margin-top:14px;">
-              <div class="field"><label>주소 (한국어)</label><input data-key="company.address_ko"></div>
-              <div class="field"><label>주소 (영어)</label><input data-key="company.address_en"></div>
-              <div class="field"><label>보유면허</label><input data-key="company.license_ko"></div>
-              <div class="field"><label>운영시간</label><input data-key="company.hours_ko"></div>
+              <div class="field-pair">
+                <div class="field"><label>주소 (한국어)</label><input data-key="company.address_ko"></div>
+                <div class="field"><label>주소 (영어)</label><input data-key="company.address_en"></div>
+              </div>
+              <div class="field-pair">
+                <div class="field"><label>보유면허 (한국어)</label><input data-key="company.license_ko"></div>
+                <div class="field"><label>보유면허 (영어)</label><input data-key="company.license_en"></div>
+              </div>
             </div>
           </div>
 
           <div class="card">
-            <div class="card-title">조직도 — 부서명 & 업무 (한국어)</div>
-            <div class="field-grid three">
-              <div class="field"><label>1팀 이름</label><input data-key="about.dept1_name_ko"></div>
-              <div class="field"><label>2팀 이름</label><input data-key="about.dept2_name_ko"></div>
-              <div class="field"><label>3팀 이름</label><input data-key="about.dept3_name_ko"></div>
-              <div class="field"><label>1팀 업무 (/ 구분)</label><input data-key="about.dept1_tasks_ko"></div>
-              <div class="field"><label>2팀 업무</label><input data-key="about.dept2_tasks_ko"></div>
-              <div class="field"><label>3팀 업무</label><input data-key="about.dept3_tasks_ko"></div>
-              <div class="field"><label>4팀 이름</label><input data-key="about.dept4_name_ko"></div>
-              <div class="field"><label>5팀 이름</label><input data-key="about.dept5_name_ko"></div>
-              <div class="field"><label>6팀 이름</label><input data-key="about.dept6_name_ko"></div>
-              <div class="field"><label>4팀 업무</label><input data-key="about.dept4_tasks_ko"></div>
-              <div class="field"><label>5팀 업무</label><input data-key="about.dept5_tasks_ko"></div>
-              <div class="field"><label>6팀 업무</label><input data-key="about.dept6_tasks_ko"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">조직도 — 부서명 & 업무 (영어)</div>
-            <div class="field-grid three">
-              <div class="field"><label>1팀 이름</label><input data-key="about.dept1_name_en"></div>
-              <div class="field"><label>2팀 이름</label><input data-key="about.dept2_name_en"></div>
-              <div class="field"><label>3팀 이름</label><input data-key="about.dept3_name_en"></div>
-              <div class="field"><label>1팀 업무 (/ 구분)</label><input data-key="about.dept1_tasks_en"></div>
-              <div class="field"><label>2팀 업무</label><input data-key="about.dept2_tasks_en"></div>
-              <div class="field"><label>3팀 업무</label><input data-key="about.dept3_tasks_en"></div>
-              <div class="field"><label>4팀 이름</label><input data-key="about.dept4_name_en"></div>
-              <div class="field"><label>5팀 이름</label><input data-key="about.dept5_name_en"></div>
-              <div class="field"><label>6팀 이름</label><input data-key="about.dept6_name_en"></div>
-              <div class="field"><label>4팀 업무</label><input data-key="about.dept4_tasks_en"></div>
-              <div class="field"><label>5팀 업무</label><input data-key="about.dept5_tasks_en"></div>
-              <div class="field"><label>6팀 업무</label><input data-key="about.dept6_tasks_en"></div>
+            <div class="card-title">조직도 — 부서명 & 업무 (팀별로 한/영 묶음)</div>
+            <div class="dept-edit-grid">
+              <div class="dept-edit-box">
+                <div class="dept-edit-label">1팀</div>
+                <div class="field-pair">
+                  <div class="field"><label>팀 이름 (한국어)</label><input data-key="about.dept1_name_ko"></div>
+                  <div class="field"><label>팀 이름 (영어)</label><input data-key="about.dept1_name_en"></div>
+                </div>
+                <div class="field-pair" style="margin-top:10px;">
+                  <div class="field"><label>업무 (한국어, / 구분)</label><input data-key="about.dept1_tasks_ko"></div>
+                  <div class="field"><label>업무 (영어)</label><input data-key="about.dept1_tasks_en"></div>
+                </div>
+              </div>
+              <div class="dept-edit-box">
+                <div class="dept-edit-label">2팀</div>
+                <div class="field-pair">
+                  <div class="field"><label>팀 이름 (한국어)</label><input data-key="about.dept2_name_ko"></div>
+                  <div class="field"><label>팀 이름 (영어)</label><input data-key="about.dept2_name_en"></div>
+                </div>
+                <div class="field-pair" style="margin-top:10px;">
+                  <div class="field"><label>업무 (한국어, / 구분)</label><input data-key="about.dept2_tasks_ko"></div>
+                  <div class="field"><label>업무 (영어)</label><input data-key="about.dept2_tasks_en"></div>
+                </div>
+              </div>
+              <div class="dept-edit-box">
+                <div class="dept-edit-label">3팀</div>
+                <div class="field-pair">
+                  <div class="field"><label>팀 이름 (한국어)</label><input data-key="about.dept3_name_ko"></div>
+                  <div class="field"><label>팀 이름 (영어)</label><input data-key="about.dept3_name_en"></div>
+                </div>
+                <div class="field-pair" style="margin-top:10px;">
+                  <div class="field"><label>업무 (한국어, / 구분)</label><input data-key="about.dept3_tasks_ko"></div>
+                  <div class="field"><label>업무 (영어)</label><input data-key="about.dept3_tasks_en"></div>
+                </div>
+              </div>
+              <div class="dept-edit-box">
+                <div class="dept-edit-label">4팀</div>
+                <div class="field-pair">
+                  <div class="field"><label>팀 이름 (한국어)</label><input data-key="about.dept4_name_ko"></div>
+                  <div class="field"><label>팀 이름 (영어)</label><input data-key="about.dept4_name_en"></div>
+                </div>
+                <div class="field-pair" style="margin-top:10px;">
+                  <div class="field"><label>업무 (한국어, / 구분)</label><input data-key="about.dept4_tasks_ko"></div>
+                  <div class="field"><label>업무 (영어)</label><input data-key="about.dept4_tasks_en"></div>
+                </div>
+              </div>
+              <div class="dept-edit-box">
+                <div class="dept-edit-label">5팀</div>
+                <div class="field-pair">
+                  <div class="field"><label>팀 이름 (한국어)</label><input data-key="about.dept5_name_ko"></div>
+                  <div class="field"><label>팀 이름 (영어)</label><input data-key="about.dept5_name_en"></div>
+                </div>
+                <div class="field-pair" style="margin-top:10px;">
+                  <div class="field"><label>업무 (한국어, / 구분)</label><input data-key="about.dept5_tasks_ko"></div>
+                  <div class="field"><label>업무 (영어)</label><input data-key="about.dept5_tasks_en"></div>
+                </div>
+              </div>
+              <div class="dept-edit-box">
+                <div class="dept-edit-label">6팀</div>
+                <div class="field-pair">
+                  <div class="field"><label>팀 이름 (한국어)</label><input data-key="about.dept6_name_ko"></div>
+                  <div class="field"><label>팀 이름 (영어)</label><input data-key="about.dept6_name_en"></div>
+                </div>
+                <div class="field-pair" style="margin-top:10px;">
+                  <div class="field"><label>업무 (한국어, / 구분)</label><input data-key="about.dept6_tasks_ko"></div>
+                  <div class="field"><label>업무 (영어)</label><input data-key="about.dept6_tasks_en"></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -494,53 +718,38 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
         <div class="page-section" id="sec-products">
           <div class="section-header"><h2>제품소개 편집</h2><p>모델명·규격·유리사양·식별번호 등 제품 목록 표를 직접 추가·수정·삭제합니다 (products.html 하단 Technical Data 표와 동일한 데이터입니다)</p></div>
 
-          <div class="card">
-            <div class="card-title">인증 로고 목록 (제품 페이지 하단에 표시 — 세로 56px 기준, 투명 배경 PNG 권장)</div>
-            <div id="certs-badge-wrap"></div>
-            <button class="add-row-btn" onclick="certsEditor.addNew()">+ 로고 추가</button>
-          </div>
+          <p style="font-size:13px;color:var(--text-mut);margin-bottom:20px;">※ 인증마크 종류 자체(로고 이미지 목록)는 여기서 관리하지 않고, 아래 각 제품 행의 "인증배지 제외/추가허용" 칸으로 제품별 노출 여부만 조절합니다. 새 인증마크 종류 추가가 필요하면 요청해주세요.</p>
 
           <div class="sub-tabs">
-            <div class="sub-tab active" onclick="showSubTab('prod','windows',this)">금속제창 (AL)</div>
+            <div class="sub-tab active" onclick="showSubTab('prod','windows',this)">금속제창</div>
             <div class="sub-tab" onclick="showSubTab('prod','awnings',this)">차양</div>
             <div class="sub-tab" onclick="showSubTab('prod','doors',this)">금속문세트</div>
           </div>
 
           <!-- 금속제창 -->
           <div class="sub-tab-pane active" id="prod-windows">
-            <div class="card">
-              <div class="card-title">금속제창 (AL) 목록</div>
-              <div id="window-list-wrap"></div>
-              <button class="add-row-btn" onclick="windowEditor.addNew()">+ 항목 추가</button>
-            </div>
+            <div id="window-list-wrap"></div>
           </div>
           <!-- 차양 -->
           <div class="sub-tab-pane" id="prod-awnings">
-            <div class="card">
-              <div class="card-title">차양 목록</div>
-              <div id="awning-list-wrap"></div>
-              <button class="add-row-btn" onclick="awningEditor.addNew()">+ 항목 추가</button>
-            </div>
+            <div id="awning-list-wrap"></div>
           </div>
           <!-- 문세트 -->
           <div class="sub-tab-pane" id="prod-doors">
-            <div class="card">
-              <div class="card-title">금속문세트 목록</div>
-              <div id="door-list-wrap"></div>
-              <button class="add-row-btn" onclick="doorEditor.addNew()">+ 항목 추가</button>
-            </div>
+            <div id="door-list-wrap"></div>
           </div>
         </div>
 
         <!-- ╔═ 인증현황 ═╗ -->
         <div class="page-section" id="sec-certs">
-          <div class="section-header"><h2>인증현황 편집</h2><p>5개 카테고리 모두 제목·발급기관·이미지로 구성된 게시글 목록입니다 (전문인력만 표 형식)</p></div>
+          <div class="section-header"><h2>인증현황 편집</h2><p>6개 카테고리 모두 제목·발급기관·이미지로 구성된 게시글 목록입니다 (보유자격증만 표 형태)</p></div>
           <div class="sub-tabs">
             <div class="sub-tab active" onclick="showSubTab('certs','company',this)">기업인증</div>
-            <div class="sub-tab" onclick="showSubTab('certs','eco',this)">환경표지</div>
-            <div class="sub-tab" onclick="showSubTab('certs','social',this)">사회적기업</div>
+            <div class="sub-tab" onclick="showSubTab('certs','eco',this)">품질 / 환경표지</div>
             <div class="sub-tab" onclick="showSubTab('certs','efficiency',this)">효율관리기자재</div>
-            <div class="sub-tab" onclick="showSubTab('certs','staff',this)">전문인력</div>
+            <div class="sub-tab" onclick="showSubTab('certs','patent',this)">특허</div>
+            <div class="sub-tab" onclick="showSubTab('certs','social',this)">사회적기업</div>
+            <div class="sub-tab" onclick="showSubTab('certs','staff',this)">보유자격증</div>
           </div>
 
           <div class="sub-tab-pane active" id="certs-company">
@@ -552,16 +761,9 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
           </div>
           <div class="sub-tab-pane" id="certs-eco">
             <div class="card">
-              <div class="card-title">환경표지 게시글 목록</div>
+              <div class="card-title">품질 / 환경표지 게시글 목록</div>
               <div id="ecodocs-list-wrap"></div>
               <button class="add-row-btn" onclick="ecoDocsEditor.addNew()">+ 항목 추가</button>
-            </div>
-          </div>
-          <div class="sub-tab-pane" id="certs-social">
-            <div class="card">
-              <div class="card-title">사회적기업 게시글 목록</div>
-              <div id="socialdocs-list-wrap"></div>
-              <button class="add-row-btn" onclick="socialDocsEditor.addNew()">+ 항목 추가</button>
             </div>
           </div>
           <div class="sub-tab-pane" id="certs-efficiency">
@@ -571,133 +773,95 @@ body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background: var
               <button class="add-row-btn" onclick="efficiencyDocsEditor.addNew()">+ 항목 추가</button>
             </div>
           </div>
+          <div class="sub-tab-pane" id="certs-patent">
+            <div class="card">
+              <div class="card-title">특허 게시글 목록</div>
+              <div id="patentdocs-list-wrap"></div>
+              <button class="add-row-btn" onclick="patentDocsEditor.addNew()">+ 항목 추가</button>
+            </div>
+          </div>
+          <div class="sub-tab-pane" id="certs-social">
+            <div class="card">
+              <div class="card-title">사회적기업 게시글 목록</div>
+              <div id="socialdocs-list-wrap"></div>
+              <button class="add-row-btn" onclick="socialDocsEditor.addNew()">+ 항목 추가</button>
+            </div>
+          </div>
           <div class="sub-tab-pane" id="certs-staff">
             <div class="card">
-              <div class="card-title">전문인력 현황 표</div>
-              <div class="proj-table-wrap">
-                <table class="proj-table">
-                  <thead>
-                    <tr>
-                      <th>자격 종목(KO)</th>
-                      <th>자격 종목(EN)</th>
-                      <th style="width:90px">등급(KO)</th>
-                      <th style="width:90px">등급(EN)</th>
-                      <th style="width:70px">인원</th>
-                      <th style="width:160px">발급기관(KO)</th>
-                      <th style="width:200px">발급기관(EN)</th>
-                      <th style="width:40px"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="staff-tbody"></tbody>
-                </table>
-              </div>
-              <button class="add-row-btn" onclick="addStaffRow()">+ 행 추가</button>
+              <div class="card-title">보유 자격증 현황</div>
+              <div id="staff-list-wrap"></div>
+              <button class="add-row-btn" onclick="staffEditor.addNew()">+ 자격증 추가</button>
             </div>
           </div>
         </div>
 
         <!-- ╔═ 시공소개 ═╗ -->
         <div class="page-section" id="sec-projects">
-          <div class="section-header"><h2>시공소개 편집</h2><p>주요납품실적 목록과 시공갤러리 사진을 추가·수정·삭제합니다</p></div>
+          <div class="section-header"><h2>시공사례 편집</h2><p>시공갤러리 사진을 분류(공공시설/교육시설/기타)별 탭으로 나눠서 추가·수정·삭제합니다. 실제 공개 페이지(공공시설/교육시설/기타 각 페이지)와 동일한 분류입니다.</p></div>
           <div class="sub-tabs">
-            <div class="sub-tab active" onclick="showSubTab('cons','deliveries',this)">주요납품실적</div>
-            <div class="sub-tab" onclick="showSubTab('cons','gallery',this)">시공갤러리</div>
+            <div class="sub-tab active" onclick="showSubTab('cons','public',this)">공공시설</div>
+            <div class="sub-tab" onclick="showSubTab('cons','edu',this)">교육시설</div>
+            <div class="sub-tab" onclick="showSubTab('cons','etc',this)">기타</div>
           </div>
 
-          <div class="sub-tab-pane active" id="cons-deliveries">
-            <div class="stat-cards">
-              <div class="stat-card"><div class="stat-card-num" id="proj-count">0</div><div class="stat-card-label">총 납품 건수</div></div>
-              <div class="stat-card">
-                <div class="stat-card-num"><input data-key="projects.stats_total" style="background:transparent;border:none;color:#1a2b45;font-size:26px;font-weight:800;width:80px;outline:none;font-family:inherit;"></div>
-                <div class="stat-card-label">표시 총계</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-card-num"><input data-key="projects.stats_school" style="background:transparent;border:none;color:#1a2b45;font-size:26px;font-weight:800;width:80px;outline:none;font-family:inherit;"></div>
-                <div class="stat-card-label">학교 납품</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-card-num"><input data-key="projects.stats_gov" style="background:transparent;border:none;color:#1a2b45;font-size:26px;font-weight:800;width:80px;outline:none;font-family:inherit;"></div>
-                <div class="stat-card-label">관공서 납품</div>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-title">납품 실적 목록</div>
-              <div class="proj-table-wrap">
-                <table class="proj-table">
-                  <thead>
-                    <tr>
-                      <th style="width:80px">연도</th>
-                      <th style="width:70px">월</th>
-                      <th>납품처</th>
-                      <th>품목</th>
-                      <th style="width:90px">분류</th>
-                      <th style="width:40px"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="proj-tbody"></tbody>
-                </table>
-              </div>
-              <button class="add-row-btn" onclick="addProjRow()">+ 납품 실적 추가</button>
-            </div>
+          <div class="sub-tab-pane active" id="cons-public">
+            <div id="gallery-public-list-wrap"></div>
+            <button class="add-row-btn" onclick="galleryPublicEditor.addNew()">+ 사진 추가</button>
           </div>
-
-          <div class="sub-tab-pane" id="cons-gallery">
-            <div class="card">
-              <div class="card-title">시공갤러리 사진 목록 (이미지 + 설명)</div>
-              <div id="gallery-list-wrap"></div>
-              <button class="add-row-btn" onclick="galleryEditor.addNew()">+ 사진 추가</button>
-            </div>
+          <div class="sub-tab-pane" id="cons-edu">
+            <div id="gallery-edu-list-wrap"></div>
+            <button class="add-row-btn" onclick="galleryEduEditor.addNew()">+ 사진 추가</button>
+          </div>
+          <div class="sub-tab-pane" id="cons-etc">
+            <div id="gallery-etc-list-wrap"></div>
+            <button class="add-row-btn" onclick="galleryEtcEditor.addNew()">+ 사진 추가</button>
           </div>
         </div>
 
         <!-- ╔═ 문의하기 ═╗ -->
         <div class="page-section" id="sec-contact">
-          <div class="section-header"><h2>문의하기 편집</h2><p>연락처 및 문의 정보를 수정합니다</p></div>
-          <div class="card">
-            <div class="card-title">연락처 정보</div>
-            <div class="field-grid three">
-              <div class="field"><label>전화번호</label><input data-key="company.phone"></div>
-              <div class="field"><label>이메일</label><input data-key="company.email"></div>
-              <div class="field"><label>운영시간</label><input data-key="company.hours_ko"></div>
-            </div>
-            <div class="field-grid" style="margin-top:14px;">
-              <div class="field"><label>주소 (한국어)</label><input data-key="company.address_ko"></div>
-              <div class="field"><label>주소 (영어)</label><input data-key="company.address_en"></div>
+          <div class="section-header"><h2>고객지원 편집</h2><p>공지사항, 자료실, 찾아오시는 길 정보를 탭으로 나눠서 수정합니다</p></div>
+          <div class="sub-tabs">
+            <div class="sub-tab active" onclick="showSubTab('support','notices',this)">공지사항</div>
+            <div class="sub-tab" onclick="showSubTab('support','resources',this)">자료실</div>
+            <div class="sub-tab" onclick="showSubTab('support','map',this)">찾아오시는 길</div>
+          </div>
+
+          <div class="sub-tab-pane active" id="support-notices">
+            <div class="card">
+              <div class="card-title">공지사항 목록</div>
+              <div id="notices-list-wrap"></div>
+              <button class="add-row-btn" onclick="noticesEditor.addNew()">+ 공지 추가</button>
             </div>
           </div>
-          <div class="card">
-            <div class="card-title">문의 섹션 설명</div>
-            <div class="field-grid single">
-              <div class="field"><label>문의 안내 문구 (한국어)</label><textarea data-key="contact.inquiry_desc_ko" rows="3"></textarea></div>
-              <div class="field" style="margin-top:12px;"><label>찾아오시는 길 — 자가용 안내</label><input data-key="contact.map_car_ko"></div>
-              <div class="field" style="margin-top:12px;"><label>찾아오시는 길 — 대중교통</label><input data-key="contact.map_transit_ko"></div>
+
+          <div class="sub-tab-pane" id="support-resources">
+            <div class="card">
+              <div class="card-title">자료실 다운로드 목록</div>
+              <div id="resources-list-wrap"></div>
+              <button class="add-row-btn" onclick="resourcesEditor.addNew()">+ 자료 추가</button>
             </div>
           </div>
-          <div class="card">
-            <div class="card-title">조달청 나라장터 등록 현황 표</div>
-            <div class="proj-table-wrap">
-              <table class="proj-table">
-                <thead>
-                  <tr>
-                    <th>등록 품목(KO)</th>
-                    <th>등록 품목(EN)</th>
-                    <th style="width:110px">KS 규격</th>
-                    <th style="width:100px">분류</th>
-                    <th style="width:100px">등록 상태(KO)</th>
-                    <th style="width:100px">등록 상태(EN)</th>
-                    <th style="width:40px"></th>
-                  </tr>
-                </thead>
-                <tbody id="koneps-tbody"></tbody>
-              </table>
+
+          <div class="sub-tab-pane" id="support-map">
+            <div class="card">
+              <div class="card-title">연락처 정보 (찾아오시는 길 등 사이트 전반에 표시)</div>
+              <div class="field-grid three">
+                <div class="field"><label>전화번호</label><input data-key="company.phone"></div>
+                <div class="field"><label>이메일</label><input data-key="company.email"></div>
+                <div class="field-pair">
+                  <div class="field"><label>운영시간 (한국어)</label><input data-key="company.hours_ko"></div>
+                  <div class="field"><label>운영시간 (영어)</label><input data-key="company.hours_en"></div>
+                </div>
+              </div>
+              <div class="field-grid" style="margin-top:14px;">
+                <div class="field-pair">
+                  <div class="field"><label>주소 (한국어)</label><input data-key="company.address_ko"></div>
+                  <div class="field"><label>주소 (영어)</label><input data-key="company.address_en"></div>
+                </div>
+              </div>
             </div>
-            <button class="add-row-btn" onclick="addKonepsRow()">+ 행 추가</button>
-          </div>
-          <div class="card">
-            <div class="card-title">자료실 다운로드 목록</div>
-            <div id="resources-list-wrap"></div>
-            <button class="add-row-btn" onclick="resourcesEditor.addNew()">+ 자료 추가</button>
           </div>
         </div>
 
@@ -780,19 +944,28 @@ async function init() {
   windowEditor.buildTable(content.products && content.products.window_list);
   awningEditor.buildTable(content.products && content.products.awning_list);
   doorEditor.buildTable(content.products && content.products.door_list);
-  certsEditor.buildTable(content.products && content.products.certs);
   docsEditor.buildTable(content.certificates && content.certificates.docs);
   ecoDocsEditor.buildTable(content.certificates && content.certificates.eco_docs);
-  socialDocsEditor.buildTable(content.certificates && content.certificates.social_docs);
   efficiencyDocsEditor.buildTable(content.certificates && content.certificates.efficiency_docs);
-  galleryEditor.buildTable(content.projects && content.projects.gallery);
+  patentDocsEditor.buildTable(content.certificates && content.certificates.patent_docs);
+  socialDocsEditor.buildTable(content.certificates && content.certificates.social_docs);
+  staffEditor.buildTable(content.staff && content.staff.list);
+  galleryPublicEditor.buildTable(content.projects && content.projects.gallery);
+  galleryEduEditor.buildTable(content.projects && content.projects.gallery);
+  galleryEtcEditor.buildTable(content.projects && content.projects.gallery);
   resourcesEditor.buildTable(content.contact && content.contact.resources);
+  noticesEditor.buildTable(content.contact && content.contact.notices);
   historyEditor.buildTable(content.about && content.about.history);
-  buildProjTable();
-  buildKonepsTable();
-  buildStaffTable();
   loadImages();
+  stampOriginalValues();
   initDirtyTracking();
+}
+
+/* 각 필드의 "현재 값"을 원본 스냅샷으로 저장 — 이후 AI 번역이 "한글이 이 시점에서 바뀌었는지"를 판단하는 기준이 됨 */
+function stampOriginalValues() {
+  document.querySelectorAll('[data-key], [data-field]').forEach(function(el) {
+    el.dataset.orig = el.value;
+  });
 }
 
 /* ══════════════════════════════════════
@@ -821,7 +994,14 @@ function initDirtyTracking() {
   var app = document.getElementById('admin-app');
   app.addEventListener('input', markDirty);
   app.addEventListener('change', markDirty);
-  var DIRTY_IGNORE = '#img-grid-wrap, #top-title, #save-status'; // 사용자 입력이 아니라 화면 UI가 스스로 갱신하는 영역
+  // 유리사양·인증현황 카드 등 긴글 textarea — 타이핑하는 동안 잘리지 않고 계속 늘어나게
+  app.addEventListener('input', function(e) {
+    if (e.target.matches && e.target.matches('.pce-spec-row textarea, .li-card-fields textarea')) {
+      e.target.style.height = 'auto';
+      e.target.style.height = e.target.scrollHeight + 'px';
+    }
+  });
+  var DIRTY_IGNORE = '#img-grid-wrap, #top-title, #save-status, #save-btn, #toast'; // 사용자 입력이 아니라 화면 UI가 스스로 갱신하는 영역 (저장 버튼 자체의 "저장 중...' 라벨 변경, 토스트 알림이 저장 직후 자기 자신을 "저장 안 됨"으로 되돌리던 버그 수정)
   new MutationObserver(function(mutations) {
     var relevant = mutations.some(function(m) {
       var t = m.target;
@@ -881,24 +1061,30 @@ function collectForms() {
   document.querySelectorAll('[data-key]').forEach(function(el) {
     f[el.dataset.key] = el.value;
   });
-  // 프로젝트 목록
-  f['projects.list'] = collectProjRows();
-  // 조달청 등록 현황
-  f['koneps.list'] = collectKonepsRows();
-  // 전문인력
-  f['staff.list'] = collectStaffRows();
-  // 제품 목록 (금속제창/차양/금속문세트) + 인증 로고
+  // 주요납품실적(projects.list)은 관리자패널·공개페이지(projects.html) 모두 없앴음 —
+  // flat(content)에 남아있는 예전 값이 계속 저장되지 않도록 여기서 확실히 비움
+  f['projects.list'] = [];
+  delete f['projects.stats_total'];
+  delete f['projects.stats_school'];
+  delete f['projects.stats_gov'];
+  // 제품 목록 (금속제창/차양/금속문세트)
   f['products.window_list'] = windowEditor.collectRows();
   f['products.awning_list'] = awningEditor.collectRows();
   f['products.door_list'] = doorEditor.collectRows();
-  f['products.certs'] = certsEditor.collectRows();
   // 인증현황 게시글형 목록 4종
   f['certificates.docs'] = docsEditor.collectRows();
   f['certificates.eco_docs'] = ecoDocsEditor.collectRows();
-  f['certificates.social_docs'] = socialDocsEditor.collectRows();
   f['certificates.efficiency_docs'] = efficiencyDocsEditor.collectRows();
-  f['projects.gallery'] = galleryEditor.collectRows();
+  f['certificates.patent_docs'] = patentDocsEditor.collectRows();
+  f['certificates.social_docs'] = socialDocsEditor.collectRows();
+  f['staff.list'] = staffEditor.collectRows();
+  // 조달청 등록 현황(koneps) — 공개페이지(contact-koneps.html)와 관리자 편집 UI 모두 없앴음 —
+  // flat(content)에 남아있는 예전 값이 계속 저장되지 않도록 여기서 확실히 비움
+  f['koneps.list'] = [];
+  // 시공갤러리 — 공공시설/교육시설/기타 탭별로 나눠서 편집하던 걸 다시 하나로 합쳐서 저장
+  f['projects.gallery'] = galleryPublicEditor.collectRows().concat(galleryEduEditor.collectRows(), galleryEtcEditor.collectRows());
   f['contact.resources'] = resourcesEditor.collectRows();
+  f['contact.notices'] = noticesEditor.collectRows();
   f['about.history'] = historyEditor.collectRows();
   // flat → 중첩 객체로 복원
   var result = {};
@@ -906,16 +1092,18 @@ function collectForms() {
     'projects.list': ['projects','list'],
     'projects.gallery': ['projects','gallery'],
     'contact.resources': ['contact','resources'],
-    'koneps.list': ['koneps','list'],
-    'staff.list': ['staff','list'],
+    'contact.notices': ['contact','notices'],
     'products.window_list': ['products','window_list'],
     'products.awning_list': ['products','awning_list'],
     'products.door_list': ['products','door_list'],
     'products.certs': ['products','certs'],
     'certificates.docs': ['certificates','docs'],
     'certificates.eco_docs': ['certificates','eco_docs'],
-    'certificates.social_docs': ['certificates','social_docs'],
     'certificates.efficiency_docs': ['certificates','efficiency_docs'],
+    'certificates.patent_docs': ['certificates','patent_docs'],
+    'certificates.social_docs': ['certificates','social_docs'],
+    'staff.list': ['staff','list'],
+    'koneps.list': ['koneps','list'],
     'about.history': ['about','history']
   };
   Object.keys(f).forEach(function(k) {
@@ -945,23 +1133,35 @@ function findKoCounterpart(scopeEl, base, attr) {
   return scopeEl.querySelector('[' + attr + '="' + base + '_ko"]') || scopeEl.querySelector('[' + attr + '="' + base + '"]');
 }
 
+/* 한글 필드가 페이지를 연 이후(또는 마지막 저장 이후) 수정됐는지 판단 */
+function koWasEdited(koEl) {
+  var orig = koEl.dataset.orig;
+  return orig === undefined || koEl.value.trim() !== orig.trim();
+}
+
 function collectUntranslated() {
   var items = [];
 
   document.querySelectorAll('[data-key$="_en"]').forEach(function(enEl) {
     var base = enEl.dataset.key.slice(0, -3);
     var koEl = findKoCounterpart(document, base, 'data-key');
-    if (!koEl || enEl.value.trim() || !koEl.value.trim()) return;
-    items.push({ el: enEl, ko: koEl.value.trim() });
+    if (!koEl || !koEl.value.trim()) return;
+    var needsTranslation = !enEl.value.trim() || koWasEdited(koEl);
+    if (!needsTranslation) return;
+    items.push({ el: enEl, koEl: koEl, ko: koEl.value.trim() });
   });
 
   document.querySelectorAll('[data-field$="_en"]').forEach(function(enEl) {
     var base = enEl.dataset.field.slice(0, -3);
-    var row = enEl.closest('tr');
+    // 표(tr) 기반 목록뿐 아니라 카드형 목록(li-card)·제품 카드(pce-card)도 짝을 찾을 수 있어야 함 —
+    // 카드형으로 바뀐 뒤로 이 부분이 <tr>만 찾다가 카드 안 필드를 전부 놓치고 있었음
+    var row = enEl.closest('tr, .li-card, .pce-card');
     if (!row) return;
     var koEl = findKoCounterpart(row, base, 'data-field');
-    if (!koEl || enEl.value.trim() || !koEl.value.trim()) return;
-    items.push({ el: enEl, ko: koEl.value.trim() });
+    if (!koEl || !koEl.value.trim()) return;
+    var needsTranslation = !enEl.value.trim() || koWasEdited(koEl);
+    if (!needsTranslation) return;
+    items.push({ el: enEl, koEl: koEl, ko: koEl.value.trim() });
   });
 
   return items;
@@ -969,8 +1169,8 @@ function collectUntranslated() {
 
 async function aiTranslateAll() {
   var items = collectUntranslated();
-  if (!items.length) { toast('번역할 빈 영문 항목이 없습니다'); return; }
-  if (!confirm(items.length + '개의 빈 영문 항목을 AI로 번역할까요?\n번역 결과는 저장 전까지 검토·수정할 수 있습니다.')) return;
+  if (!items.length) { toast('번역이 필요한 항목이 없습니다 (빈 영문 칸도, 새로 수정된 한글도 없음)'); return; }
+  if (!confirm(items.length + '개 항목을 AI로 번역할까요? (영문이 비어있거나, 한글이 새로 수정된 항목)\n번역 결과는 저장 전까지 검토·수정할 수 있습니다.')) return;
 
   var btn = document.getElementById('ai-translate-btn');
   btn.disabled = true; btn.textContent = '번역 중...';
@@ -984,6 +1184,7 @@ async function aiTranslateAll() {
     if (!data.ok) { toast('❌ ' + (data.error || '번역 실패'), true); return; }
     data.translations.forEach(function(t, i) {
       items[i].el.value = t;
+      items[i].koEl.dataset.orig = items[i].koEl.value; // 번역 반영 완료 — 재클릭 시 같은 항목 중복 번역 방지
       markDirty();
     });
     toast('✅ ' + items.length + '개 항목 번역 완료 — 저장 전에 확인해주세요');
@@ -1011,6 +1212,7 @@ async function saveAll() {
     if (d.ok) {
       content = data;
       markClean();
+      stampOriginalValues(); // 저장 성공 = 새 기준선. 여기부터 다시 바뀐 부분만 번역 대상이 됨
       toast('✅ 저장되었습니다!');
       document.getElementById('save-status').style.color = 'var(--success)';
       document.getElementById('save-status').textContent = '저장됨 ' + new Date().toLocaleTimeString();
@@ -1029,7 +1231,7 @@ async function saveAll() {
    fetch('/api/content') 후 그대로 렌더링하는 배열과 완전히 동일한 구조.
 ══════════════════════════════════════ */
 function confirmRemoveRow(btn) {
-  if (confirm('이 항목을 삭제할까요?')) btn.closest('tr').remove();
+  if (confirm('이 항목을 삭제할까요?')) btn.closest('tr, .li-card').remove();
 }
 
 // 표 안 이미지 썸네일 — 경로가 잘못됐을 때 조용히 사라지지 않고 빨간 테두리로 확실히 표시
@@ -1044,47 +1246,134 @@ function liThumbLoad(img) {
   img.title = '';
 }
 
-function makeListEditor(wrapId, columns) {
+function makeListEditor(wrapId, columns, opts) {
+  var cardMode = !!(opts && opts.cardMode);
+  // categoryFilter: 이 에디터 인스턴스가 그 값(예: "공공시설")만 다루게 함 — 전체 목록을 넘겨줘도 여기서 걸러서 보여주고,
+  // 저장할 때도 이 값으로 고정해서 돌려준다. 갤러리처럼 한 배열을 분류탭 여러 개로 나눠 편집할 때 씀.
+  var categoryKey = (opts && opts.categoryKey) || 'category';
+  var categoryFilter = opts && opts.categoryFilter;
   function esc(v) { return String(v==null?'':v).replace(/"/g,'&quot;'); }
+
+  // col.list: true인 컬럼은 배열 필드(예: cert_exclude:["ks","eco"])를 "ks,eco" 콤마 목록으로 보여주고, 저장 시 다시 배열로 변환한다.
+  function listVal(v) { return Array.isArray(v) ? v.join(',') : (v||''); }
 
   function appendRow(item) {
     item = item || {};
+    if (cardMode) { appendCard(item); return; }
     var tr = document.createElement('tr');
-    tr.innerHTML = columns.map(function(col) {
-      var input = '<input data-field="'+col.key+'" value="'+esc(item[col.key])+'" placeholder="'+(col.label||'')+'" style="'+(col.img?'flex:1;':'')+'"'
+    tr.innerHTML = columns.map(function(col, i) {
+      var lastOfGroup = col.group && (i === columns.length - 1 || columns[i+1].group !== col.group);
+      var tdStyle = lastOfGroup ? ' style="border-right:2px solid var(--border);"' : '';
+      if (col.bool) {
+        return '<td'+(lastOfGroup?' style="text-align:center;border-right:2px solid var(--border);"':' style="text-align:center;"')+'><input type="checkbox" data-field="'+col.key+'" style="width:18px;height:18px;cursor:pointer;"'+(item[col.key]?' checked':'')+'></td>';
+      }
+      var shown = col.list ? listVal(item[col.key]) : item[col.key];
+      var input = '<input data-field="'+col.key+'" value="'+esc(shown)+'" placeholder="'+(col.label||'')+'" style="'+(col.img?'flex:1;':'')+'"'
         + (col.img ? ' oninput="this.previousElementSibling.src=this.value"' : '') + '>';
       if (col.img) {
         var thumb = '<img class="li-thumb" src="'+esc(item[col.key])+'" style="width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--border);background:var(--bg);flex-shrink:0;" title="" onerror="liThumbError(this)" onload="liThumbLoad(this)">';
-        return '<td><div style="display:flex;gap:6px;align-items:center;">'+thumb+input+'<button type="button" class="row-del" title="이미지 업로드" style="color:var(--navy);flex-shrink:0;" onclick="listEditorUpload(this)">📁</button></div></td>';
+        return '<td'+tdStyle+'><div style="display:flex;gap:6px;align-items:center;">'+thumb+input+'<button type="button" class="row-del" title="이미지 업로드" style="color:var(--navy);flex-shrink:0;" onclick="listEditorUpload(this)">📁</button></div></td>';
       }
-      return '<td>'+input+'</td>';
+      return '<td'+tdStyle+'>'+input+'</td>';
     }).join('') + '<td><button class="row-del" onclick="confirmRemoveRow(this)">✕</button></td>';
     document.getElementById(wrapId+'-tbody').appendChild(tr);
   }
 
+  // 카드형 — 이미지 미리보기를 크게 위에 두고(세로 배치), 나머지 필드는 그 아래 2열로.
+  function appendCard(item) {
+    var imgCol = columns.find(function(c){ return c.img; });
+    var otherCols = columns.filter(function(c){ return !c.img; });
+    var card = document.createElement('div');
+    card.className = 'li-card';
+    var imgHtml = '';
+    if (imgCol) {
+      imgHtml = '<div class="li-card-thumb-wrap"><img class="li-thumb" src="'+esc(item[imgCol.key])+'" onerror="liThumbError(this)" onload="liThumbLoad(this)"></div>'
+        + '<div class="li-card-imgrow">'
+        + '<input data-field="'+imgCol.key+'" value="'+esc(item[imgCol.key])+'" placeholder="'+(imgCol.label||'')+'" oninput="this.closest(\'.li-card\').querySelector(\'.li-thumb\').src=this.value">'
+        + '<button type="button" title="이미지 업로드" onclick="liCardUpload(this)">📁</button>'
+        + '</div>';
+    }
+    var fieldsHtml = otherCols.map(function(col) {
+      if (col.bool) {
+        return '<label class="li-card-check"><input type="checkbox" data-field="'+col.key+'"'+(item[col.key]?' checked':'')+'> '+(col.label||'')+'</label>';
+      }
+      var shown = col.list ? listVal(item[col.key]) : item[col.key];
+      // 한 줄 입력칸 대신 textarea — 글자수에 맞춰 자동으로 늘어나서 긴 제목·발급기관명도 안 잘리고 다 보임
+      return '<div class="field"><label>'+(col.label||'')+'</label><textarea data-field="'+col.key+'" placeholder="'+(col.label||'')+'">'+esc(shown)+'</textarea></div>';
+    }).join('');
+    card.innerHTML = imgHtml + '<div class="li-card-fields">'+fieldsHtml+'</div>'
+      + '<button type="button" class="row-del li-card-del" onclick="confirmRemoveRow(this)">✕</button>';
+    document.getElementById(wrapId+'-grid').appendChild(card);
+    // 불러온 값 길이에 맞춰 처음부터 다 보이는 높이로 펼쳐둠
+    card.querySelectorAll('.li-card-fields textarea').forEach(function(ta) {
+      ta.style.height = 'auto';
+      ta.style.height = ta.scrollHeight + 'px';
+    });
+  }
+
   function collectRows() {
-    return Array.from(document.querySelectorAll('#'+wrapId+'-tbody tr')).map(function(tr) {
+    var sel = cardMode ? ('#'+wrapId+'-grid > .li-card') : ('#'+wrapId+'-tbody tr');
+    return Array.from(document.querySelectorAll(sel)).map(function(row) {
       var obj = {};
       columns.forEach(function(col) {
-        obj[col.key] = tr.querySelector('[data-field="'+col.key+'"]').value;
+        if (col.bool) {
+          obj[col.key] = row.querySelector('[data-field="'+col.key+'"]').checked;
+          return;
+        }
+        var raw = row.querySelector('[data-field="'+col.key+'"]').value;
+        if (col.list) {
+          var arr = raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+          if (arr.length) obj[col.key] = arr;
+        } else {
+          obj[col.key] = raw;
+        }
       });
+      if (categoryFilter) obj[categoryKey] = categoryFilter;
       return obj;
     });
   }
 
+  // columns에 col.group(그룹명)이 있으면 헤더를 2단으로 나눠서, 연속된 같은 그룹을 colspan으로 묶어 보여준다.
+  // 그룹이 하나도 없으면 기존처럼 1단 헤더.
+  function buildGroupRow() {
+    var hasGroup = columns.some(function(c){ return c.group; });
+    if (!hasGroup) return '';
+    var cells = [];
+    var i = 0;
+    while (i < columns.length) {
+      var g = columns[i].group;
+      var span = 1;
+      while (i + span < columns.length && columns[i + span].group === g) span++;
+      cells.push(g
+        ? '<th colspan="'+span+'" style="text-align:center;background:var(--bg);color:var(--navy);font-size:12px;letter-spacing:.03em;border-right:2px solid var(--border);">'+g+'</th>'
+        : '<th colspan="'+span+'"></th>');
+      i += span;
+    }
+    return '<tr>' + cells.join('') + '<th></th></tr>';
+  }
+
   function buildTable(list) {
-    var thead = '<tr>' + columns.map(function(col) {
-      return '<th style="min-width:'+(col.w||100)+'px;">'+col.label+'</th>';
+    var filtered = categoryFilter ? (list||[]).filter(function(it){ return it[categoryKey] === categoryFilter; }) : list;
+    if (cardMode) {
+      document.getElementById(wrapId).innerHTML = '<div class="li-card-grid" id="'+wrapId+'-grid"></div>';
+      (filtered||[]).forEach(appendRow);
+      return;
+    }
+    var groupRow = buildGroupRow();
+    var thead = groupRow + '<tr>' + columns.map(function(col, i) {
+      var lastOfGroup = col.group && (i === columns.length - 1 || columns[i+1].group !== col.group);
+      return '<th style="min-width:'+(col.w||100)+'px;'+(lastOfGroup ? 'border-right:2px solid var(--border);' : '')+'">'+col.label+'</th>';
     }).join('') + '<th style="width:40px;"></th></tr>';
     document.getElementById(wrapId).innerHTML =
       '<div class="proj-table-wrap"><table class="proj-table"><thead>'+thead+'</thead><tbody id="'+wrapId+'-tbody"></tbody></table></div>';
-    (list||[]).forEach(appendRow);
+    (filtered||[]).forEach(appendRow);
   }
 
   // "+ 항목 추가" — 바로 앞 항목과 같은 분류(category_ko/en)로 시작해서,
   // 그대로 두면 기존 탭에 합쳐지고 값을 바꾸면 새 탭이 생긴다.
   function addNew() {
-    var rows = document.querySelectorAll('#'+wrapId+'-tbody tr');
+    var sel = cardMode ? ('#'+wrapId+'-grid > .li-card') : ('#'+wrapId+'-tbody tr');
+    var rows = document.querySelectorAll(sel);
     var prefill = {};
     if (rows.length) {
       var last = rows[rows.length - 1];
@@ -1102,244 +1391,474 @@ function makeListEditor(wrapId, columns) {
 // 표 안의 이미지 칸 옆 📁 버튼 — 클릭한 칸의 입력창에 바로 업로드 경로를 채워준다.
 var _listUploadInput = null;
 var _listUploadTarget = null;
+var _pceUploadThumb = null; // 카드형 에디터(pce-card)는 썸네일이 입력창 바로 앞에 있지 않아 별도로 지정해줌
 function listEditorUpload(btn) {
+  _pceUploadThumb = null;
   _listUploadTarget = btn.previousElementSibling;
-  if (!_listUploadInput) {
-    _listUploadInput = document.createElement('input');
-    _listUploadInput.type = 'file';
-    _listUploadInput.accept = 'image/*,.pdf';
-    _listUploadInput.style.display = 'none';
-    document.body.appendChild(_listUploadInput);
-    _listUploadInput.addEventListener('change', function() {
-      if (!this.files[0] || !_listUploadTarget) return;
-      var fd = new FormData();
-      fd.append('image', this.files[0]);
-      fetch('/api/upload', { method: 'POST', body: fd }).then(function(r){ return r.json(); }).then(function(d) {
-        if (d.ok) {
-          _listUploadTarget.value = d.path;
-          var thumb = _listUploadTarget.previousElementSibling;
-          if (thumb && thumb.classList.contains('li-thumb')) thumb.src = d.path;
-          toast('✅ 업로드 완료: ' + d.filename);
-        } else toast('❌ 업로드 실패: ' + (d.error||''), true);
-      }).catch(function(){ toast('❌ 업로드 오류', true); });
-    });
-  }
+  ensureListUploadInput();
   _listUploadInput.click();
 }
+// 카드형 제품 에디터 전용 업로드 — 썸네일과 "이미지 경로" 입력창이 카드 안 다른 위치에 있어 카드 기준으로 찾는다.
+function pceUpload(btn) {
+  var card = btn.closest('.pce-card');
+  _listUploadTarget = card.querySelector('[data-field="image"]');
+  _pceUploadThumb = card.querySelector('.li-thumb');
+  ensureListUploadInput();
+  _listUploadInput.click();
+}
+// 카드형 목록 에디터(li-card) 전용 업로드 — pceUpload와 같은 이유로 카드 기준으로 찾는다.
+function liCardUpload(btn) {
+  var card = btn.closest('.li-card');
+  _listUploadTarget = card.querySelector('.li-card-imgrow [data-field]');
+  _pceUploadThumb = card.querySelector('.li-thumb');
+  ensureListUploadInput();
+  _listUploadInput.click();
+}
+function ensureListUploadInput() {
+  if (_listUploadInput) return;
+  _listUploadInput = document.createElement('input');
+  _listUploadInput.type = 'file';
+  _listUploadInput.accept = 'image/*,.pdf';
+  _listUploadInput.style.display = 'none';
+  document.body.appendChild(_listUploadInput);
+  _listUploadInput.addEventListener('change', function() {
+    if (!this.files[0] || !_listUploadTarget) return;
+    var fd = new FormData();
+    fd.append('image', this.files[0]);
+    fetch('/api/upload', { method: 'POST', body: fd }).then(function(r){ return r.json(); }).then(function(d) {
+      if (d.ok) {
+        _listUploadTarget.value = d.path;
+        var thumb = _pceUploadThumb || _listUploadTarget.previousElementSibling;
+        if (thumb && thumb.classList.contains('li-thumb')) thumb.src = d.path;
+        _pceUploadThumb = null;
+        toast('✅ 업로드 완료: ' + d.filename);
+      } else toast('❌ 업로드 실패: ' + (d.error||''), true);
+    }).catch(function(){ toast('❌ 업로드 오류', true); });
+  });
+}
 
-var windowEditor = makeListEditor('window-list-wrap', [
-  {key:'category_ko', label:'분류(KO)', w:90}, {key:'category_en', label:'분류(EN)', w:120},
-  {key:'subcategory_ko', label:'하위분류(KO)', w:100}, {key:'subcategory_en', label:'하위분류(EN)', w:110},
-  {key:'name_ko', label:'제품명(KO)', w:130}, {key:'name_en', label:'제품명(EN)', w:160},
-  {key:'model', label:'모델명', w:110}, {key:'spec', label:'규격', w:90},
-  {key:'glass_ko', label:'유리사양', w:200}, {key:'id_no', label:'식별번호', w:90},
-  {key:'u_value', label:'열관류율', w:70}, {key:'airtight', label:'기밀성', w:60},
-  {key:'ks', label:'KS', w:90}, {key:'image', label:'이미지 경로', w:160, img:true}
-]);
-var awningEditor = makeListEditor('awning-list-wrap', [
-  {key:'category_ko', label:'분류(KO)', w:150}, {key:'category_en', label:'분류(EN)', w:200},
-  {key:'name_ko', label:'제품명(KO)', w:150}, {key:'name_en', label:'제품명(EN)', w:170},
-  {key:'model', label:'모델명', w:110}, {key:'spec', label:'규격', w:110},
-  {key:'id_no', label:'식별번호', w:90}, {key:'image', label:'이미지 경로', w:160, img:true}
-]);
-var doorEditor = makeListEditor('door-list-wrap', [
-  {key:'category_ko', label:'분류(KO)', w:120}, {key:'category_en', label:'분류(EN)', w:170},
-  {key:'name_ko', label:'제품명(KO)', w:150}, {key:'name_en', label:'제품명(EN)', w:170},
-  {key:'model', label:'모델명', w:110}, {key:'spec', label:'규격', w:80},
-  {key:'id_no', label:'식별번호', w:90}, {key:'ks', label:'KS', w:90}, {key:'image', label:'이미지 경로', w:160, img:true}
-]);
+/* ══════════════════════════════════════
+   제품 카드 에디터 (제품소개 — 금속제창/차양/금속문세트 공통)
+   - 분류(카테고리)별로 섹션을 완전히 분리해서 보여줌 ("탭 묶음이 다 붙어있다" 문제 해결)
+   - 분류·하위분류는 버튼(pill) 클릭으로 선택 — "+"로 새 분류/하위분류도 바로 추가
+   - 모델명/규격 등 상세 스펙은 표의 가로 스크롤 대신 카드 안에 세로로 나열
+══════════════════════════════════════ */
+function makeProductCardEditor(wrapId, varName, topFields, tableColumns, certMode) {
+  var ALL_FIELD_KEYS = topFields.concat(tableColumns, [{key:'name_ko'}, {key:'name_en'}, {key:'image'}]);
+  var state = { list: [] };
 
-// 제품 페이지 하단 인증 로고 배지 목록 (제품소개 탭) — key는 'ks'일 때만 특별 취급(제품 자체 KS 규격과 자동 연동)되고,
-// 새로 추가하는 로고는 비워두면 된다.
-var certsEditor = makeListEditor('certs-badge-wrap', [
-  {key:'key', label:'식별키(선택, ks만 특수)', w:130},
-  {key:'name_ko', label:'로고명(KO)', w:150},
-  {key:'name_en', label:'로고명(EN)', w:150},
-  {key:'image', label:'이미지 경로', w:200, img:true}
-]);
+  function esc(v) { return String(v==null?'':v).replace(/"/g,'&quot;'); }
+  function listVal(v) { return Array.isArray(v) ? v.join(',') : (v||''); }
+
+  function readFieldsInto(item, root) {
+    root.querySelectorAll('[data-field]').forEach(function(inp) {
+      var key = inp.dataset.field;
+      var field = ALL_FIELD_KEYS.find(function(f){ return f.key === key; });
+      if (field && field.list) {
+        var arr = inp.value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        if (arr.length) item[key] = arr;
+      } else {
+        item[key] = inp.value;
+      }
+    });
+  }
+
+  // 구조가 바뀌는 조작(추가/삭제/분류 이동) 직전에, 화면에 지금 입력된 값들을 state.list로 그러모은다.
+  // 대표 이미지 카드와 규격상세표 행은 분리된 화면 요소지만 같은 제품 하나를 가리키므로, 섹션(분류) 안에서 같은 순서(i번째 카드 = i번째 표 행)로 짝지어 합친다.
+  function syncFromDom() {
+    var items = [];
+    document.querySelectorAll('#'+wrapId+' .pce-section').forEach(function(section) {
+      var cards = section.querySelectorAll(':scope > .pce-section-body .pce-card');
+      var specRows = section.querySelectorAll(':scope > .pce-spec-block .pce-spec-table tbody tr');
+      cards.forEach(function(card, i) {
+        var item = { category_ko: section.dataset.catKo, category_en: section.dataset.catEn };
+        var subActive = card.querySelector('[data-role="sub-active"]');
+        if (subActive) { item.subcategory_ko = subActive.dataset.subKo; item.subcategory_en = subActive.dataset.subEn; }
+        readFieldsInto(item, card);
+        if (specRows[i]) readFieldsInto(item, specRows[i]);
+        items.push(item);
+      });
+    });
+    state.list = items;
+  }
+
+  function knownCategories() {
+    var seen = [], out = [];
+    state.list.forEach(function(it) {
+      if (it.category_ko && seen.indexOf(it.category_ko) === -1) { seen.push(it.category_ko); out.push({ko: it.category_ko, en: it.category_en||''}); }
+    });
+    return out;
+  }
+  function knownSubcats(catKo) {
+    var seen = [], out = [];
+    state.list.forEach(function(it) {
+      if (it.category_ko === catKo && it.subcategory_ko && seen.indexOf(it.subcategory_ko) === -1) { seen.push(it.subcategory_ko); out.push({ko: it.subcategory_ko, en: it.subcategory_en||''}); }
+    });
+    return out;
+  }
+
+  function renderCard(item, cats, subs) {
+    var subHtml = '';
+    if (subs.length) {
+      var subPills = subs.map(function(s) {
+        var isActive = s.ko === item.subcategory_ko;
+        return '<button type="button" class="pce-pill'+(isActive?' active':'')+'" data-role="'+(isActive?'sub-active':'sub')+'" data-sub-ko="'+esc(s.ko)+'" data-sub-en="'+esc(s.en)+'" onclick="'+varName+'.moveCard(this,\'sub\',\''+esc(s.ko).replace(/'/g,"\\'")+'\',\''+esc(s.en).replace(/'/g,"\\'")+'\')">'+esc(s.ko)+'</button>';
+      }).join('') + '<button type="button" class="pce-pill-add" onclick="'+varName+'.promptNewSubcategory(this)">+</button>';
+      subHtml = '<div class="pce-card-sub"><label class="pce-cat-label">하위분류</label><div class="pce-pills">'+subPills+'</div></div>';
+    }
+
+    // 대표 이미지 · 인증마크 영역에 딸린 추가 필드 (규격/유리사양 등 — 이름·이미지 외의 top 필드)
+    // 인증배지 제외/추가(cert_exclude, cert_include) 두 필드는 콤마 입력칸 대신 아래 배지 미리보기로 따로 렌더링
+    var normalTopFields = topFields.filter(function(f) { return f.key !== 'cert_exclude' && f.key !== 'cert_include'; });
+    var extraTopHtml = normalTopFields.map(function(f) {
+      var val = f.list ? listVal(item[f.key]) : (item[f.key]||'');
+      // 유리사양처럼 글이 긴 필드는 한 줄 입력칸 대신 여러 줄 textarea로 — 잘려서 안 보이던 문제 해결
+      var control = f.longText
+        ? '<textarea data-field="'+f.key+'" placeholder="'+f.label+'">'+esc(val)+'</textarea>'
+        : '<input data-field="'+f.key+'" value="'+esc(val)+'" placeholder="'+f.label+'">';
+      return '<div class="pce-spec-row'+(f.longText?' pce-spec-row-full':'')+'">'+'<label>'+f.label+'</label>'+control+'</div>';
+    }).join('');
+    var certPickerHtml = renderCertBlock(item);
+
+    return '<div class="pce-card">'
+      + subHtml
+      + '<div class="pce-card-top">'
+      + '<div class="pce-card-thumb"><img class="li-thumb" src="'+esc(item.image)+'" onerror="liThumbError(this)" onload="liThumbLoad(this)"><button type="button" title="이미지 업로드" onclick="pceUpload(this)">📁</button></div>'
+      + '<div class="pce-card-names">'
+      + '<input data-field="name_ko" value="'+esc(item.name_ko)+'" placeholder="제품명(한국어)">'
+      + '<input data-field="name_en" value="'+esc(item.name_en)+'" placeholder="제품명(영어)">'
+      + '<input data-field="image" value="'+esc(item.image)+'" placeholder="이미지 경로" style="grid-column:1/-1;font-family:\'SF Mono\',Consolas,monospace;font-size:12px;" oninput="this.closest(\'.pce-card\').querySelector(\'.li-thumb\').src=this.value">'
+      + '</div>'
+      + '<button type="button" class="row-del pce-card-del" onclick="'+varName+'.deleteCard(this)">✕</button>'
+      + '</div>'
+      + (extraTopHtml ? '<div class="pce-spec-grid">'+extraTopHtml+'</div>' : '')
+      + certPickerHtml
+      + '</div>';
+  }
+
+  // certMode에 따라 인증배지 블록을 다르게 그림 — 실제 각 제품군 페이지 로직이 서로 다르기 때문:
+  //  'edit'          (금속제창) — 배지별로 제외/추가허용 여부를 이 제품에서 직접 켜고 끌 수 있음
+  //  'fixed'         (차양)     — 특정 배지들이 분류 전체에 자동 고정 적용, 이 화면에서 개별 조정 불가 (실제 페이지 로직과 동일)
+  //  'fixed-plus-ks' (금속문세트) — 위와 같되, KS 배지만 이 카드의 KS 규격 입력값이 있으면 추가로 붙음
+  function renderCertBlock(item) {
+    if (certMode === 'edit') return renderCertPicker(item);
+    if (certMode === 'fixed' || certMode === 'fixed-plus-ks') return renderFixedCertPreview(item, certMode === 'fixed-plus-ks');
+    return '';
+  }
+
+  function renderFixedCertPreview(item, includeKs) {
+    var certs = (content.products && content.products.certs) || [];
+    if (!certs.length) return '';
+    var shown = certs.filter(function(b) { return b.key !== 'ks' && b.key !== 'eco' && b.key !== 'energy'; });
+    var chips = shown.map(function(badge) {
+      var label = String(badge.name_ko||'').replace(/<br>/g,' ');
+      return '<span class="pce-cert-chip on pce-cert-chip-fixed"><img src="'+esc(badge.image)+'" alt=""><span>'+esc(label)+'</span></span>';
+    }).join('');
+    if (includeKs) {
+      var ksBadge = certs.find(function(b) { return b.key === 'ks'; });
+      if (ksBadge && item.ks) {
+        chips += '<span class="pce-cert-chip on pce-cert-chip-fixed"><img src="'+esc(ksBadge.image)+'" alt=""><span>'+esc(item.ks)+'</span></span>';
+      }
+    }
+    var note = '(이 분류는 배지가 자동 고정 적용됩니다 — 여기서 켜고 끌 수 없어요'+(includeKs?'. KS만 아래 규격표에 KS 값을 채우면 자동으로 붙습니다':'')+')';
+    return '<div class="pce-cert-picker">'
+      + '<label class="pce-cat-label">인증배지 미리보기 <span style="font-weight:400;color:var(--text-mut);text-transform:none;letter-spacing:0;">'+note+'</span></label>'
+      + '<div class="pce-cert-chips">'+chips+'</div>'
+      + '</div>';
+  }
+
+  // 인증배지 켜고 끄는 배지 미리보기 — 실제 홈페이지 로직과 동일:
+  // 'energy'는 cert_include에 있어야만 켜짐(기본 꺼짐), 나머지는 cert_exclude에 없으면 켜짐(기본 켜짐)
+  function renderCertPicker(item) {
+    var certs = (content.products && content.products.certs) || [];
+    if (!certs.length) return '';
+    var excludeList = Array.isArray(item.cert_exclude) ? item.cert_exclude : String(item.cert_exclude||'').split(',').map(function(s){return s.trim();}).filter(Boolean);
+    var includeList = Array.isArray(item.cert_include) ? item.cert_include : String(item.cert_include||'').split(',').map(function(s){return s.trim();}).filter(Boolean);
+    var chips = certs.map(function(badge) {
+      var isOn = badge.key === 'energy' ? includeList.indexOf('energy') !== -1 : excludeList.indexOf(badge.key) === -1;
+      var label = badge.key === 'ks' ? (item.ks || 'KS인증') : String(badge.name_ko||'').replace(/<br>/g,' ');
+      return '<button type="button" class="pce-cert-chip'+(isOn?' on':'')+'" data-cert-key="'+esc(badge.key)+'" title="'+(isOn?'켜짐 — 클릭하면 이 제품에서 끄기':'꺼짐 — 클릭하면 이 제품에 켜기')+'" onclick="'+varName+'.toggleCert(this)">'
+        + '<img src="'+esc(badge.image)+'" alt="">'
+        + '<span>'+esc(label)+'</span>'
+        + '</button>';
+    }).join('');
+    return '<div class="pce-cert-picker">'
+      + '<label class="pce-cat-label">인증배지 미리보기 <span style="font-weight:400;color:var(--text-mut);text-transform:none;letter-spacing:0;">(클릭해서 이 제품에 표시할 배지를 켜고 끕니다)</span></label>'
+      + '<div class="pce-cert-chips">'+chips+'</div>'
+      + '<input type="hidden" data-field="cert_exclude" value="'+esc(excludeList.join(','))+'">'
+      + '<input type="hidden" data-field="cert_include" value="'+esc(includeList.join(','))+'">'
+      + '</div>';
+  }
+
+  // 규격상세표 — 실제 제품 페이지 하단 표와 완전히 똑같은 칼럼 구성으로 보여준다.
+  // 그중 이미 카드에서 편집하는 필드(모델명·관리번호·사이즈 등)는 여기서는 참고용으로 읽기전용 표시만 하고
+  // (두 군데서 동시에 고치다 한쪽이 씹히는 걸 방지), 카드에 없는 나머지 필드만 이 표에서 직접 입력한다.
+  function renderSpecTable(catKo, itemsInCat) {
+    if (!tableColumns.length) return '';
+    var topKeys = topFields.map(function(f){ return f.key; });
+    function isReadOnly(col) { return col.key === '_name' || topKeys.indexOf(col.key) !== -1; }
+    function cellText(item, col) {
+      if (col.key === '_name') return item.name_ko + (item.name_en ? ' / ' + item.name_en : '');
+      return item[col.key] || '';
+    }
+    var thead = '<tr><th style="width:34px;"></th>' + tableColumns.map(function(c){ return '<th>'+c.label+'</th>'; }).join('') + '</tr>';
+    var rows = itemsInCat.map(function(item, i) {
+      var cells = tableColumns.map(function(col) {
+        if (isReadOnly(col)) return '<td class="pce-spec-readonly">'+esc(cellText(item, col))+'</td>';
+        var val = col.list ? listVal(item[col.key]) : (item[col.key]||'');
+        return '<td><input data-field="'+col.key+'" value="'+esc(val)+'" placeholder="'+col.label+'"></td>';
+      }).join('');
+      return '<tr><td style="text-align:center;"><button type="button" class="row-del" title="이 제품 삭제" onclick="'+varName+'.deleteRow(this)">✕</button></td>'+cells+'</tr>';
+    }).join('');
+    return '<div class="pce-spec-block">'
+      + '<div class="pce-block-label">📋 규격상세표 <small style="font-weight:400;color:var(--text-mut);">(실제 페이지 하단 표와 동일한 칼럼 — 회색 칸은 위 카드에서 이미 입력한 값이라 참고용, 나머지만 여기서 수정)</small></div>'
+      + '<div style="overflow-x:auto;"><table class="pce-spec-table pce-spec-table-multi"><thead>'+thead+'</thead><tbody>'+(rows||'')+'</tbody></table></div>'
+      + '<button type="button" class="add-row-btn" style="margin-top:10px;padding:6px 14px;font-size:13px;" onclick="'+varName+'.addNew(\''+esc(catKo).replace(/'/g,"\\'")+'\')">+ 규격상세표에 행 추가</button>'
+      + '</div>';
+  }
+
+  function render() {
+    var cats = knownCategories();
+    // 마지막으로 보고 있던 분류가 여전히 존재하면 유지, 없으면(첫 렌더/분류 삭제 등) 첫 분류로
+    if (!cats.some(function(c){ return c.ko === state.activeCat; })) {
+      state.activeCat = cats.length ? cats[0].ko : null;
+    }
+    var tabsHtml = cats.length ? '<div class="pce-cat-tabs">' + cats.map(function(cat) {
+      var n = state.list.filter(function(it){ return it.category_ko === cat.ko; }).length;
+      return '<button type="button" class="pce-cat-tab'+(cat.ko===state.activeCat?' active':'')+'" data-cat-tab="'+esc(cat.ko)+'" onclick="'+varName+'.showCat(this,\''+esc(cat.ko).replace(/'/g,"\\'")+'\')">'+esc(cat.ko)+'<span class="pce-cat-tab-count">'+n+'</span></button>';
+    }).join('') + '</div>' : '';
+    var html = cats.map(function(cat) {
+      var itemsInCat = state.list.filter(function(it){ return it.category_ko === cat.ko; });
+      var subs = knownSubcats(cat.ko);
+      var cardsHtml = itemsInCat.map(function(item){ return renderCard(item, cats, subs); }).join('') || '<div class="pce-cards-empty">등록된 제품이 없습니다.</div>';
+      var hidden = cat.ko === state.activeCat ? '' : ' pce-hidden';
+      return '<div class="pce-section'+hidden+'" data-cat-ko="'+esc(cat.ko)+'" data-cat-en="'+esc(cat.en)+'">'
+        + '<div class="pce-section-head"><div class="pce-section-title">'+esc(cat.ko)+'<span class="pce-count">'+itemsInCat.length+'</span></div>'
+        + '<button type="button" class="add-row-btn" style="margin:0;padding:6px 14px;font-size:13px;" onclick="'+varName+'.addNew(\''+esc(cat.ko).replace(/'/g,"\\'")+'\')">+ 제품 추가</button></div>'
+        + '<div class="pce-block-label" style="margin-top:0;padding-top:16px;">🖼️ 대표 이미지 · 제품명 · 인증마크</div>'
+        + '<div class="pce-section-body">'+cardsHtml+'</div>'
+        + renderSpecTable(cat.ko, itemsInCat)
+        + '</div>';
+    }).join('');
+    var emptyMsg = cats.length ? '' : '<p style="color:var(--text-mut);font-size:13px;margin-bottom:14px;">등록된 분류가 없습니다. 아래 버튼으로 첫 분류를 추가해주세요.</p>';
+    document.getElementById(wrapId).innerHTML = emptyMsg + tabsHtml + html + '<button type="button" class="add-row-btn" onclick="'+varName+'.addCategory()">+ 새 분류 추가</button>';
+    // 유리사양 등 긴글 textarea — 저장된 값 길이에 맞춰 처음부터 다 보이는 높이로 펼쳐둠
+    document.querySelectorAll('#'+wrapId+' .pce-spec-row textarea').forEach(function(ta) {
+      ta.style.height = 'auto';
+      ta.style.height = ta.scrollHeight + 'px';
+    });
+  }
+
+  function idxOfCard(card) {
+    return Array.prototype.indexOf.call(document.querySelectorAll('#'+wrapId+' .pce-card'), card);
+  }
+  // 규격상세표의 특정 행이 state.list 어디에 대응하는지 찾는다 — 같은 섹션 안에서 표 행의 순번(i번째)과 같은 순번의 카드를 기준으로 idxOfCard를 재사용한다.
+  function idxOfRow(row) {
+    var section = row.closest('.pce-section');
+    var localIdx = Array.prototype.indexOf.call(section.querySelectorAll(':scope > .pce-spec-block .pce-spec-table tbody tr'), row);
+    var card = section.querySelectorAll(':scope > .pce-section-body .pce-card')[localIdx];
+    return card ? idxOfCard(card) : -1;
+  }
+
+  return {
+    buildTable: function(list) { state.list = (list||[]).slice(); state.activeCat = null; render(); },
+    collectRows: function() { syncFromDom(); return state.list; },
+    // 탭 전환은 다시 그리지 않고 보이기/숨기기만 함 — 다른 분류 카드에 입력 중이던(아직 저장 전) 값이
+    // render()로 통째로 덮어써져 사라지는 일이 없게 하기 위함
+    showCat: function(btn, catKo) {
+      state.activeCat = catKo;
+      var wrap = document.getElementById(wrapId);
+      wrap.querySelectorAll(':scope > .pce-cat-tabs > .pce-cat-tab').forEach(function(t) {
+        t.classList.toggle('active', t.dataset.catTab === catKo);
+      });
+      wrap.querySelectorAll(':scope > .pce-section').forEach(function(s) {
+        s.classList.toggle('pce-hidden', s.dataset.catKo !== catKo);
+      });
+    },
+    toggleCert: function(btn) {
+      syncFromDom();
+      var idx = idxOfCard(btn.closest('.pce-card'));
+      var item = state.list[idx];
+      var key = btn.dataset.certKey;
+      var excludeList = Array.isArray(item.cert_exclude) ? item.cert_exclude.slice() : [];
+      var includeList = Array.isArray(item.cert_include) ? item.cert_include.slice() : [];
+      if (key === 'energy') {
+        var i = includeList.indexOf('energy');
+        if (i === -1) includeList.push('energy'); else includeList.splice(i, 1);
+      } else {
+        var j = excludeList.indexOf(key);
+        if (j === -1) excludeList.push(key); else excludeList.splice(j, 1);
+      }
+      item.cert_exclude = excludeList;
+      item.cert_include = includeList;
+      render();
+    },
+    addNew: function(catKo) {
+      syncFromDom();
+      var existing = state.list.find(function(it){ return it.category_ko === catKo; });
+      var item = { category_ko: catKo, category_en: (existing && existing.category_en) || '', name_ko:'', name_en:'', image:'' };
+      topFields.concat(tableColumns.filter(function(f){ return f.key !== '_name'; })).forEach(function(f){ if (!f.list) item[f.key] = ''; });
+      // 그냥 배열 끝에 push하면, 화면은 분류별로 묶어서 보여주는데 state.list 순서는 안 맞게 돼서
+      // 삭제(X) 버튼이 화면 위치 기준으로 index를 찾다가 엉뚱한 제품을 지우는 버그가 생긴다.
+      // 같은 분류의 마지막 항목 바로 뒤에 끼워 넣어서 화면 순서와 항상 일치시킨다.
+      var insertAt = state.list.length;
+      for (var i = state.list.length - 1; i >= 0; i--) {
+        if (state.list[i].category_ko === catKo) { insertAt = i + 1; break; }
+      }
+      state.list.splice(insertAt, 0, item);
+      render();
+    },
+    addCategory: function() {
+      syncFromDom();
+      var ko = prompt('새 분류 이름(한국어)을 입력하세요');
+      if (!ko) return;
+      var en = prompt('분류 이름(영어)을 입력하세요 (생략 가능)') || '';
+      var item = { category_ko: ko, category_en: en, name_ko:'', name_en:'', image:'' };
+      topFields.concat(tableColumns.filter(function(f){ return f.key !== '_name'; })).forEach(function(f){ if (!f.list) item[f.key] = ''; });
+      state.list.push(item);
+      render();
+    },
+    promptNewSubcategory: function(btn) {
+      syncFromDom();
+      var ko = prompt('새 하위분류 이름(한국어)');
+      if (!ko) return;
+      var en = prompt('하위분류 이름(영어, 생략 가능)') || '';
+      var idx = idxOfCard(btn.closest('.pce-card'));
+      state.list[idx].subcategory_ko = ko;
+      state.list[idx].subcategory_en = en;
+      render();
+    },
+    moveCard: function(btn, kind, ko, en) {
+      syncFromDom();
+      var idx = idxOfCard(btn.closest('.pce-card'));
+      if (kind === 'cat') { state.list[idx].category_ko = ko; state.list[idx].category_en = en; }
+      else { state.list[idx].subcategory_ko = ko; state.list[idx].subcategory_en = en; }
+      render();
+    },
+    deleteCard: function(btn) {
+      if (!confirm('이 제품을 삭제할까요?')) return;
+      syncFromDom();
+      var idx = idxOfCard(btn.closest('.pce-card'));
+      state.list.splice(idx, 1);
+      render();
+    },
+    deleteRow: function(btn) {
+      if (!confirm('이 제품을 삭제할까요?')) return;
+      syncFromDom();
+      var idx = idxOfRow(btn.closest('tr'));
+      if (idx === -1) return;
+      state.list.splice(idx, 1);
+      render();
+    }
+  };
+}
+
+// topFields = 카드 위에 바로 보이는(편집하는) 필드.
+// tableColumns = 카드 아래 규격상세표에 "표시되는" 칼럼 — 실제 공개 페이지(products*.html) 하단
+// "규격 상세표"와 칼럼 구성을 똑같이 맞춤(관리번호·품명·모델명 + 그 제품군의 기술 스펙).
+// tableColumns 중 topFields에도 있는 칼럼(모델명·관리번호·사이즈 등)은 표에서는 회색 읽기전용으로만 보여주고
+// (카드·표 두 군데서 동시에 편집하면 저장할 때 한쪽 값이 씹히는 문제가 생겨서), 나머지만 표에서 직접 입력한다.
+var windowEditor = makeProductCardEditor('window-list-wrap', 'windowEditor',
+  [
+    {key:'model', label:'모델명'}, {key:'id_no', label:'관리번호'},
+    {key:'spec', label:'규격'}, {key:'glass_ko', label:'유리사양', longText:true},
+    {key:'cert_exclude', label:'인증배지 제외 (콤마, 예: ks,eco)', list:true},
+    {key:'cert_include', label:'인증배지 추가허용 (콤마, 예: energy)', list:true}
+  ],
+  [
+    {key:'id_no', label:'관리번호'}, {key:'_name', label:'품명'}, {key:'model', label:'모델명'},
+    {key:'ks', label:'KS'}, {key:'u_value', label:'열관류율'}, {key:'airtight', label:'기밀등급'}
+  ],
+  'edit'
+);
+var awningEditor = makeProductCardEditor('awning-list-wrap', 'awningEditor',
+  [
+    {key:'model', label:'모델명'}, {key:'id_no', label:'관리번호'}, {key:'spec', label:'사이즈'}
+  ],
+  [
+    {key:'id_no', label:'관리번호'}, {key:'_name', label:'품명'}, {key:'model', label:'모델명'}, {key:'spec', label:'사이즈'}
+  ],
+  'fixed'
+);
+var doorEditor = makeProductCardEditor('door-list-wrap', 'doorEditor',
+  [
+    {key:'model', label:'모델명'}, {key:'id_no', label:'관리번호'},
+    {key:'spec', label:'사이즈'}, {key:'ks', label:'KS 규격'}
+  ],
+  [
+    {key:'id_no', label:'관리번호'}, {key:'_name', label:'품명'}, {key:'model', label:'모델명'},
+    {key:'spec', label:'사이즈'}, {key:'ks', label:'KS 규격'}
+  ],
+  'fixed-plus-ks'
+);
 
 // 인증현황 — 게시글형 목록 4종 (제목 + 발급기관 + 이미지)
 var docsEditor = makeListEditor('docs-list-wrap', [
   {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
   {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
   {key:'image', label:'이미지 경로', w:220, img:true}
-]);
+], {cardMode:true});
 var ecoDocsEditor = makeListEditor('ecodocs-list-wrap', [
   {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
   {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
   {key:'image', label:'이미지 경로', w:220, img:true}
-]);
-var socialDocsEditor = makeListEditor('socialdocs-list-wrap', [
-  {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
-  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
-  {key:'image', label:'이미지 경로', w:220, img:true}
-]);
+], {cardMode:true});
 var efficiencyDocsEditor = makeListEditor('effdocs-list-wrap', [
   {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
   {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
   {key:'image', label:'이미지 경로', w:220, img:true}
+], {cardMode:true});
+var patentDocsEditor = makeListEditor('patentdocs-list-wrap', [
+  {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
+  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
+  {key:'image', label:'이미지 경로', w:220, img:true}
+], {cardMode:true});
+var socialDocsEditor = makeListEditor('socialdocs-list-wrap', [
+  {key:'title_ko', label:'제목(KO)', w:220}, {key:'title_en', label:'제목(EN)', w:220},
+  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:180},
+  {key:'image', label:'이미지 경로', w:220, img:true}
+], {cardMode:true});
+// 보유 자격증 현황 — 실제 페이지(certs-staff.html)가 표(번호/자격증명/등급/발급기관)로 보여주므로 표 형태로
+var staffEditor = makeListEditor('staff-list-wrap', [
+  {key:'qualification_ko', label:'자격증명(KO)', w:200}, {key:'qualification_en', label:'자격증명(EN)', w:220},
+  {key:'grade_ko', label:'등급(KO)', w:100}, {key:'grade_en', label:'등급(EN)', w:120},
+  {key:'issuer_ko', label:'발급기관(KO)', w:160}, {key:'issuer_en', label:'발급기관(EN)', w:200},
+  {key:'count', label:'보유 인원수', w:90}
 ]);
 
-// 시공갤러리 — 이미지 + 한/영 설명
-var galleryEditor = makeListEditor('gallery-list-wrap', [
+// 시공갤러리 — 이미지 + 한/영 설명 + 분류(어느 탭에 뜨는지) + 홈 화면 노출 여부(최대 6개까지만 화면에 표시됨)
+// 시공갤러리 — 분류(공공시설/교육시설/기타)별로 탭을 나눠서 각자 그 분류만 다루는 별도 에디터 3개로 관리.
+// (분류는 각 에디터에 고정돼 있어서 카드에서 따로 입력할 필요 없음 — 어느 탭에서 추가했는지로 자동 결정)
+var GALLERY_CARD_COLUMNS = [
   {key:'image', label:'이미지 경로', w:220, img:true},
-  {key:'caption_ko', label:'설명(KO)', w:200}, {key:'caption_en', label:'설명(EN)', w:220}
-]);
+  {key:'caption_ko', label:'설명(KO)', w:200}, {key:'caption_en', label:'설명(EN)', w:220},
+  {key:'home_featured', label:'홈 화면 노출', w:80, bool:true}
+];
+var galleryPublicEditor = makeListEditor('gallery-public-list-wrap', GALLERY_CARD_COLUMNS, {cardMode:true, categoryFilter:'공공시설'});
+var galleryEduEditor = makeListEditor('gallery-edu-list-wrap', GALLERY_CARD_COLUMNS, {cardMode:true, categoryFilter:'교육시설'});
+var galleryEtcEditor = makeListEditor('gallery-etc-list-wrap', GALLERY_CARD_COLUMNS, {cardMode:true, categoryFilter:'기타'});
 
 // 회사연혁 — 연도/월 + 제목/부제 (한/영)
 var historyEditor = makeListEditor('history-list-wrap', [
-  {key:'year', label:'연도', w:70}, {key:'date', label:'월', w:60},
-  {key:'title_ko', label:'제목(KO)', w:200}, {key:'title_en', label:'제목(EN)', w:220},
-  {key:'sub_ko', label:'부제(KO)', w:220}, {key:'sub_en', label:'부제(EN)', w:240}
-]);
+  {key:'year', label:'연도'},
+  {key:'title_ko', label:'제목(KO)'}, {key:'title_en', label:'제목(EN)'}
+], {cardMode:true});
 
 // 자료실 — 다운로드 파일(PDF 등) 목록
 var resourcesEditor = makeListEditor('resources-list-wrap', [
-  {key:'title_ko', label:'제목(KO)', w:200}, {key:'title_en', label:'제목(EN)', w:200},
-  {key:'meta_ko', label:'설명(KO)', w:220}, {key:'meta_en', label:'설명(EN)', w:220},
-  {key:'file', label:'파일 경로 (PDF)', w:220, img:true}
-]);
+  {key:'file', label:'파일 경로 (PDF)', img:true},
+  {key:'title_ko', label:'제목(KO)'}, {key:'title_en', label:'제목(EN)'},
+  {key:'meta_ko', label:'설명(KO)'}, {key:'meta_en', label:'설명(EN)'}
+], {cardMode:true});
 
+// 공지사항 — 제목(한/영) + 날짜
+var noticesEditor = makeListEditor('notices-list-wrap', [
+  {key:'image', label:'이미지 (선택사항)', img:true},
+  {key:'title_ko', label:'제목(KO)'}, {key:'title_en', label:'제목(EN)'},
+  {key:'date', label:'날짜 (예: 2026-03-05)'},
+  {key:'content_ko', label:'본문(KO)'}, {key:'content_en', label:'본문(EN)'}
+], {cardMode:true});
 
-/* ══════════════════════════════════════
-   납품 실적 목록
-══════════════════════════════════════ */
-function buildProjTable() {
-  var list = (content.projects && content.projects.list) || [];
-  var tbody = document.getElementById('proj-tbody');
-  tbody.innerHTML = '';
-  list.forEach(function(item, i) { appendProjRow(item); });
-  updateProjCount();
-}
-
-function appendProjRow(item) {
-  item = item || {};
-  var tr = document.createElement('tr');
-  tr.innerHTML =
-    '<td><input class="proj-year" value="'+(item.year||'')+'" placeholder="2025"></td>'
-   +'<td><input class="proj-month" value="'+(item.month||'')+'" placeholder="01월"></td>'
-   +'<td><input class="proj-client" value="'+(item.client_ko||'')+'" placeholder="납품처명"></td>'
-   +'<td><input class="proj-item" value="'+(item.item_ko||'')+'" placeholder="품목"></td>'
-   +'<td><select class="proj-cat">'
-   +['학교','관공서','공공시설','관광시설','기타'].map(function(c){
-     return '<option'+(c===item.category_ko?' selected':'')+'>'+c+'</option>';
-   }).join('')+'</select></td>'
-   +'<td><button class="row-del" onclick="delProjRow(this)">✕</button></td>';
-  document.getElementById('proj-tbody').appendChild(tr);
-  updateProjCount();
-}
-
-function addProjRow() { appendProjRow({}); }
-
-function delProjRow(btn) {
-  if (!confirm('이 실적 항목을 삭제할까요?')) return;
-  btn.closest('tr').remove();
-  updateProjCount();
-}
-
-function collectProjRows() {
-  return Array.from(document.querySelectorAll('#proj-tbody tr')).map(function(tr) {
-    return {
-      year:        tr.querySelector('.proj-year').value,
-      month:       tr.querySelector('.proj-month').value,
-      client_ko:   tr.querySelector('.proj-client').value,
-      item_ko:     tr.querySelector('.proj-item').value,
-      category_ko: tr.querySelector('.proj-cat').value
-    };
-  });
-}
-
-function updateProjCount() {
-  var n = document.querySelectorAll('#proj-tbody tr').length;
-  document.getElementById('proj-count').textContent = n;
-}
-
-/* ══════════════════════════════════════
-   조달청 등록 현황 표
-══════════════════════════════════════ */
-function buildKonepsTable() {
-  var list = (content.koneps && content.koneps.list) || [];
-  var tbody = document.getElementById('koneps-tbody');
-  tbody.innerHTML = '';
-  list.forEach(function(item) { appendKonepsRow(item); });
-}
-
-var konepsCatEn = { '금속제창':'Metal Windows', '차양':'Awnings', '문세트':'Door Sets', '기타':'Other' };
-
-function appendKonepsRow(item) {
-  item = item || {};
-  var tr = document.createElement('tr');
-  tr.innerHTML =
-    '<td><input class="koneps-item" value="'+(item.item_ko||'')+'" placeholder="등록 품목명"></td>'
-   +'<td><input class="koneps-item-en" value="'+(item.item_en||'')+'" placeholder="Registered Item"></td>'
-   +'<td><input class="koneps-ks" value="'+(item.ks||'')+'" placeholder="KS F 0000"></td>'
-   +'<td><select class="koneps-cat">'
-   +['금속제창','차양','문세트','기타'].map(function(c){
-     return '<option'+(c===item.category_ko?' selected':'')+'>'+c+'</option>';
-   }).join('')+'</select></td>'
-   +'<td><input class="koneps-status" value="'+(item.status_ko||'등록완료')+'" placeholder="등록완료"></td>'
-   +'<td><input class="koneps-status-en" value="'+(item.status_en||'Registered')+'" placeholder="Registered"></td>'
-   +'<td><button class="row-del" onclick="confirmRemoveRow(this)">✕</button></td>';
-  document.getElementById('koneps-tbody').appendChild(tr);
-}
-
-function addKonepsRow() { appendKonepsRow({}); }
-
-function collectKonepsRows() {
-  return Array.from(document.querySelectorAll('#koneps-tbody tr')).map(function(tr) {
-    var cat = tr.querySelector('.koneps-cat').value;
-    return {
-      item_ko:     tr.querySelector('.koneps-item').value,
-      item_en:     tr.querySelector('.koneps-item-en').value,
-      ks:          tr.querySelector('.koneps-ks').value,
-      category_ko: cat,
-      category_en: konepsCatEn[cat] || cat,
-      status_ko:   tr.querySelector('.koneps-status').value,
-      status_en:   tr.querySelector('.koneps-status-en').value
-    };
-  });
-}
-
-/* ══════════════════════════════════════
-   전문인력 표
-══════════════════════════════════════ */
-function buildStaffTable() {
-  var list = (content.staff && content.staff.list) || [];
-  var tbody = document.getElementById('staff-tbody');
-  tbody.innerHTML = '';
-  list.forEach(function(item) { appendStaffRow(item); });
-}
-
-function appendStaffRow(item) {
-  item = item || {};
-  var tr = document.createElement('tr');
-  tr.innerHTML =
-    '<td><input class="staff-qual" value="'+(item.qualification_ko||'')+'" placeholder="자격 종목명"></td>'
-   +'<td><input class="staff-qual-en" value="'+(item.qualification_en||'')+'" placeholder="Qualification"></td>'
-   +'<td><input class="staff-grade" value="'+(item.grade_ko||'')+'" placeholder="기사/기능사"></td>'
-   +'<td><input class="staff-grade-en" value="'+(item.grade_en||'')+'" placeholder="Engineer/Craftsman"></td>'
-   +'<td><input class="staff-count" value="'+(item.count||'')+'" placeholder="1" style="width:100%;"></td>'
-   +'<td><input class="staff-issuer" value="'+(item.issuer_ko||'')+'" placeholder="발급기관"></td>'
-   +'<td><input class="staff-issuer-en" value="'+(item.issuer_en||'')+'" placeholder="Issuing Body"></td>'
-   +'<td><button class="row-del" onclick="confirmRemoveRow(this)">✕</button></td>';
-  document.getElementById('staff-tbody').appendChild(tr);
-}
-
-function addStaffRow() { appendStaffRow({}); }
-
-function collectStaffRows() {
-  return Array.from(document.querySelectorAll('#staff-tbody tr')).map(function(tr) {
-    return {
-      qualification_ko: tr.querySelector('.staff-qual').value,
-      qualification_en: tr.querySelector('.staff-qual-en').value,
-      grade_ko:         tr.querySelector('.staff-grade').value,
-      grade_en:         tr.querySelector('.staff-grade-en').value,
-      count:            tr.querySelector('.staff-count').value,
-      issuer_ko:        tr.querySelector('.staff-issuer').value,
-      issuer_en:        tr.querySelector('.staff-issuer-en').value
-    };
-  });
-}
 
 /* ══════════════════════════════════════
    이미지 관리
@@ -1446,7 +1965,7 @@ function updateImgPreview(input) {
 var pageMap = {
   home:'홈페이지 편집', about:'회사소개 편집',
   products:'제품소개 편집', certs:'인증현황 편집',
-  projects:'시공소개 편집', contact:'문의하기 편집',
+  projects:'시공사례 편집', contact:'고객지원 편집',
   images:'이미지 관리'
 };
 
