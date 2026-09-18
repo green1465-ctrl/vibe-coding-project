@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>(주)네오콘크리트 — 홈페이지 관리</title>
+<link rel="icon" href="./images/favicon.png">
+<link rel="stylesheet" href="./admin.css?v=20260925h">
+</head>
+<body>
+
+<!-- ══ 로그인 ══ -->
+<div class="login-screen" id="login">
+  <form class="login-box" id="login-form" autocomplete="off">
+    <h1>홈페이지 관리</h1>
+    <p>(주)네오콘크리트 · 관리자 전용</p>
+    <label class="fld">
+      <span class="hint">비밀번호</span>
+      <input type="password" id="pw" autocomplete="current-password" required>
+    </label>
+    <button type="submit" class="btn">로그인</button>
+    <p class="hint" id="login-msg" style="margin-top:12px;color:var(--danger)" hidden></p>
+  </form>
+</div>
+
+<!-- ══ 관리 화면 ══ -->
+<div id="app" hidden>
+  <header class="top">
+    <h1>홈페이지 관리</h1>
+    <span class="top-sub">(주)네오콘크리트</span>
+    <span class="spacer"></span>
+    <span class="save-state" id="save-state">불러오는 중…</span>
+    <a class="btn btn-ghost btn-sm" href="./index.html" target="_blank" rel="noopener">홈페이지 보기 ↗</a>
+    <button type="button" class="btn btn-sm" id="save-btn">저장하기</button>
+    <button type="button" class="btn btn-ghost btn-sm" id="logout-btn">로그아웃</button>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="관리 항목">
+    <button type="button" class="tab" role="tab" data-tab="history"   aria-selected="true">회사연혁</button>
+    <button type="button" class="tab" role="tab" data-tab="gallery"   aria-selected="false">시공사례 갤러리</button>
+    <button type="button" class="tab" role="tab" data-tab="certs"     aria-selected="false">인증서</button>
+    <button type="button" class="tab" role="tab" data-tab="patents"  aria-selected="false">특허 · 디자인등록</button>
+    <button type="button" class="tab" role="tab" data-tab="notices"   aria-selected="false">공지사항</button>
+    <button type="button" class="tab" role="tab" data-tab="resources" aria-selected="false">자료실</button>
+  </nav>
+
+  <main class="wrap">
+    <p class="notice-bar">수정한 내용은 오른쪽 위 <b>저장하기</b>를 눌러야 홈페이지에 반영됩니다. 영문 칸을 비워두면 영문 화면에도 한글이 그대로 표시됩니다.</p>
+
+    <section class="panel" id="panel-history" role="tabpanel">
+      <div class="panel-head">
+        <h2>회사연혁</h2>
+        <p>회사소개 → 회사연혁 페이지에 표시됩니다. 위쪽 연도가 화면에서도 위에 나옵니다(최근 연도를 위로).</p>
+      </div>
+      <div id="history-list"></div>
+      <button type="button" class="add-row" id="add-year">+ 연도 추가</button>
+    </section>
+
+    <section class="panel" id="panel-gallery" role="tabpanel" hidden>
+      <div class="panel-head">
+        <h2>시공사례 갤러리</h2>
+        <p>현장 한 곳이 카드 한 장입니다. 첫 번째 사진이 카드에 보이는 대표 사진이고, 카드를 누르면 나머지 사진을 넘겨볼 수 있습니다.</p>
+      </div>
+      <div id="gallery-list"></div>
+      <button type="button" class="add-row" id="add-site">+ 현장 추가</button>
+    </section>
+
+    <section class="panel" id="panel-certs" role="tabpanel" hidden>
+      <div class="panel-head">
+        <h2>인증서</h2>
+        <p>인증현황 → 인증서 페이지에 표시됩니다. KS·단체표준·벤처기업 등의 인증서 이미지를 한 장씩 올립니다.</p>
+      </div>
+      <div id="certs-list"></div>
+      <button type="button" class="add-row" id="add-cert">+ 인증서 추가</button>
+    </section>
+
+    <section class="panel" id="panel-patents" role="tabpanel" hidden>
+      <div class="panel-head">
+        <h2>특허 · 디자인등록</h2>
+        <p>인증현황 → 특허·디자인등록 페이지에 표시됩니다. "구분"을 특허/디자인등록 중 선택하면 해당 영역에 표시됩니다.</p>
+      </div>
+      <div id="patents-list"></div>
+      <button type="button" class="add-row" id="add-patent">+ 특허 · 디자인 추가</button>
+    </section>
+
+    <section class="panel" id="panel-notices" role="tabpanel" hidden>
+      <div class="panel-head">
+        <h2>공지사항</h2>
+        <p>고객지원 → 공지사항 페이지에 표시됩니다. ‘상단 고정’을 켜면 항상 맨 위에 보입니다.</p>
+      </div>
+      <div id="notices-list"></div>
+      <button type="button" class="add-row" id="add-notice">+ 공지 추가</button>
+    </section>
+
+    <section class="panel" id="panel-resources" role="tabpanel" hidden>
+      <div class="panel-head">
+        <h2>자료실</h2>
+        <p>카탈로그·도면 등 내려받을 파일을 올립니다. 파일을 올리지 않으면 방문자에게 ‘준비 중’ 안내가 나갑니다.</p>
+      </div>
+      <div id="resources-list"></div>
+      <button type="button" class="add-row" id="add-resource">+ 자료 추가</button>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="./admin.js?v=20260925h"></script>
+</body>
+</html>

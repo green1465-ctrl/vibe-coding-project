@@ -1,0 +1,28 @@
+# ─────────────────────────────────────────────────────────────
+# (주)네오콘크리트 — Cloudflare Pages 설정
+#  · Pages 이름 : neoconcrete
+#  · D1(DB)     : 사이트 편집 내용(연혁·갤러리·공지·자료실·오시는길)을 JSON 한 덩어리로 보관
+#  · R2(FILES)  : 갤러리 사진 · 자료실 파일 저장소
+#  대시보드에서 아래 두 가지를 "비밀 변수"로 따로 넣어야 한다 (이 파일에 쓰지 말 것)
+#    ADMIN_PW   : 관리자 비밀번호
+#    JWT_SECRET : 로그인 토큰 서명키 (아무 긴 임의 문자열)
+# ─────────────────────────────────────────────────────────────
+name = "neoconcrete"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "neoconcrete-db"
+database_id = "여기에-D1-만들고-나온-id"
+
+# R2(사진·파일 저장소) — 카드 등록 후 버킷을 만들고 아래 3줄의 # 을 지우면 연결된다.
+#   npx wrangler r2 bucket create neoconcrete-files
+# 연결 전까지 사진·파일 올리기만 안 되고, 글 수정은 정상 동작한다.
+# [[r2_buckets]]
+# binding = "FILES"
+# bucket_name = "neoconcrete-files"
+
+[vars]
+# R2 버킷의 공개 주소 (예: https://files.네오도메인.com 또는 r2.dev 주소)
+R2_PUBLIC_URL = ""

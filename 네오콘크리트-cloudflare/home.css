@@ -1,0 +1,397 @@
+/* ═══════════════════════════════════════════════════════════
+   (주)네오콘크리트 — HOME 전용 스타일 (index.html 에서만 로드)
+   디자인 기준: _design-compare/ipark-style.html 시안 (IPARK 레이아웃 흡수)
+   · 섹션 순서: HERO → COMPANY(고정 스크롤) → PRODUCTS(탭) → PROJECTS(흐르는 슬라이드)
+   · 공통 헤더/푸터/언어토글은 style.css · main.js 그대로 사용
+═══════════════════════════════════════════════════════════ */
+.home {
+  --ink: #212121; --ink-2: #434343; --ink-3: #6E6E6E;
+  --grey: #EDEDED; --line: #DEDEDE; --paper: #F4F4F2;
+  --e: cubic-bezier(.43,.2,.02,1);
+  color: var(--ink); letter-spacing: -.5px;
+}
+.home a { color: inherit; }
+.home a:hover { color: inherit; }
+.home h1, .home h2, .home h3, .home h4 { color: inherit; }
+.home p { line-height: inherit; }
+.hm-wrap { max-width: var(--container); margin: 0 auto; padding: 0 20px; }
+
+/* 섹션 라벨 — 짧은 포인트 막대 */
+.hm-label { display: inline-flex; align-items: center; gap: 10px; font-size: 13.5px; line-height: 1.4; font-weight: 500; color: var(--ink); }
+.hm-label::before { content: ''; width: 3px; height: 13px; background: var(--slate); }
+.nw { white-space: nowrap; }
+.hm-h2 { margin-top: 18px; font-size: 36px; font-weight: 600; line-height: 1.4; color: var(--ink); }
+
+/* 라인 마스크 — 줄마다 가림막 안에서 아래 → 위 */
+.lm { display: block; overflow: clip; }
+html.js .ln { display: block; transform: translateY(110%); transition: transform 1s var(--e); }
+html.js .in .ln, html.js .ready .ln { transform: none; }
+.lm:nth-of-type(2) .ln { transition-delay: .1s; }
+.lm:nth-of-type(3) .ln { transition-delay: .2s; }
+
+/* 공통 등장 */
+html.js .hm-rv { opacity: 0; transform: translateY(40px); transition: opacity 1s var(--e), transform 1s var(--e); }
+html.js .hm-rv.in { opacity: 1; transform: none; }
+html.js .hm-clip { clip-path: inset(0 0 100% 0); transition: clip-path 1.4s var(--e); }
+html.js .hm-clip.in { clip-path: inset(0); }
+.hm-clip img { transform: scale(1.15); transition: transform 1.8s var(--e); }
+.hm-clip.in img { transform: scale(1); }
+html:not(.js) .hm-clip img { transform: none; }
+
+/* ═════════ HERO ═════════ */
+.hm-hero { position: relative; height: 100vh; min-height: 680px; padding-top: var(--header-h); overflow: hidden; color: #fff; background: #111; }
+.hm-slides { position: absolute; inset: var(--header-h) 0 0; }
+html.js .hm-slides { clip-path: inset(0 0 100% 0); transition: clip-path 1.4s var(--e); }
+html.js .hm-hero.ready .hm-slides { clip-path: inset(0); }
+.hm-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transform: scale(1.08); transition: opacity 1.6s ease, transform 7s linear; }
+.hm-slide.on { opacity: 1; transform: scale(1); }
+.hm-hero::after { content: ''; position: absolute; inset: var(--header-h) 0 0; z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(10,10,10,.45) 0%, rgba(10,10,10,0) 55%),
+    linear-gradient(90deg, rgba(10,10,10,.72) 0%, rgba(10,10,10,.5) 45%, rgba(10,10,10,.32) 100%),
+    linear-gradient(0deg, rgba(10,10,10,.35), transparent 35%); }
+.hm-hero .hm-wrap { position: relative; z-index: 2; height: 100%; padding-top: 140px; }
+.hm-facts, .hm-hero h1, .hm-more { text-shadow: 0 2px 18px rgba(0,0,0,.35); }
+.hm-facts { font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.78); }
+.hm-hero h1 { margin-top: 18px; font-size: 52px; font-weight: 500; line-height: 1.3; letter-spacing: -1.5px; color: #fff; }
+.home .hm-more { margin-top: 26px; display: inline-flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; line-height: 1.5; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,.55); color: #fff; }
+.hm-more .arw { transition: transform .6s var(--e); }
+.hm-more:hover .arw { transform: translateX(6px); }
+html.js .hm-more { opacity: 0; transform: translateY(24px); transition: opacity 1s var(--e), transform 1s var(--e); }
+html.js .hm-hero.ready .hm-facts .ln { transition-delay: .5s; }
+html.js .hm-hero.ready h1 .lm:nth-of-type(1) .ln { transition-delay: .62s; }
+html.js .hm-hero.ready h1 .lm:nth-of-type(2) .ln { transition-delay: .72s; }
+html.js .hm-hero.ready .hm-more { opacity: 1; transform: none; transition-delay: 1s; }
+.hm-pager { position: absolute; right: 40px; bottom: 88px; z-index: 2; display: flex; align-items: center; gap: 14px; font-size: 13px; line-height: 1; color: rgba(255,255,255,.7); font-variant-numeric: tabular-nums; }
+.hm-pager b { color: #fff; font-weight: 600; }
+.hm-pager .bar { width: 120px; height: 1px; background: rgba(255,255,255,.3); position: relative; overflow: hidden; }
+.hm-pager .bar i { position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(0); }
+.hm-pager .bar i.run { animation: hmBar 6s linear forwards; }
+@keyframes hmBar { to { transform: scaleX(1); } }
+
+/* ═════════ COMPANY — 섹션 고정 · 01/02/03 이 아래에서 위로 교체 ═════════
+   단계당 스크롤 --c-step · 사진은 원본 비율(자르지 않음) · 설명글 칸 최소폭 --c-text 확보 */
+.hm-company { --c-step: 26vh; --c-pad: clamp(72px, 11vh, 130px); --c-gap: clamp(44px, 7vh, 84px); --c-col-gap: clamp(60px, 5vw, 96px); --c-text: 470px; }
+.cstage { position: relative; height: calc(100vh - var(--header-h) + var(--c-step) * 3); }
+.csticky { position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); padding-block: var(--c-pad); overflow: hidden; display: flex; flex-direction: column; }
+.csticky::before, .csticky::after { content: ''; flex: 1 1 0; }   /* 남는 세로 공간은 위·아래 똑같이 */
+.csticky > .hm-wrap { width: 100%; flex: none; }
+.hm-company .hm-h2 { margin-top: 20px; font-size: 40px; line-height: 1.3; letter-spacing: -1px; }
+.cgrid { margin-top: var(--c-gap); display: grid; grid-template-columns: auto minmax(var(--c-text), 1fr); gap: var(--c-col-gap); }
+/* 채움 장식 ① 사진 뒤 옅은 슬레이트 면 — 화면 왼쪽 끝에서 사진 오른쪽 70% 지점까지
+   (사진은 clip-path 리빌이라 사진 자체의 ::before 는 잘림 → 격자에 붙임) */
+.cimg { margin: 0; position: relative; z-index: 1; }
+.cgrid { position: relative; }
+.cgrid::before { content: ''; position: absolute; top: 18%; bottom: -40px; left: -100vw; right: calc(100% - var(--cimg-w, 55%) - var(--c-col-gap) / 2); background: #EEF1F3; }   /* --cimg-w: home.js 가 사진 실제 폭을 넣음 → 면이 사진과 글 사이 간격 가운데서 끝남 */
+/* 채움 장식 ② 오른쪽 위 대형 외곽선 번호 — 01/02/03 단계에 맞춰 위로 굴러감 */
+.csticky > .hm-wrap { position: relative; }
+.cbig { position: absolute; right: 20px; top: -14px; display: flex; align-items: flex-start; gap: 14px; pointer-events: none; }
+.cbig-roll { display: flex; flex-direction: column; transition: transform 1s var(--e); }
+.cbig { height: calc(clamp(120px, 13vw, 210px) * .86); overflow: hidden; }
+.cbig-roll span { display: block; height: calc(clamp(120px, 13vw, 210px) * .86); font-size: clamp(120px, 13vw, 210px); font-weight: 700; line-height: .86; letter-spacing: -6px; color: transparent; -webkit-text-stroke: 1.5px #C9D2D8; }
+.cbig em { font-style: normal; font-size: 15px; font-weight: 600; letter-spacing: .04em; color: var(--slate); padding-bottom: 10px; align-self: flex-end; }
+.cimg img { display: block; width: auto; height: auto;
+  max-height: clamp(260px, calc(100vh - var(--header-h) - var(--c-pad) - var(--c-gap) - 210px), 600px);
+  max-width: min(860px, calc(min(100vw, var(--container)) - 40px - var(--c-text) - var(--c-col-gap))); }
+.cimg figcaption { margin-top: 6px; font-size: 13px; line-height: 1.3; color: var(--ink-3); }
+.citems { position: relative; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22px, #000 72%, transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 22px, #000 72%, transparent 100%); }
+.ctrack { position: absolute; left: 0; right: 0; top: 0; padding-top: 22px; display: grid; gap: clamp(56px, 9vh, 100px); transition: transform 1s var(--e); will-change: transform; }
+.citem { position: relative; padding-left: 28px; opacity: .26; transition: opacity .7s ease; }
+.citem.on { opacity: 1; }
+.citem::before, .citem::after { content: ''; position: absolute; left: 0; top: 3px; bottom: 3px; width: 2px; }
+.citem::before { background: var(--line); }
+.citem::after { background: var(--slate); transform: scaleY(0); transform-origin: top; transition: transform .8s var(--e) .15s; }
+.citem.on::after { transform: scaleY(1); }
+.cno { display: block; font-size: 13px; line-height: 1.4; font-weight: 600; color: var(--slate); }
+.citem h3 { margin-top: 8px; font-size: 28px; font-weight: 600; line-height: 1.35; }
+.citem p { margin-top: 12px; font-size: 16px; line-height: 1.65; color: var(--ink-2); }
+html.js .cgrid.in .citem .ln { transition-duration: .9s; }
+html.js .cgrid.in .citem.rise .ln { transform: translateY(110%); transition: none; }
+.citem p .lm:nth-of-type(1) .ln { transition-delay: .08s; }
+.citem p .lm:nth-of-type(2) .ln { transition-delay: .16s; }
+@media (max-height: 820px) { .citem h3 { font-size: 22px; margin-top: 6px; } .citem p { font-size: 15px; margin-top: 8px; line-height: 1.6; } }
+html:not(.js) .cstage { height: auto; }
+html:not(.js) .csticky { position: static; height: auto; padding: 120px 0; display: block; }
+html:not(.js) .citems { overflow: visible; -webkit-mask-image: none; mask-image: none; }
+html:not(.js) .ctrack { position: static; }
+html:not(.js) .citem { opacity: 1; }
+
+/* ═════════ PRODUCTS — 탭 + 제품 컷아웃 ═════════ */
+.hm-products { background: var(--paper); padding: 140px 0; }
+/* 섹션 라벨·제목·흰 패널 모두 다른 섹션과 같은 콘텐츠 폭(1270px) 왼쪽 선에 맞춤 */
+.hm-products .head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px 40px; }
+.ptabs { display: flex; gap: 4px; }
+.ptabs button { font: inherit; font-size: 16px; font-weight: 500; line-height: 1.4; letter-spacing: -.5px; padding: 14px 22px; border: 0; background: transparent; color: var(--ink-3); cursor: pointer; position: relative; white-space: nowrap; transition: color .3s; }
+.ptabs button::after { content: ''; position: absolute; left: 22px; right: 22px; bottom: 6px; height: 2px; background: var(--slate); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--e); }
+.ptabs button:hover, .ptabs button.on { color: var(--ink); }
+.ptabs button.on::after { transform: scaleX(1); }
+.ppanels { margin-top: 64px; }
+.ppanel { display: none; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); min-height: 640px; background: #fff; }
+.ppanel.on { display: grid; animation: hmPanel .8s var(--e); }
+@keyframes hmPanel { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.pinfo { padding: 72px 80px 64px; }
+.pinfo .no { font-size: 14px; line-height: 1.4; font-weight: 600; color: var(--slate); }
+.pinfo h3 { margin-top: 12px; font-size: 36px; font-weight: 600; line-height: 1.3; }
+.pinfo p { margin-top: 18px; font-size: 17px; line-height: 1.7; color: var(--ink-2); }
+.plist { margin-top: 36px; border-top: 1px solid var(--ink); }
+.home .plist a { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 4px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 500; line-height: 1.5; transition: padding .4s var(--e), color .3s; }
+.plist a .arw { color: var(--ink-3); transition: transform .4s var(--e), color .3s; }
+.home .plist a:hover { padding-left: 12px; color: var(--slate); }
+.plist a:hover .arw { transform: translateX(4px); color: var(--slate); }
+.pvisual { border-left: 1px solid var(--line); display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; }
+/* 투수골재포장 탭: 현장사진 4장을 칸에 꽉 채움 (다른 탭의 흰 배경 제품컷 2×2 와 같은 틀) */
+.pcell.pphoto { padding: 0; overflow: hidden; background: #ddd; }
+.pcell.pphoto img { position: absolute; inset: 0; width: 100%; height: 100%; max-height: none; object-fit: cover; transition: transform 1s var(--e); }
+.pcell.pphoto:hover img { transform: scale(1.06); }
+.pcell.pphoto::after { content: ''; position: absolute; inset: 55% 0 0; background: linear-gradient(to top, rgba(10,10,10,.55), transparent); pointer-events: none; }
+.pcell.pphoto em { z-index: 1; color: #fff; font-weight: 500; text-shadow: 0 1px 6px rgba(0,0,0,.3); }
+.pvisual:has(.pphoto) { gap: 2px; background: #fff; }
+.pvisual:has(.pphoto) .pcell { border: 0; }
+.pcell { display: grid; place-items: center; padding: 36px 36px 52px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); position: relative; }
+.pcell:nth-child(2n) { border-right: 0; }
+.pcell:nth-last-child(-n+2) { border-bottom: 0; }
+.pcell img { max-height: 210px; width: auto; object-fit: contain; transition: transform .6s var(--e); }
+.pcell:hover img { transform: scale(1.06); }
+.pcell em { position: absolute; left: 24px; bottom: 18px; font-style: normal; font-size: 14px; line-height: 1.3; color: var(--ink-3); }
+
+/* ═════════ PROJECTS — 계속 흐르는 무한 슬라이드 ═════════ */
+.hm-projects { padding: 165px 0; overflow: hidden; }
+.hm-projects .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; }
+.pctrl { display: flex; align-items: center; gap: 24px; flex-shrink: 0; }
+.pcount { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.pcount b { color: var(--ink); font-weight: 600; }
+.arrows { display: flex; gap: 6px; }
+.arrows button { width: 44px; height: 44px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 15px; color: var(--ink); transition: border-color .2s ease, background .2s ease, color .2s ease; }
+.arrows button:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
+.gview { margin-top: 56px; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+.gview.drag { cursor: grabbing; }
+.track { display: flex; gap: 20px; will-change: transform; }
+.pc { flex: 0 0 calc((100% - 60px) / 4); display: block; }
+.pc .pc-ph { aspect-ratio: 3 / 4; overflow: hidden; background: var(--grey); }
+.pc .pc-ph img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--e); -webkit-user-drag: none; pointer-events: none; }
+.gview:not(.drag) .pc:hover .pc-ph img { transform: scale(1.05); }
+.pc h4 { margin-top: 20px; font-size: 18px; font-weight: 600; line-height: 1.4; }
+.pc p { margin-top: 6px; font-size: 14px; line-height: 1.55; color: var(--ink-3); }
+
+/* 맨 위로 */
+.hm-top { position: fixed; right: 28px; bottom: 28px; z-index: 40; width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 1px solid var(--line, #DEDEDE); display: grid; place-items: center; font-size: 16px; color: #212121; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.08); opacity: 0; pointer-events: none; transition: opacity .4s ease; }
+.hm-top.show { opacity: 1; pointer-events: auto; }
+
+/* ═════════ RESPONSIVE ═════════ */
+@media (max-width: 1024px) {
+  .hm-wrap { padding: 0 16px; }
+  .hm-hero { min-height: 560px; }
+  .hm-hero .hm-wrap { padding-top: 96px; }
+  .hm-hero h1 { font-size: 40px; }
+  .hm-pager { right: 16px; bottom: 48px; }
+  .hm-h2 { font-size: 30px; }
+
+  /* 회사소개: 고정 해제 → 사진 위 · 01/02/03 세로로 모두 표시 */
+  .cstage { height: auto; }
+  .csticky { position: static; height: auto; display: block; padding: 96px 0; overflow: visible; }
+  .hm-company .hm-h2 { font-size: 30px; }
+  .cgrid { grid-template-columns: 1fr; gap: 40px; }
+  .cimg img { max-width: 100%; max-height: none; width: 100%; }
+  .citems { overflow: visible; -webkit-mask-image: none; mask-image: none; }
+  .ctrack { position: static; transform: none !important; padding-top: 0; gap: 36px; }
+  .citem { opacity: 1; }
+  .citem::after { transform: scaleY(1); }
+  .cbig { display: none; }
+  .cgrid::before { display: none; }
+
+  .hm-products { padding: 96px 0; }
+  .ptabs { width: 100%; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
+  .ptabs::-webkit-scrollbar { display: none; }
+  .ptabs button { padding: 12px 16px; }
+  .ptabs button::after { left: 16px; right: 16px; bottom: -1px; }
+  .ppanels { margin-top: 32px; }
+  .ppanel { grid-template-columns: 1fr; min-height: 0; }
+  .pinfo { padding: 36px 28px; }
+  .pvisual { border-left: 0; border-top: 1px solid var(--line); }
+  .pcell.pphoto { aspect-ratio: 4 / 3; }
+
+  .hm-projects { padding: 96px 0; }
+  .pc { flex-basis: calc((100% - 40px) / 3); }
+}
+@media (max-width: 768px) {
+  .hm-hero { height: 88vh; min-height: 520px; }
+  .hm-hero h1 { font-size: 32px; letter-spacing: -1px; }
+  .hm-h2, .hm-company .hm-h2 { font-size: 25px; }
+  .csticky { padding: 72px 0; }
+  .citem h3 { font-size: 21px; }
+  .citem p { font-size: 15px; }
+  .citem p .lm { display: inline; }            /* 좁은 화면: 강제 줄바꿈 대신 자연스럽게 흐르게 */
+  .citem p .lm .ln { display: inline; }
+  .citem p .lm:not(:last-child)::after { content: ' '; }
+  .hm-products { padding: 72px 0; }
+  .pinfo h3 { font-size: 24px; }
+  .pinfo p { font-size: 15px; }
+  .pcell { padding: 20px 16px 36px; }
+  .pcell img { max-height: 100px; }
+  .hm-projects { padding: 72px 0; }
+  .hm-projects .top { flex-direction: column; align-items: flex-start; }
+  .gview { margin-top: 32px; }
+  .track { gap: 12px; }
+  .pc { flex-basis: 62%; }
+  .pc h4 { margin-top: 14px; font-size: 16px; }
+  .hm-top { right: 16px; bottom: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .hm-rv, html.js .hm-clip, html.js .hm-more, html.js .hm-slides { opacity: 1; transform: none; clip-path: none; }
+  html.js .ln { transform: none; }
+}
+
+/* Lenis 부드러운 스크롤 필수 규칙 */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+
+/* ═════════ 빈 곳 채우기 (2026-09-15) — 히어로 부제 · 기대효과 ═════════ */
+.home .hm-sub { margin-top: 14px; font-size: 19px; line-height: 1.5; font-weight: 400; color: rgba(255,255,255,.86); text-shadow: 0 2px 14px rgba(0,0,0,.35); }
+html.js .hm-hero.ready .hm-sub .ln { transition-delay: .84s; }
+
+/* 기대효과 — 어두운 배경으로 흐름에 강약 */
+.hm-effects { background: #0E1113; color: #fff; padding: 150px 0 140px; position: relative; overflow: hidden; }
+.hm-effects::before { content: ''; position: absolute; right: -10%; top: -30%; width: 60%; height: 120%; background: radial-gradient(closest-side, rgba(83,104,120,.35), transparent 70%); pointer-events: none; }
+.hm-effects .hm-wrap { position: relative; }
+.hm-label.light { color: #fff; }
+.hm-effects .hm-h2 { color: #fff; }
+.ef-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; flex-wrap: wrap; }
+.home .ef-lead { font-size: 17px; line-height: 1.75; color: rgba(255,255,255,.62); }
+.ef-grid { margin-top: 72px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(255,255,255,.16); }
+.ef-card { padding: 44px 40px 48px; border-right: 1px solid rgba(255,255,255,.1); transition: background .5s ease; }
+.ef-card:last-child { border-right: 0; }
+.ef-card:hover { background: rgba(255,255,255,.04); }
+.ef-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.ef-ico { width: 52px; height: 52px; color: #9FB2BF; display: block; transition: transform .8s var(--e); }
+.ef-card:hover .ef-ico { transform: translateY(-4px); }
+.ef-ico svg { width: 100%; height: 100%; }
+.ef-no { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.4); line-height: 1; }
+.ef-card h3 { margin-top: 36px; font-size: 25px; font-weight: 600; line-height: 1.35; color: #fff; }
+.home .ef-card p { margin-top: 14px; font-size: 15.5px; line-height: 1.7; color: rgba(255,255,255,.62); }
+.home .ef-kpi { margin-top: 26px; display: flex; align-items: baseline; gap: 14px; }
+.ef-kpi small { font-size: 13px; color: rgba(255,255,255,.5); }
+.ef-kpi b { font-size: 30px; font-weight: 600; letter-spacing: -.5px; color: #C8D6DF; }
+.ef-grid .ef-card:nth-child(2) { transition-delay: .12s; }
+.ef-grid .ef-card:nth-child(3) { transition-delay: .24s; }
+.home .ef-link { margin-top: 48px; display: inline-flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; line-height: 1.5; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,.4); color: #fff; }
+.ef-link .arw { transition: transform .6s var(--e); }
+.ef-link:hover .arw { transform: translateX(6px); }
+.home .ef-link.dark { color: var(--ink); border-color: var(--ink); }
+
+@media (max-width: 1024px) {
+  .hm-effects { padding: 96px 0; }
+  .ef-grid { grid-template-columns: 1fr; margin-top: 48px; }
+  .ef-card { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.1); padding: 32px 4px; }
+  .ef-card h3 { margin-top: 20px; }
+}
+@media (max-width: 768px) {
+  .home .hm-sub { font-size: 15px; }
+  .ef-lead br { display: none; }
+  .ef-card h3 { font-size: 21px; }
+}
+
+/* 확대되며 나타나는 사진(scale 1.15 → 1)이 상자 밖으로 삐져나가 화면을 가로로 밀던 것 방지 */
+.hm-clip { overflow: hidden; }
+
+/* ══════════════════════════════════════════════════════════
+   Why Permeable 세 항목 — 모바일 조정
+   · 손가락으로 누르는 화면에서는 hover 효과를 끈다
+     (터치하면 배경색·아이콘 이동이 그대로 남아 어색함)
+   · 글자 크기를 줄여 카드 3개가 덜 길어지게
+   ══════════════════════════════════════════════════════════ */
+@media (hover: none) {
+  .ef-card:hover { background: none; }
+  .ef-card:hover .ef-ico { transform: none; }
+}
+
+@media (max-width: 768px) {
+  .home .ef-lead { font-size: 15px; line-height: 1.7; }
+  .ef-grid { margin-top: 34px; }
+  .ef-card { padding: 26px 2px 28px; }
+  .ef-ico { width: 38px; height: 38px; }
+  .ef-no { font-size: 12px; }
+  .ef-card h3 { margin-top: 16px; font-size: 18px; line-height: 1.4; }
+  .home .ef-card p { margin-top: 10px; font-size: 14px; line-height: 1.65; }
+  .home .ef-kpi { margin-top: 16px; gap: 10px; }
+  .ef-kpi small { font-size: 12px; }
+  .ef-kpi b { font-size: 22px; }
+}
+
+/* 히어로 슬라이드 — 모바일에서는 크기 변화(확대/축소) 없이 부드럽게 넘어가기만 한다
+   (작은 화면에서는 scale 움직임이 화면이 흔들리는 것처럼 보임) */
+@media (max-width: 768px) {
+  .hm-slide, .hm-slide.on { transform: none; transition: opacity 1.2s ease; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   모바일 주소창 때문에 화면이 늘었다 줄었다 하는 문제
+   · 모바일 브라우저의 100vh 는 '주소창이 숨겨진 큰 화면' 기준이라,
+     스크롤해서 주소창이 접히면 히어로가 세로로 커지는 것처럼 보인다.
+   · svh(가장 작은 화면 높이) 기준으로 잡아 스크롤해도 높이가 변하지 않게 한다.
+     데스크톱에서는 svh = vh 라 달라지는 것이 없다.
+   ══════════════════════════════════════════════════════════ */
+@supports (height: 100svh) {
+  .hm-hero { height: 100svh; }
+  /* 회사소개 고정 스크롤은 데스크톱 전용 — 모바일에서는 '고정 해제' 규칙을 덮어쓰면 안 된다 */
+  @media (min-width: 1025px) {
+    .cstage { height: calc(100svh - var(--header-h) + var(--c-step) * 3); }
+    .csticky { height: calc(100svh - var(--header-h)); }
+    .cimg img { max-height: clamp(260px, calc(100svh - var(--header-h) - var(--c-pad) - var(--c-gap) - 210px), 600px); }
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   홈 모바일 교정
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  /* ① 히어로 — 주소창이 접혀도 높이가 변하지 않도록 JS가 잰 픽셀값을 쓴다
+        (--hero-h 는 home.js 가 처음 한 번만 넣고, 가로폭이 바뀔 때만 다시 넣는다) */
+  .hm-hero { height: var(--hero-h, 88svh); min-height: 460px; }
+
+  /* ② 회사소개 — 위아래 흰 여백 축소 */
+  .csticky { padding: 56px 0; }
+  .cgrid { gap: 28px; }
+  .ctrack { gap: 26px; }
+
+  /* ③ 제품소개 — 위아래 흰 여백 축소 */
+  .hm-products { padding: 56px 0; }
+  .ppanels { margin-top: 22px; }
+  .pinfo { padding: 26px 20px; }
+
+  /* ④ 제품 탭 — 세 개가 한눈에 보이도록 줄바꿈(가로 스크롤 금지) + 선택 상태를 뚜렷하게 */
+  .ptabs {
+    width: 100%; overflow-x: visible; flex-wrap: wrap; gap: 6px;
+    border-bottom: 0; margin-top: 22px;
+  }
+  .ptabs button {
+    flex: 1 1 auto; min-width: 0; padding: 11px 12px;
+    font-size: 14px; font-weight: 600; white-space: normal; text-align: center;
+    border: 1px solid var(--line); border-radius: 0;
+    background: #fff; color: var(--ink-3);
+    transition: background-color .2s, color .2s, border-color .2s;
+  }
+  .ptabs button::after { display: none; }          /* 밑줄 대신 칸 전체를 채운다 */
+  .ptabs button.on {
+    background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 700;
+  }
+}
+
+@media (max-width: 768px) {
+  .csticky { padding: 44px 0; }
+  .hm-products { padding: 44px 0; }
+  .hm-effects { padding: 56px 0; }
+  .hm-projects { padding: 48px 0; }
+  .ptabs button { font-size: 13.5px; padding: 10px 8px; }
+}
+
+/* 모바일에서는 히어로 사진을 작은 판(900px)으로 — 데이터 사용량 2.6MB → 0.7MB
+   브라우저는 조건에 맞는 것 하나만 내려받으므로 큰 판은 받지 않는다 */
+@media (min-width: 769px) {
+  .hm-slide:nth-of-type(1) { background-image: url('./images/hero-stock-1.jpg') !important; }
+}

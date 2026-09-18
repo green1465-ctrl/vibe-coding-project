@@ -1,0 +1,24 @@
+# ─────────────────────────────────────────────
+# 공개(PUBLIC) 저장소이므로 올리지 않을 것
+# ─────────────────────────────────────────────
+
+# 비밀값
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+*.p12
+*.pfx
+.wrangler/
+
+# Cloudflare 설정 (D1 주소 등 계정 식별자 포함)
+wrangler.toml
+
+# 사진·이미지 전부 — 현장사진 · 인증서 · 배너
+images/
+
+# 빌드·의존성
+node_modules/
+package-lock.json

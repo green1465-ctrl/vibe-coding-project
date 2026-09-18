@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════════════
+   (주)네오콘크리트 — 회사소개 전용 (about.html 에서만 로드)
+   경영이념 · 핵심가치
+   · 밝은 배경 (푸터·어두운 섹션과 겹치지 않게)
+   · 세 가치를 한눈에 — 자동 전환·미끄러지는 강조 블록 없음
+   · 마우스를 올렸을 때만 글자색이 바뀜 (네비게이션 하위 탭과 같은 방식)
+═══════════════════════════════════════════════════════════ */
+.vx {
+  --vx-line: #DDE3E6;
+  --vx-ink: #161C20;
+  --vx-ink-2: #444;
+  --vx-quiet: #8C99A1;
+  position: relative;
+  background: #F7F9FA;   /* Overview(흰색)와 구분되는 균일한 아주 연한 회색 */
+  padding: clamp(72px, 9vw, 128px) 0;
+  letter-spacing: -.5px;
+  color: var(--vx-ink);
+}
+.vx .container { position: relative; }
+
+.vx-wrap { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: clamp(40px, 5vw, 88px); align-items: start; }
+
+.vx-lead { margin-top: 18px; font-size: 15.5px; line-height: 1.7; color: var(--vx-ink-2); }
+
+/* 세 가치 — ＋ 를 눌러 설명을 펼치는 목록 */
+.vx-list { position: relative; margin-top: 4px; border-top: 2px solid var(--onyx); }
+.vx-item { border-bottom: 1px solid var(--vx-line); }
+.vx-item:last-child { border-bottom: 0; }
+
+.vx-head {
+  width: 100%; display: grid; grid-template-columns: 74px minmax(0, 1fr) 44px; align-items: center; gap: 4px;
+  padding: 26px 8px 26px 26px; border: 0; background: transparent; text-align: left;
+  font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer;
+  transition: background-color .3s ease;
+}
+.vx-head:hover { background-color: #EFF3F5; }
+.vx-head:focus-visible { outline: 2px solid var(--slate); outline-offset: -3px; }
+
+.vx-no { font-family: var(--font-mono); font-size: 15px; font-weight: 500; line-height: 1.9; color: var(--slate); letter-spacing: .04em; }
+.vx-text { display: block; }
+.vx-en { display: block; font-size: clamp(21px, 2.1vw, 27px); font-weight: 700; line-height: 1.3; color: var(--vx-ink); letter-spacing: -.02em; transition: color .25s ease; }
+.vx-head:hover .vx-en { color: var(--slate); }
+.vx-ko { display: block; margin-top: 6px; font-size: 15px; line-height: 1.7; color: var(--vx-ink-2); }
+
+/* 펼침 표시 — 얇은 꺾쇠, 열리면 위로 뒤집힘 (X 표시 대신) */
+.vx-plus { width: 12px; height: 12px; justify-self: end; margin-right: 10px; margin-top: -4px;
+  border-right: 1.5px solid var(--vx-quiet); border-bottom: 1.5px solid var(--vx-quiet);
+  transform: rotate(45deg);
+  transition: transform .45s cubic-bezier(.43,.2,.02,1), border-color .3s ease; }
+.vx-head:hover .vx-plus { border-color: var(--slate); }
+.vx-item.is-open .vx-plus { transform: rotate(225deg) translate(-3px, -3px); border-color: var(--slate); }
+
+/* 설명 패널 */
+.vx-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .5s cubic-bezier(.43,.2,.02,1); }
+.vx-item.is-open .vx-panel { grid-template-rows: 1fr; }
+.vx-panel > div { overflow: hidden; }
+.vx-desc {
+  margin: 0 26px 30px 104px; padding-top: 16px; border-top: 1px solid var(--vx-line);
+  font-size: 15.5px; line-height: 1.7; color: var(--vx-ink-2); max-width: 52ch;
+  opacity: 0; transform: translateY(-6px); transition: opacity .4s ease .05s, transform .5s cubic-bezier(.43,.2,.02,1) .05s;
+}
+.vx-item.is-open .vx-desc { opacity: 1; transform: none; }
+html:not(.js) .vx-panel { grid-template-rows: 1fr; }
+html:not(.js) .vx-desc { opacity: 1; transform: none; }
+
+/* 닫는 문장 */
+.vx-close {
+  grid-column: 1 / -1; margin-top: clamp(22px, 2.6vw, 38px);
+  display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: clamp(40px, 5vw, 88px);
+}
+.vx-close q { grid-column: 2; quotes: none; font-size: clamp(16.5px, 1.7vw, 19px); line-height: 1.75; color: var(--vx-ink-2); }
+.vx-close strong { display: block; margin-top: 12px; color: var(--vx-ink); font-weight: 600; }
+
+@media (max-width: 1024px) {
+  .vx-wrap, .vx-close { grid-template-columns: 1fr; }
+  .vx-close q { grid-column: 1; }
+  .vx-head { grid-template-columns: 44px minmax(0, 1fr) 38px; padding: 20px 4px 20px 6px; }
+  .vx-desc { margin: 0 6px 24px 52px; }
+}
+
+/* 회사개요 표 — 인증 칸: 회색 알약 대신 담백한 목록 (약어 대신 정식 명칭) */
+.cert-lines { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 24px; margin: 2px 0 0; padding: 0; list-style: none; }
+.cert-lines li { position: relative; padding-left: 14px; font-size: 14.5px; line-height: 1.65; color: #444; }
+.cert-lines li::before { content: ''; position: absolute; left: 0; top: 10px; width: 5px; height: 5px; background: var(--slate); }
+.cert-more { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 14px; font-weight: 500; color: var(--slate); border-bottom: 1px solid rgba(83,104,120,.35); padding-bottom: 2px; transition: color .2s ease, border-color .2s ease; }
+.cert-more span { transition: transform .4s cubic-bezier(.43,.2,.02,1); }
+.cert-more:hover { color: var(--slate-dark); border-color: var(--slate-dark); }
+.cert-more:hover span { transform: translateX(4px); }
+@media (max-width: 1024px) { .cert-lines { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 768px) { .cert-lines { grid-template-columns: 1fr; gap: 4px; } }
+
+/* 스크롤로 들어올 때 순서대로 등장 — main.js 의 reveal 사용 */
+@media (hover: none) { .vx-head:hover { background-color: transparent; } }
+
+/* 회사개요 표 — 연락처: 항목과 번호를 칸으로 나눠 붙어 보이지 않게 (링크 없이 표기만) */
+.contact-lines { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px 32px; margin: 0; padding: 0; list-style: none; }
+.contact-lines li { display: flex; align-items: baseline; gap: 12px; }   /* 항목-값 간격을 항목 길이와 무관하게 동일하게 */
+.c-key { font-size: 12.5px; font-weight: 600; letter-spacing: .08em; color: #8C99A1; text-transform: uppercase; }
+.c-val { font-size: 15px; color: #444; letter-spacing: .01em; }
+@media (max-width: 768px) {
+  .contact-lines { grid-template-columns: 1fr; gap: 6px; }
+  .c-val { font-size: 14px; }
+}
+
+.nowrap { white-space: nowrap; }   /* 이 묶음은 줄을 넘기지 않음 */
+
+/* ── 회사개요 정보 — 두 칸으로 나눠 줄마다 간격이 일정하게 ── */
+.overview-table { margin-top: 48px; margin-bottom: 56px; }   /* 표 아래 여백 — 다음 섹션과 너무 붙지 않게 */
+.spec { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(40px, 5vw, 80px); border-top: 1px solid #1A1F23; }
+.spec-col { margin: 0; }
+.spec-item { display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 20px; align-items: start;
+  padding: 20px 4px; border-bottom: 1px solid #EBEFF1; }
+.spec-col:last-child .spec-item:last-child { border-bottom: 0; }
+.spec-item dt { font-size: 14.5px; font-weight: 600; line-height: 1.6; letter-spacing: .01em; color: #55636B; }
+.spec-item dd { margin: 0; font-size: 16px; line-height: 1.7; color: #262C31; }
+
+.contact-lines { display: grid; grid-template-columns: repeat(2, max-content); gap: 10px 36px; margin: 0; padding: 0; list-style: none; }
+.contact-lines li { display: flex; align-items: baseline; gap: 12px; }
+.c-key { font-size: 12.5px; font-weight: 600; letter-spacing: .08em; color: #8C99A1; text-transform: uppercase; }
+.c-val { font-size: 16px; color: #262C31; letter-spacing: .01em; }
+
+.cert-lines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; margin: 0; padding: 0; list-style: none; }
+.cert-lines li { position: relative; padding-left: 15px; font-size: 15px; line-height: 1.6; color: #262C31; }
+.cert-lines li::before { content: ''; position: absolute; left: 0; top: 9px; width: 4px; height: 4px; border-radius: 50%; background: var(--slate); }
+
+@media (max-width: 1024px) {
+  .spec { grid-template-columns: 1fr; }
+  .spec-col:first-child .spec-item:last-child { border-bottom: 1px solid #EBEFF1; }
+}
+@media (max-width: 768px) {
+  .spec-item { grid-template-columns: 88px minmax(0, 1fr); gap: 14px; padding: 16px 2px; }
+  .spec-item dt { font-size: 13.5px; }
+  .spec-item dd { font-size: 14.5px; }
+  .contact-lines { grid-template-columns: 1fr; gap: 8px; }
+  .cert-lines { grid-template-columns: 1fr; gap: 6px; }
+}
