@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공고 스크리닝 — 행정사·가맹거래사사무소 성찬</title>
+<style>
+:root {
+  color-scheme: light;
+  --plane:      #f9f9f7;
+  --surface:    #fcfcfb;
+  --ink:        #0b0b0b;
+  --ink-2:      #52514e;
+  --muted:      #898781;
+  --grid:       #e1e0d9;
+  --axis:       #c3c2b7;
+  --ring:       rgba(11,11,11,.10);
+  --series-1:   #2a78d6;
+  --good:       #0ca30c;
+  --warning:    #fab219;
+  --critical:   #d03b3b;
+  --accent-bg:  #cde2fb;
+  --sans: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --plane: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --axis: #383835;
+    --ring: rgba(255,255,255,.10); --series-1: #3987e5; --accent-bg: #184f95;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plane: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+  --muted: #898781; --grid: #2c2c2a; --axis: #383835;
+  --ring: rgba(255,255,255,.10); --series-1: #3987e5; --accent-bg: #184f95;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--plane); color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+
+.shell { max-width: 1320px; margin-inline: auto; padding: 24px 20px 64px; }
+
+/* 헤더 */
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+.top h1 { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.top p { font-size: 13px; color: var(--ink-2); margin-top: 3px; }
+.top__right { display: flex; align-items: center; gap: 10px; }
+.chip { font-size: 12px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--ring); border-radius: 999px; padding: 5px 11px; }
+.iconbtn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--ring); background: var(--surface); color: var(--ink-2); cursor: pointer; font-size: 14px; }
+.iconbtn:hover { color: var(--ink); }
+
+/* KPI 타일 */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 12px; margin-bottom: 20px; }
+.tile { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 16px 18px; }
+.tile__label { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.tile__value { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin-top: 6px; line-height: 1.1; }
+.tile__sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.tile--alert .tile__value { color: var(--critical); }
+.tile--good .tile__value { color: var(--good); }
+
+/* 필터 */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.filters select, .filters input {
+  font-family: var(--sans); font-size: 13px; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
+  padding: 8px 11px; min-width: 132px;
+}
+.filters input { flex: 1; min-width: 200px; }
+.filters select:focus, .filters input:focus { outline: 2px solid var(--series-1); outline-offset: -1px; }
+.reset { font-size: 13px; color: var(--ink-2); background: none; border: 0; cursor: pointer; padding: 8px 4px; text-decoration: underline; }
+
+.layout { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
+@media (max-width: 1080px) { .layout { grid-template-columns: 1fr; } }
+
+/* 표 */
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; overflow: hidden; }
+.card__head { padding: 13px 16px; border-bottom: 1px solid var(--grid); display: flex; align-items: center; justify-content: space-between; }
+.card__title { font-size: 13px; font-weight: 700; }
+.card__meta { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); padding: 9px 16px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+td { padding: 12px 16px; border-bottom: 1px solid var(--grid); font-size: 13px; vertical-align: top; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: color-mix(in srgb, var(--series-1) 6%, transparent); }
+tbody tr[aria-selected="true"] { background: color-mix(in srgb, var(--series-1) 11%, transparent); }
+tbody tr:last-child td { border-bottom: 0; }
+.t-title { font-weight: 600; line-height: 1.4; }
+.t-org { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.t-date { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12px; color: var(--ink-2); }
+.dday { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 5px; margin-top: 3px; }
+.dday--soon { background: color-mix(in srgb, var(--critical) 15%, transparent); color: var(--critical); }
+.dday--open { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+.dday--closed { background: var(--grid); color: var(--muted); }
+
+/* 인증 태그 — 색만으로 뜻을 전하지 않도록 기호+이름을 함께 쓴다 */
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--ring); white-space: nowrap; }
+.tag--confirmed { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); background: color-mix(in srgb, var(--good) 9%, transparent); }
+.tag--likely    { color: #8a6000; border-color: color-mix(in srgb, var(--warning) 50%, transparent); background: color-mix(in srgb, var(--warning) 13%, transparent); }
+.tag--possible  { color: var(--muted); }
+:root[data-theme="dark"] .tag--likely, :root:where(:not([data-theme="light"])) .tag--likely { color: var(--warning); }
+.pill { font-size: 11px; color: var(--ink-2); border: 1px solid var(--ring); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+
+/* 분포 차트 — 단일 계열이라 범례 없이 직접 라벨 */
+.bars { padding: 14px 16px 16px; display: grid; gap: 7px; }
+.bar { display: grid; grid-template-columns: 104px 1fr 26px; align-items: center; gap: 9px; font-size: 12px; }
+.bar__name { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar__track { height: 9px; background: var(--grid); border-radius: 4px; overflow: hidden; }
+.bar__fill { height: 100%; background: var(--series-1); border-radius: 0 4px 4px 0; min-width: 3px; }
+.bar__val { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 600; }
+
+/* 상세 패널 */
+.detail { position: sticky; top: 16px; }
+.detail__body { padding: 16px; }
+.detail h2 { font-size: 15px; font-weight: 700; line-height: 1.4; }
+.detail__org { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.detail__row { display: flex; gap: 8px; font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--grid); }
+.detail__row dt { color: var(--muted); min-width: 66px; flex-shrink: 0; }
+.detail__row dd { color: var(--ink-2); }
+.detail__sec { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .04em; margin: 16px 0 8px; }
+.cert { border: 1px solid var(--ring); border-radius: 9px; padding: 10px 12px; margin-bottom: 7px; }
+.cert__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cert__name { font-size: 13px; font-weight: 700; }
+.cert__formal { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.cert__src { font-size: 11px; color: var(--ink-2); margin-top: 6px; }
+.cert__src b { color: var(--ink); font-weight: 600; }
+.btn { display: block; text-align: center; margin-top: 14px; padding: 10px; border-radius: 9px; background: var(--series-1); color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; }
+.btn:hover { filter: brightness(.92); }
+.empty { padding: 34px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-2); padding: 10px 16px; border-top: 1px solid var(--grid); }
+.legend span { display: inline-flex; align-items: center; gap: 4px; }
+.banner[hidden] { display: none; }
+.banner { background: color-mix(in srgb, var(--warning) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent); border-radius: 10px; padding: 10px 14px; font-size: 12.5px; color: var(--ink-2); margin-bottom: 18px; display: flex; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="top">
+    <div>
+      <h1>공고 스크리닝 대시보드</h1>
+      <p>행정사·가맹거래사사무소 성찬 — 기업마당 공고에서 인허가·인증 업무 기회를 추출합니다</p>
+    </div>
+    <div class="top__right">
+      <span class="chip" id="stamp">—</span>
+      <button class="iconbtn" id="theme" title="라이트/다크 전환" aria-label="라이트/다크 전환">◐</button>
+    </div>
+  </div>
+
+  <div class="banner" id="banner" hidden>
+    <span>⚠</span>
+    <span id="banner-msg"></span>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="filters">
+    <select id="f-type"><option value="">공고유형 · 전체</option></select>
+    <select id="f-cat"><option value="">분야 · 전체</option></select>
+    <select id="f-cert"><option value="">인증 · 전체</option></select>
+    <select id="f-conf">
+      <option value="any" selected>업무 대상만 (기본)</option>
+      <option value="confirmed">● 확정만</option>
+      <option value="likely">◐ 가능성 이상</option>
+      <option value="">전체 보기 (무관 공고 포함)</option>
+    </select>
+    <input type="search" id="f-q" placeholder="공고명 · 기관명 검색">
+    <button class="reset" id="reset">초기화</button>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="card">
+        <div class="card__head">
+          <span class="card__title">공고 목록 <span id="scope" style="font-weight:500;color:var(--muted)"></span></span>
+          <span class="card__meta" id="count">—</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40%">공고명</th>
+                <th>유형</th>
+                <th>신청기간</th>
+                <th style="width:30%">탐지된 행정사 업무</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="legend">
+          <span style="color:var(--good)">● 확정</span>
+          <span>— 제출서류에 정식 명칭이 있음</span>
+          <span style="margin-left:8px">◐ 가능성</span>
+          <span>— 정황 키워드 2개 이상</span>
+          <span style="margin-left:8px">○ 검토</span>
+          <span>— 단서 1개, 원문 확인 필요</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card__head"><span class="card__title">인증별 등장 건수</span><span class="card__meta">확정 기준</span></div>
+        <div class="bars" id="bars"></div>
+      </div>
+    </div>
+
+    <div class="card detail">
+      <div class="card__head"><span class="card__title">공고 상세</span></div>
+      <div id="detail"><div class="empty">목록에서 공고를 선택하세요</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 수집 결과. npm run collect 실행 시 생성된다 (없으면 조용히 건너뛴다) -->
+<script src="data.js" onerror="void 0"></script>
+<script src="data.sample.js"></script>
+<script>
+const CONF = {
+  confirmed: { icon: "●", label: "확정" },
+  likely:    { icon: "◐", label: "가능성" },
+  possible:  { icon: "○", label: "검토" },
+};
+const RANK = { confirmed: 3, likely: 2, possible: 1 };
+
+const $ = (s) => document.querySelector(s);
+let DATA = window.SAMPLE_DATA || [];
+let selected = null;
+
+/* 수집기가 넣어준 periodEnd(ISO) 기준. "예산 소진시까지" 같은 건 rolling 으로 온다 */
+function dday(a) {
+  if (a.rolling || !a.periodEnd) return { text: "상시", cls: "dday--open", days: 999 };
+  const today = new Date(); today.setHours(0,0,0,0);
+  const end = new Date(a.periodEnd + "T00:00:00");
+  const days = Math.round((end - today) / 86400000);
+  if (days < 0) return { text: "마감", cls: "dday--closed", days };
+  if (days === 0) return { text: "오늘 마감", cls: "dday--soon", days };
+  return { text: `D-${days}`, cls: days <= 7 ? "dday--soon" : "dday--open", days };
+}
+function fmtRange(a) {
+  if (a.periodStart && a.periodEnd) return `${a.periodStart.replace(/-/g,".")} ~ ${a.periodEnd.replace(/-/g,".")}`;
+  return a.reqstDt || "—";
+}
+
+function filtered() {
+  const type = $("#f-type").value, cat = $("#f-cat").value;
+  const cert = $("#f-cert").value, conf = $("#f-conf").value;
+  const q = $("#f-q").value.trim().toLowerCase();
+  const minRank = conf === "confirmed" ? 3 : conf === "likely" ? 2 : conf === "any" ? 1 : 0;
+
+  return DATA.filter((a) => {
+    if (type && a.programType !== type) return false;
+    if (cat && a.lcategory !== cat) return false;
+    if (cert && !a.certifications.some((c) => c.name === cert)) return false;
+    if (minRank && !a.certifications.some((c) => RANK[c.confidence] >= minRank)) return false;
+    if (q && !(`${a.title} ${a.author} ${a.excInsttNm}`.toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+function renderTiles() {
+  /* 세 상태는 서로 겹치지 않는다: 확정 / 단서만 / 해당없음 */
+  const isConfirmed = (a) => a.certifications.some((c) => c.confidence === "confirmed");
+  const confirmed = DATA.filter(isConfirmed);
+  const review = DATA.filter((a) => a.certifications.length && !isConfirmed(a));
+  const none = DATA.length - confirmed.length - review.length;
+  /* 마감 임박은 "업무 기회가 있는 공고" 중에서만 센다 — 나머지는 볼 필요가 없다 */
+  const actionable = [...confirmed, ...review];
+  const soon = actionable.filter((a) => { const d = dday(a); return d.days >= 0 && d.days <= 7; }).length;
+  const tiles = [
+    { label: "수집된 공고", value: DATA.length, sub: `업무 해당 없음 ${none}건`, cls: "" },
+    { label: "행정사 업무 확정", value: confirmed.length, sub: "● 정식 명칭 탐지", cls: "tile--good" },
+    { label: "검토 필요", value: review.length, sub: "◐○ 단서만 있음", cls: "" },
+    { label: "마감 임박", value: soon, sub: "업무 대상 중 7일 이내", cls: "tile--alert" },
+  ];
+  $("#tiles").innerHTML = tiles.map((t) => `
+    <div class="tile ${t.cls}">
+      <div class="tile__label">${t.label}</div>
+      <div class="tile__value">${t.value}</div>
+      <div class="tile__sub">${t.sub}</div>
+    </div>`).join("");
+}
+
+function renderBars() {
+  const counts = {};
+  DATA.forEach((a) => a.certifications.forEach((c) => {
+    if (c.confidence !== "confirmed") return;
+    counts[c.name] = (counts[c.name] || 0) + 1;
+  }));
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...rows.map((r) => r[1]));
+  $("#bars").innerHTML = rows.map(([name, n]) => `
+    <div class="bar">
+      <span class="bar__name" title="${name}">${name}</span>
+      <span class="bar__track"><span class="bar__fill" style="width:${(n / max) * 100}%"></span></span>
+      <span class="bar__val">${n}</span>
+    </div>`).join("");
+}
+
+function renderRows() {
+  const list = filtered();
+  $("#count").textContent = `${list.length}건 / 전체 ${DATA.length}건`;
+  const scope = { any: "— 단서가 잡힌 공고만", confirmed: "— 확정 건만", likely: "— 가능성 이상", "": "— 무관 공고 포함 전체" }[$("#f-conf").value] || "";
+  $("#scope").textContent = scope;
+  if (!list.length) { $("#rows").innerHTML = `<tr><td colspan="4"><div class="empty">조건에 맞는 공고가 없습니다</div></td></tr>`; return; }
+
+  $("#rows").innerHTML = list.map((a) => {
+    const d = dday(a);
+    const tags = a.certifications
+      .slice().sort((x, y) => RANK[y.confidence] - RANK[x.confidence])
+      .map((c) => `<span class="tag tag--${c.confidence}">${CONF[c.confidence].icon} ${c.name}</span>`).join("");
+    return `<tr data-id="${a.pblancId}" aria-selected="${selected === a.pblancId}">
+      <td><div class="t-title">${a.title}</div><div class="t-org">${a.author} · ${a.excInsttNm}</div></td>
+      <td><span class="pill">${a.programType}</span><div class="t-org" style="margin-top:4px">${a.lcategory}</div></td>
+      <td class="t-date">${fmtRange(a)}<br><span class="dday ${d.cls}">${d.text}</span></td>
+      <td><div class="tags">${tags}</div></td>
+    </tr>`;
+  }).join("");
+
+  $("#rows").querySelectorAll("tr[data-id]").forEach((tr) => {
+    tr.addEventListener("click", () => { selected = tr.dataset.id; renderRows(); renderDetail(); });
+  });
+}
+
+function renderDetail() {
+  const a = DATA.find((x) => x.pblancId === selected);
+  if (!a) { $("#detail").innerHTML = `<div class="empty">목록에서 공고를 선택하세요</div>`; return; }
+  const d = dday(a);
+  const certs = a.certifications.slice().sort((x, y) => RANK[y.confidence] - RANK[x.confidence]);
+
+  $("#detail").innerHTML = `<div class="detail__body">
+    <h2>${a.title}</h2>
+    <div class="detail__org">${a.author} · ${a.excInsttNm}</div>
+    <dl style="margin-top:12px">
+      <div class="detail__row"><dt>공고유형</dt><dd>${a.programType} · ${a.lcategory}</dd></div>
+      <div class="detail__row"><dt>신청기간</dt><dd>${fmtRange(a)} <span class="dday ${d.cls}">${d.text}</span></dd></div>
+      <div class="detail__row"><dt>지원대상</dt><dd>${a.trgetNm}</dd></div>
+      <div class="detail__row"><dt>첨부파일</dt><dd>${a.hasAttachment ? "있음 — 제출서류 파싱 대상" : "없음"}</dd></div>
+    </dl>
+    <div class="detail__sec">사업개요</div>
+    <p style="font-size:12.5px;color:var(--ink-2);line-height:1.65">${a.description}</p>
+    <div class="detail__sec">탐지된 행정사 업무 ${certs.length}건</div>
+    ${certs.map((c) => `
+      <div class="cert">
+        <div class="cert__top">
+          <span class="cert__name">${c.name}</span>
+          <span class="tag tag--${c.confidence}">${CONF[c.confidence].icon} ${CONF[c.confidence].label}</span>
+        </div>
+        <div class="cert__formal">${c.formal} · ${c.category}</div>
+        <div class="cert__src">근거: <b>${c.matched.join(", ")}</b> <span style="color:var(--muted)">(${c.source})</span></div>
+      </div>`).join("")}
+    <a class="btn" href="${a.link}" target="_blank" rel="noopener">기업마당 원문 보기</a>
+  </div>`;
+}
+
+function initFilters() {
+  const fill = (sel, values) => {
+    values.sort().forEach((v) => { const o = document.createElement("option"); o.value = o.textContent = v; sel.appendChild(o); });
+  };
+  fill($("#f-type"), [...new Set(DATA.map((a) => a.programType))]);
+  fill($("#f-cat"), [...new Set(DATA.map((a) => a.lcategory))]);
+  fill($("#f-cert"), [...new Set(DATA.flatMap((a) => a.certifications.map((c) => c.name)))]);
+  ["f-type","f-cat","f-cert","f-conf","f-q"].forEach((id) => {
+    $("#" + id).addEventListener("input", renderRows);
+  });
+  $("#reset").addEventListener("click", () => {
+    ["f-type","f-cat","f-cert","f-q"].forEach((id) => ($("#" + id).value = ""));
+    $("#f-conf").value = "any";   /* 기본은 업무 대상만 */
+    renderRows();
+  });
+}
+
+$("#theme").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : cur === "light" ? "dark"
+    : (matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark");
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("theme", next); } catch (e) {}
+});
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+
+function boot(items, collectedAt, note) {
+  DATA = items;
+  $("#stamp").textContent = "최종 수집 " + new Date(collectedAt)
+    .toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  if (note) { $("#banner").hidden = false; $("#banner-msg").innerHTML = note; }
+  initFilters(); renderTiles(); renderBars(); renderRows();
+}
+
+/* 수집 결과(data.js)가 있으면 그걸 쓰고, 없으면 예시 데이터로 떨어진다 */
+if (window.COLLECTED && window.COLLECTED.items?.length) {
+  boot(window.COLLECTED.items, window.COLLECTED.collectedAt, null);
+} else {
+  boot(window.SAMPLE_DATA || [], new Date().toISOString(),
+    "<b>예시 데이터로 동작 중입니다.</b> 터미널에서 <code>npm run collect</code> 을 실행하면 실제 공고로 바뀝니다.");
+}
+</script>
+</body>
+</html>

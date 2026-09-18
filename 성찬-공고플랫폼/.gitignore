@@ -1,0 +1,17 @@
+# 비밀값 — 절대 커밋 금지
+.dev.vars
+.env
+.env.*
+!.dev.vars.example
+
+# 의존성
+node_modules/
+
+# 수집 결과물 (매번 새로 생성됨, 용량 큼)
+public/data.js
+public/data.json
+pdf-cache/
+
+# 기타
+.wrangler/
+*.local

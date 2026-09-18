@@ -1,0 +1,14 @@
+{
+  "name": "seongchan-gonggo",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "collect": "node collect.mjs",
+    "open": "node -e \"import('child_process').then(c=>c.exec('start public/index.html'))\""
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "pdfjs-dist": "^4.10.38"
+  }
+}
