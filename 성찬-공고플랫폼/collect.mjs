@@ -22,7 +22,9 @@ const OUT = path.join(__dir, "public", "data.json");
 
 /* ---------- 설정 ---------- */
 const COUNT = Number(process.env.COUNT || 300); // 한 번에 받아올 공고 수
-const MAX_PDF = Number(process.env.MAX_PDF || 60); // 이번 실행에서 새로 받을 PDF 수 상한
+/* 새로 내려받을 문서 수 상한. 이미 캐시된 문서는 여기에 포함되지 않는다
+   (캐시 읽기는 비용이 없으므로 항상 전부 처리한다) */
+const MAX_PDF = Number(process.env.MAX_PDF || 250);
 const PDF_PAGES = 25; // PDF 앞에서 몇 페이지까지 읽을지
 
 function loadKey() {
@@ -174,10 +176,17 @@ const prepared = raw.map((r) => {
   };
 });
 
-/* 우선순위가 높은 공고부터 MAX_PDF 만큼만 PDF를 읽는다 */
-const queue = prepared.filter((p) => p.prio > 0).sort((a, b) => b.prio - a.prio).slice(0, MAX_PDF);
+/* 캐시된 문서는 비용이 없으니 전부 읽고, 새로 내려받는 건만 MAX_PDF 로 제한한다 */
+const isCached = (id) => fs.existsSync(path.join(CACHE, `${id}.txt`));
+const candidates = prepared.filter((p) => p.prio > 0).sort((a, b) => b.prio - a.prio);
+const cachedOnes = candidates.filter((p) => isCached(p.r.pblancId));
+const freshOnes = candidates.filter((p) => !isCached(p.r.pblancId)).slice(0, MAX_PDF);
+const queue = [...cachedOnes, ...freshOnes];
 const skipped = prepared.filter((p) => p.prio === 0).length;
-console.log(`PDF 대상 선별: 읽을 ${queue.length}건 / 건너뜀 ${skipped}건(소상공인 전용·마감·첨부없음)`);
+console.log(
+  `문서 분석 대상 ${queue.length}건 (캐시 ${cachedOnes.length} + 신규 다운로드 ${freshOnes.length})` +
+  ` / 건너뜀 ${skipped}건(소상공인 전용·마감·첨부없음)`
+);
 
 let pdfUsed = 0, pdfHit = 0;
 for (const [i, p] of queue.entries()) {
@@ -193,7 +202,7 @@ for (const [i, p] of queue.entries()) {
   const merged = [...seen.values()];
   if (merged.length > p.certs.length) pdfHit++;
   p.certs = merged.sort((a, b) => b.score - a.score);
-  if ((i + 1) % 25 === 0) console.log(`  ...PDF ${i + 1}/${queue.length} 확인`);
+  if ((i + 1) % 50 === 0) console.log(`  ...${i + 1}/${queue.length} 분석`);
 }
 
 const out = [];
